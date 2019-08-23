@@ -3,16 +3,16 @@
 <plist version="1.0">
     <dict>
         <key>name</key>
-        <string>pnpChannel</string>
+        <string>colorizedChannel</string>
         <key>scopeName</key>
-        <string>text.channel.pnp</string>
+        <string>text.channel.colorized</string>
         <key>patterns</key>
         <array>
             <dict>
                 <key>name</key>
-                <string>channel.pnp.info</string>
+                <string>channel.colorized.info</string>
                 <key>match</key>
-                <string>(\[Start\]|\[Complete\])(.*)</string>
+                <string>(\[Start\]|\[Done\])(.*)</string>
                 <key>captures</key>
                 <dict>
                     <key>0</key>
@@ -24,9 +24,9 @@
             </dict>
             <dict>
                 <key>name</key>
-                <string>channle.pnp.warn</string>
+                <string>channel.colorized.warn</string>
                 <key>match</key>
-                <string>(\[Warn\])(.*)</string>
+                <string>(\[Warn\])(.+)</string>
                 <key>captures</key>
                 <dict>
                     <key>0</key>
@@ -38,9 +38,9 @@
             </dict>
             <dict>
                 <key>name</key>
-                <string>channel.pnp.error</string>
+                <string>channel.colorized.error</string>
                 <key>match</key>
-                <string>(\[Error\])(.*)</string>
+                <string>(\[Error\])(.+)</string>
                 <key>captures</key>
                 <dict>
                     <key>0</key>
