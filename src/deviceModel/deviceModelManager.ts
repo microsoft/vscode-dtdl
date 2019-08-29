@@ -16,6 +16,10 @@ export enum ModelType {
 }
 
 export class DeviceModelManager {
+  public static convertToModelType(name: string): ModelType {
+    return ModelType[name as keyof typeof ModelType];
+  }
+
   public static generateModelId(name: string): string {
     return `urn:{your name}:${name}:1`;
   }
@@ -34,27 +38,27 @@ export class DeviceModelManager {
   public async createModel(type: ModelType): Promise<void> {
     const folder: string = await UI.selectRootFolder(UIConstants.SELECT_ROOT_FOLDER_LABEL);
     const name: string = await UI.inputModelName(UIConstants.INPUT_MODEL_NAME_LABEL, type, folder);
-    const model: string = `${type} ${name}`;
 
-    this.outputChannel.start(`Create ${model} in folder ${folder}`, Constants.DEVICE_MODEL_COMPONENT);
+    const subject = `Create ${type} ${name} in folder ${folder}`;
+    this.outputChannel.start(subject, Constants.DEVICE_MODEL_COMPONENT);
+
     let filePath: string;
     try {
       filePath = await this.doCreateModel(type, folder, name);
     } catch (error) {
-      const errorMessage = `Fail to create ${model}. Error: ${error.message}`;
-      throw new ProcessError(errorMessage, Constants.DEVICE_MODEL_COMPONENT);
+      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), Constants.DEVICE_MODEL_COMPONENT);
     }
 
-    const message = `${model} is created successfully`;
     await UI.openAndShowTextDocument(filePath);
+    const message: string = ColorizedChannel.generateMessage(subject);
     UI.showNotification(MessageType.Info, message);
     this.outputChannel.end(message, Constants.DEVICE_MODEL_COMPONENT);
   }
 
   private async doCreateModel(type: ModelType, folder: string, name: string): Promise<string> {
-    const modelId = DeviceModelManager.generateModelId(name);
-    const filePath = path.join(folder, DeviceModelManager.generateModelFilename(name, type));
-    const templatePath = this.context.asAbsolutePath(
+    const modelId: string = DeviceModelManager.generateModelId(name);
+    const filePath: string = path.join(folder, DeviceModelManager.generateModelFilename(name, type));
+    const templatePath: string = this.context.asAbsolutePath(
       path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFilename(type)),
     );
     const replacement = new Map<string, string>();

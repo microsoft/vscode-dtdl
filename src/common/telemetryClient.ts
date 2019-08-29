@@ -26,13 +26,12 @@ export class TelemetryClient {
   }
 
   private static isInternalUser(): boolean {
-    const userDomain = process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : "";
+    const userDomain: string = process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : "";
     return userDomain.endsWith(INTERNAL_USER_DOMAIN);
   }
 
   private client: TelemetryReporter | undefined;
   private isInternal: boolean = false;
-
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = require(context.asAbsolutePath(PACKAGE_JSON_PATH));
     if (!packageJSON) {

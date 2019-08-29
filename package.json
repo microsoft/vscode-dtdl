@@ -62,7 +62,7 @@
       {
         "title": "IoT Plug and Play Configuration",
         "properties": {
-          "iot-pnp.publicRepositoryUrl": {
+          "azure-digital-twins.publicRepositoryUrl": {
             "type": "string",
             "default": "https://repo.azureiotrepository.com",
             "description": "Set the public model repository url."
@@ -99,6 +99,8 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
     "@types/vscode": "^1.36.0",
+    "@types/request-promise": "^4.1.44",
+    "@types/keytar": "^4.4.0",
     "cz-conventional-changelog": "^3.0.2",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
@@ -108,7 +110,11 @@
   },
   "dependencies": {
     "vscode-extension-telemetry": "^0.1.0",
-    "fs-extra": "^7.0.1"
+    "fs-extra": "^7.0.1",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4",
+    "vscode-express": "^1.0.1",
+    "keytar": "^4.13.0"
   },
   "config": {
     "commitizen": {

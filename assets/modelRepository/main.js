@@ -1,10 +1,13 @@
+const INTERFACE = "Interface";
+const CAPABILITY_MODEL = "CapabilityModel";
+const IS_PUBLIC_URL = "?public";
+const VALUE = "value";
+const ALL = "All";
+
 var repository = new Vue({
   el: "#main",
   data: {
-    companyName:
-      _location.search === "?public"
-        ? "Public repository"
-        : "Company repository",
+    companyName: _location.search === IS_PUBLIC_URL ? "Public repository" : "Company repository",
     selectedInterfaces: {
       value: []
     },
@@ -18,7 +21,7 @@ var repository = new Vue({
       value: []
     },
     type: {
-      value: "CapabilityModel"
+      value: CAPABILITY_MODEL
     },
     interfaceNextToken: {
       value: ""
@@ -29,7 +32,7 @@ var repository = new Vue({
     showSearchBar: false,
     showStatusSelector: false,
     showTagSelector: false,
-    filterStatus: "All",
+    filterStatus: ALL,
     filterTags: [],
     filterKeywords: "",
     searchKeywords: "",
@@ -41,24 +44,11 @@ var repository = new Vue({
       value: true
     },
     allTags: {
-      value: [
-        "tag1",
-        "tag2",
-        "tag3",
-        "tag11",
-        "tag12",
-        "tag13",
-        "tag21",
-        "tag22",
-        "tag23",
-        "tag31",
-        "tag32",
-        "tag33"
-      ]
+      value: ["tag1", "tag2", "tag3", "tag11", "tag12", "tag13", "tag21", "tag22", "tag23", "tag31", "tag32", "tag33"]
     },
     filterTagsKeywords: "",
     nextPageLoadingCounter: null,
-    publicRepository: _location.search === "?public"
+    publicRepository: _location.search === IS_PUBLIC_URL
   },
   methods: {
     command,
@@ -92,8 +82,8 @@ var repository = new Vue({
     clearKeywords
   },
   created: function() {
-    getNextPageDigitalTwinFiles.call(this, "Interface");
-    getNextPageDigitalTwinFiles.call(this, "CapabilityModel");
+    getNextPageDigitalTwinFiles.call(this, INTERFACE);
+    getNextPageDigitalTwinFiles.call(this, CAPABILITY_MODEL);
   }
 });
 
@@ -106,25 +96,14 @@ function encodeHTML(value) {
 }
 
 function deleteDigitalTwinFiles() {
-  const fileIds =
-    this.type.value === "Interface"
-      ? this.selectedInterfaces.value
-      : this.selectedCapabilityModels.value;
-  command(
-    "iotworkbench.deleteMetamodelFiles",
-    fileIds,
-    this.type.value,
-    refreshDigitalTwinFileList.bind(this)
-  );
+  const fileIds = this.type.value === INTERFACE ? this.selectedInterfaces.value : this.selectedCapabilityModels.value;
+  command("azure-digital-twins.deleteModel", fileIds, this.type.value, refreshDigitalTwinFileList.bind(this));
 }
 
 function editDigitalTwinFiles() {
-  const fileIds =
-    this.type.value === "Interface"
-      ? this.selectedInterfaces.value
-      : this.selectedCapabilityModels.value;
+  const fileIds = this.type.value === INTERFACE ? this.selectedInterfaces.value : this.selectedCapabilityModels.value;
   command(
-    "iotworkbench.editMetamodelFiles",
+    "azure-digital-twins.downloadModel",
     fileIds,
     this.type.value,
     this.publicRepository,
@@ -134,9 +113,7 @@ function editDigitalTwinFiles() {
 
 function createDigitalTwinFile() {
   const commandName =
-    this.type.value === "Interface"
-      ? "iotworkbench.iotPnPCreateInterface"
-      : "iotworkbench.iotPnPCreateCapabilityModel";
+    this.type.value === INTERFACE ? "azure-digital-twins.createInterface" : "azure-digital-twins.createCapabilityModel";
   command(commandName);
 }
 
@@ -144,14 +121,14 @@ function getNextPageDigitalTwinFiles(fileType) {
   fileType = typeof fileType === "string" ? fileType : this.type.value;
   let commandName, fileList, nextToken, loadingDigitalTwinFiles;
 
-  if (fileType === "Interface") {
-    commandName = "iotworkbench.getInterfaces";
+  if (fileType === INTERFACE) {
+    commandName = "azure-digital-twins.searchInterface";
     fileList = this.interfaceList;
     nextToken = this.interfaceNextToken;
     loadingDigitalTwinFiles = this.loadingDigitalTwinInterfaces;
     tableId = "interfaceListTable";
   } else {
-    commandName = "iotworkbench.getCapabilityModels";
+    commandName = "azure-digital-twins.searchCapabilityModel";
     fileList = this.capabilityList;
     nextToken = this.capabilityNextToken;
     loadingDigitalTwinFiles = this.loadingDigitalTwinCapabilityModels;
@@ -159,24 +136,16 @@ function getNextPageDigitalTwinFiles(fileType) {
   }
 
   loadingDigitalTwinFiles.value = true;
-
-  command(
-    commandName,
-    this.searchKeywords,
-    this.publicRepository,
-    50,
-    nextToken.value,
-    res => {
-      Vue.set(fileList, "value", fileList.value.concat(res.result.results));
-      Vue.set(nextToken, "value", res.result.continuationToken);
-      Vue.set(loadingDigitalTwinFiles, "value", false);
-    }
-  );
+  command(commandName, this.searchKeywords, this.publicRepository, 50, nextToken.value, res => {
+    Vue.set(fileList, VALUE, fileList.value.concat(res.result.results));
+    Vue.set(nextToken, VALUE, res.result.continuationToken);
+    Vue.set(loadingDigitalTwinFiles, VALUE, false);
+  });
 }
 
 function refreshDigitalTwinFileList() {
   let nextToken, selectedList;
-  if (this.type.value === "Interface") {
+  if (this.type.value === INTERFACE) {
     fileList = this.interfaceList;
     nextToken = this.interfaceNextToken;
     selectedList = this.selectedInterfaces;
@@ -188,10 +157,10 @@ function refreshDigitalTwinFileList() {
     loadingDigitalTwinFiles = this.loadingDigitalTwinCapabilityModels;
   }
 
-  Vue.set(fileList, "value", []);
-  Vue.set(nextToken, "value", "");
-  Vue.set(selectedList, "value", []);
-  Vue.set(loadingDigitalTwinFiles, "value", true);
+  Vue.set(fileList, VALUE, []);
+  Vue.set(nextToken, VALUE, "");
+  Vue.set(selectedList, VALUE, []);
+  Vue.set(loadingDigitalTwinFiles, VALUE, true);
   setTimeout(getNextPageDigitalTwinFiles.bind(this), 1000); // wait for server refresh
 }
 
@@ -213,7 +182,7 @@ function showHideTagSelector() {
 
 function clearFilter() {
   this.filterTags = [];
-  this.filterStatus = "All";
+  this.filterStatus = ALL;
   this.showStatusSelector = false;
   this.filterKeywords = "";
   this.showTagSelector = false;
@@ -264,7 +233,7 @@ function filterItems(list) {
   const filterTagsOrAnd = this.filterTagsOrAnd;
 
   return list.filter(item => {
-    if (filterStatus !== "All") {
+    if (filterStatus !== ALL) {
       if (item.published && filterStatus !== "Published") {
         return false;
       }
@@ -331,19 +300,10 @@ function onScrollTable(event) {
   if (this.filterKeywords) {
     return;
   }
-  const nextToken =
-    this.type.value === "Interface"
-      ? this.interfaceNextToken.value
-      : this.capabilityNextToken.value;
+  const nextToken = this.type.value === INTERFACE ? this.interfaceNextToken.value : this.capabilityNextToken.value;
   const loadingDigitalTwinFiles =
-    this.type.value === "Interface"
-      ? this.loadingDigitalTwinInterfaces
-      : this.loadingDigitalTwinCapabilityModels;
-  if (
-    !nextToken ||
-    this.nextPageLoadingCounter ||
-    loadingDigitalTwinFiles.value
-  ) {
+    this.type.value === INTERFACE ? this.loadingDigitalTwinInterfaces : this.loadingDigitalTwinCapabilityModels;
+  if (!nextToken || this.nextPageLoadingCounter || loadingDigitalTwinFiles.value) {
     return;
   }
   this.nextPageLoadingCounter = setTimeout(() => {
@@ -373,7 +333,7 @@ function copy(event, content) {
 
 function hasNoItemToPublish() {
   let selectedItemList, fullItemList;
-  if (this.type.value === "Interface") {
+  if (this.type.value === INTERFACE) {
     fullItemList = this.interfaceList.value;
     selectedItemList = this.selectedInterfaces.value;
   } else {

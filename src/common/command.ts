@@ -16,6 +16,5 @@ export class Command {
     "azure-digital-twins.submitFiles",
     "Submit Files to Model Repository",
   );
-
   private constructor(public readonly id: string, public readonly description: string) {}
 }

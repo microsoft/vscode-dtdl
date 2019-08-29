@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+import { BadRequestError } from "./common/badRequestError";
 import { ColorizedChannel } from "./common/colorizedChannel";
 import { Command } from "./common/command";
 import { Constants } from "./common/constants";
@@ -10,6 +11,7 @@ import { ProcessError } from "./common/processError";
 import { TelemetryClient, TelemetryContext } from "./common/telemetryClient";
 import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
+import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
 import { MessageType, UI } from "./views/ui";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -17,6 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
   const telemetryClient = new TelemetryClient(context);
   const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
   const deviceModelManager = new DeviceModelManager(context, outputChannel);
+  const modelRepositoryManager = new ModelRepositoryManager(context, outputChannel, Constants.WEB_VIEW_PATH);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
 
@@ -45,7 +48,6 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
 
 function initCommand(

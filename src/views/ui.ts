@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
 import { ModelType } from "../deviceModel/deviceModelManager";
+import { UIConstants } from "./uiConstants";
 
 export enum MessageType {
   Info,
@@ -36,7 +37,7 @@ export class UI {
   }
 
   public static async selectRootFolder(label: string): Promise<string> {
-    const worksapceFolders = vscode.workspace.workspaceFolders;
+    const worksapceFolders: vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders;
     // use the only workspace as default
     if (worksapceFolders && worksapceFolders.length === 1) {
       return worksapceFolders[0].uri.fsPath;
@@ -46,21 +47,21 @@ export class UI {
     let items: vscode.QuickPickItem[] = [];
     if (worksapceFolders) {
       items = worksapceFolders.map((f: vscode.WorkspaceFolder) => {
-        const fsPath = f.uri.fsPath;
+        const fsPath: string = f.uri.fsPath;
         return {
           label: path.basename(fsPath),
           description: fsPath,
         };
       });
     }
-    items.push({ label: "Browse...", description: undefined });
-    const selected: vscode.QuickPickItem = await UI.showQuickPick(items, label);
+    items.push({ label: UIConstants.BROWSE_LABEL, description: "" });
+    const selected: vscode.QuickPickItem = await UI.showQuickPick(label, items);
 
     // browse to open folder
     return selected.description ? selected.description : await UI.showOpenDialog(label);
   }
 
-  public static async showQuickPick(items: vscode.QuickPickItem[], label: string): Promise<vscode.QuickPickItem> {
+  public static async showQuickPick(label: string, items: vscode.QuickPickItem[]): Promise<vscode.QuickPickItem> {
     const options: vscode.QuickPickOptions = {
       placeHolder: label,
       ignoreFocusOut: true,
@@ -82,11 +83,11 @@ export class UI {
       canSelectMany: false,
     };
 
-    const result: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
-    if (!result || result.length === 0) {
+    const results: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
+    if (!results || results.length === 0) {
       throw new UserCancelledError(label);
     }
-    return result[0].fsPath;
+    return results[0].fsPath;
   }
 
   public static async inputModelName(label: string, type: ModelType, folder: string): Promise<string> {
@@ -118,4 +119,13 @@ export class UI {
     }
     return result;
   }
+
+  public static async inputConnectionString(label: string): Promise<string> {
+    const validateInput = async (name: string): Promise<string | undefined> => {
+      return await Utility.validateConnctionString(name);
+    };
+    return await UI.showInputBox(label, UIConstants.REPOSITORY_CONNECTION_STRING_TEMPLATE, validateInput);
+  }
+
+  private constructor() {}
 }
