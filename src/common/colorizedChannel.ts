@@ -8,7 +8,7 @@ export class ColorizedChannel {
     const message: string = error
       ? subject.charAt(0).toLowerCase() + subject.slice(1)
       : subject.charAt(0).toUpperCase() + subject.slice(1);
-    return error ? `Fail to ${message}. Error ${error.message}` : `${message} successfully`;
+    return error ? `Fail to ${message}. Error: ${error.message}` : `${message} successfully`;
   }
 
   private static buildTag(name: string | undefined): string {

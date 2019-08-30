@@ -7,7 +7,6 @@ import { Constants } from "../common/constants";
 const PROPERTY_SEPARATOR = ";";
 const KEY_VALUE_SEPARATOR = "=";
 const PROPERTY_COUNT = 4;
-const KEY_VALUE_COUNT = 2;
 const HOSTNAME_PROPERTY = "HostName";
 const REPOSITORY_ID_PROPERTY = "RepositoryId";
 const SHARED_ACCESS_KEY_NAME_PROPERTY = "SharedAccessKeyName";
@@ -32,11 +31,16 @@ export class ModelRepositoryConnection {
       throw new Error(Constants.CONNECTION_STRING_INVALID_FORMAT_MSG);
     }
     for (const property of properties) {
-      const fields: string[] = property.split(KEY_VALUE_SEPARATOR);
-      if (fields.length !== KEY_VALUE_COUNT) {
+      const index: number = property.indexOf(KEY_VALUE_SEPARATOR);
+      if (index <= 0) {
         throw new Error(Constants.CONNECTION_STRING_INVALID_FORMAT_MSG);
       }
-      map[fields[0]] = fields[1];
+      const name: string = property.substring(0, index);
+      const value: string = property.substring(index + 1);
+      if (!name || !value) {
+        throw new Error(Constants.CONNECTION_STRING_INVALID_FORMAT_MSG);
+      }
+      map[name] = value;
     }
 
     return new ModelRepositoryConnection(

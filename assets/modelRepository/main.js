@@ -97,18 +97,12 @@ function encodeHTML(value) {
 
 function deleteDigitalTwinFiles() {
   const fileIds = this.type.value === INTERFACE ? this.selectedInterfaces.value : this.selectedCapabilityModels.value;
-  command("azure-digital-twins.deleteModel", fileIds, this.type.value, refreshDigitalTwinFileList.bind(this));
+  command("azure-digital-twins.deleteModels", this.publicRepository, fileIds, refreshDigitalTwinFileList.bind(this));
 }
 
 function editDigitalTwinFiles() {
   const fileIds = this.type.value === INTERFACE ? this.selectedInterfaces.value : this.selectedCapabilityModels.value;
-  command(
-    "azure-digital-twins.downloadModel",
-    fileIds,
-    this.type.value,
-    this.publicRepository,
-    refreshDigitalTwinFileList.bind(this)
-  );
+  command("azure-digital-twins.downloadModels", this.publicRepository, fileIds, refreshDigitalTwinFileList.bind(this));
 }
 
 function createDigitalTwinFile() {
@@ -136,7 +130,7 @@ function getNextPageDigitalTwinFiles(fileType) {
   }
 
   loadingDigitalTwinFiles.value = true;
-  command(commandName, this.searchKeywords, this.publicRepository, 50, nextToken.value, res => {
+  command(commandName, this.publicRepository, this.searchKeywords, 50, nextToken.value, res => {
     Vue.set(fileList, VALUE, fileList.value.concat(res.result.results));
     Vue.set(nextToken, VALUE, res.result.continuationToken);
     Vue.set(loadingDigitalTwinFiles, VALUE, false);

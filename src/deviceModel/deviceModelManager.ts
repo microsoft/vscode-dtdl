@@ -17,7 +17,11 @@ export enum ModelType {
 
 export class DeviceModelManager {
   public static convertToModelType(name: string): ModelType {
-    return ModelType[name as keyof typeof ModelType];
+    const type: ModelType = ModelType[name as keyof typeof ModelType];
+    if (!type) {
+      throw new Error(Constants.MODEL_TYPE_INVALID_MSG);
+    }
+    return type;
   }
 
   public static generateModelId(name: string): string {
@@ -33,26 +37,29 @@ export class DeviceModelManager {
     return DeviceModelManager.generateModelFilename(Constants.SAMPLE_FILENAME, type);
   }
 
-  constructor(private readonly context: vscode.ExtensionContext, private readonly outputChannel: ColorizedChannel) {}
+  private readonly component: string;
+  constructor(private readonly context: vscode.ExtensionContext, private readonly outputChannel: ColorizedChannel) {
+    this.component = Constants.DEVICE_MODEL_COMPONENT;
+  }
 
   public async createModel(type: ModelType): Promise<void> {
     const folder: string = await UI.selectRootFolder(UIConstants.SELECT_ROOT_FOLDER_LABEL);
     const name: string = await UI.inputModelName(UIConstants.INPUT_MODEL_NAME_LABEL, type, folder);
 
     const subject = `Create ${type} ${name} in folder ${folder}`;
-    this.outputChannel.start(subject, Constants.DEVICE_MODEL_COMPONENT);
+    this.outputChannel.start(subject, this.component);
 
     let filePath: string;
     try {
       filePath = await this.doCreateModel(type, folder, name);
     } catch (error) {
-      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), Constants.DEVICE_MODEL_COMPONENT);
+      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), this.component);
     }
 
     await UI.openAndShowTextDocument(filePath);
     const message: string = ColorizedChannel.generateMessage(subject);
     UI.showNotification(MessageType.Info, message);
-    this.outputChannel.end(message, Constants.DEVICE_MODEL_COMPONENT);
+    this.outputChannel.end(message, this.component);
   }
 
   private async doCreateModel(type: ModelType, folder: string, name: string): Promise<string> {

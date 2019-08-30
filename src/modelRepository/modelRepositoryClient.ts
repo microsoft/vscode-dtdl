@@ -63,7 +63,7 @@ export class ModelRepositoryClient {
     return new Promise<SearchResult>((resolve, reject) => {
       request(options)
         .then((response) => {
-          const result = response as SearchResult;
+          const result = response.body as SearchResult;
           return resolve(result);
         })
         .catch((err) => {

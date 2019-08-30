@@ -10,7 +10,7 @@ import { Constants } from "../common/constants";
 import { CredentialStore } from "../common/credentialStore";
 import { ProcessError } from "../common/processError";
 import { Utility } from "../common/utility";
-import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
+import { ModelType } from "../deviceModel/deviceModelManager";
 import { MessageType, UI } from "../views/ui";
 import { UIConstants } from "../views/uiConstants";
 import { ModelRepositoryClient } from "./modelRepositoryClient";
@@ -36,8 +36,17 @@ export interface ModelFileInfo {
 }
 
 export class ModelRepositoryManager {
-  private static async buildRepositoryInfo(isCompany: boolean): Promise<RepositoryInfo> {
-    if (isCompany) {
+  private static async buildRepositoryInfo(publicRepository: boolean): Promise<RepositoryInfo> {
+    if (publicRepository) {
+      const url: string | undefined = Configuration.getProperty<string>(Constants.PUBLIC_REPOSITORY_URL);
+      if (!url) {
+        throw new Error(Constants.PUBLIC_REPOSITORY_URL_NOT_FOUND_MSG);
+      }
+      return {
+        hostname: Utility.enforceHttps(url),
+        apiVersion: Constants.MODEL_REPOSITORY_API_VERSION,
+      };
+    } else {
       const connectionString: string | null = await CredentialStore.get(Constants.MODEL_REPOSITORY_CONNECTION_KEY);
       if (!connectionString) {
         throw new Error(Constants.CONNECTION_STRING_NOT_FOUND_MSG);
@@ -49,21 +58,12 @@ export class ModelRepositoryManager {
         repositoryId: connection.repositoryId,
         accessToken: connection.generateAccessToken(),
       };
-    } else {
-      const url: string | undefined = Configuration.getProperty<string>(Constants.PUBLIC_REPOSITORY_URL);
-      if (!url) {
-        throw new Error(Constants.PUBLIC_REPOSITORY_URL_NOT_FOUND_MSG);
-      }
-      return {
-        hostname: Utility.enforceHttps(url),
-        apiVersion: Constants.MODEL_REPOSITORY_API_VERSION,
-      };
     }
   }
 
-  private static async setupConnection(connectionString: string, isNew: boolean): Promise<void> {
+  private static async setupConnection(connectionString: string, newConnection: boolean): Promise<void> {
     const connection: ModelRepositoryConnection = ModelRepositoryConnection.parse(connectionString);
-    if (isNew) {
+    if (newConnection) {
       ModelRepositoryConnection.validate(connection);
     }
 
@@ -74,8 +74,8 @@ export class ModelRepositoryManager {
       accessToken: connection.generateAccessToken(),
     };
     // test connection by searching interface
-    ModelRepositoryClient.searchModel(repoInfo, ModelType.Interface, "", 1, null);
-    if (isNew) {
+    await ModelRepositoryClient.searchModel(repoInfo, ModelType.Interface, "", 1, null);
+    if (newConnection) {
       await CredentialStore.set(Constants.MODEL_REPOSITORY_CONNECTION_KEY, connectionString);
     }
   }
@@ -87,8 +87,10 @@ export class ModelRepositoryManager {
   }
 
   private readonly express: VSCExpress;
+  private readonly component: string;
   constructor(context: vscode.ExtensionContext, private readonly outputChannel: ColorizedChannel, filePath: string) {
     this.express = new VSCExpress(context, filePath);
+    this.component = Constants.MODEL_REPOSITORY_COMPONENT;
   }
 
   public async signIn(): Promise<void> {
@@ -96,7 +98,7 @@ export class ModelRepositoryManager {
     const selected: vscode.QuickPickItem = await UI.showQuickPick(UIConstants.SELECT_REPOSITORY_LABEL, items);
 
     const subject = `Connect to ${selected.label}`;
-    this.outputChannel.start(subject, Constants.MODEL_REPOSITORY_COMPONENT);
+    this.outputChannel.start(subject, this.component);
 
     if (selected.label === RepositoryType.Company) {
       let isNew: boolean = false;
@@ -107,15 +109,15 @@ export class ModelRepositoryManager {
       }
 
       try {
-        ModelRepositoryManager.setupConnection(connectionString, isNew);
+        await ModelRepositoryManager.setupConnection(connectionString, isNew);
       } catch (error) {
-        throw new ProcessError(ColorizedChannel.generateMessage(subject, error), Constants.MODEL_REPOSITORY_COMPONENT);
+        throw new ProcessError(ColorizedChannel.generateMessage(subject, error), this.component);
       }
     }
 
     const message: string = ColorizedChannel.generateMessage(subject);
     UI.showNotification(MessageType.Info, message);
-    this.outputChannel.end(message, Constants.MODEL_REPOSITORY_COMPONENT);
+    this.outputChannel.end(message, this.component);
 
     // open web view
     const uri =
@@ -128,7 +130,7 @@ export class ModelRepositoryManager {
 
   public async signOut(): Promise<void> {
     const subject = "Sign out company repository";
-    this.outputChannel.start(subject, Constants.MODEL_REPOSITORY_COMPONENT);
+    this.outputChannel.start(subject, this.component);
 
     const success: boolean = await CredentialStore.delete(Constants.MODEL_REPOSITORY_CONNECTION_KEY);
 
@@ -136,77 +138,75 @@ export class ModelRepositoryManager {
     if (success) {
       UI.showNotification(MessageType.Info, message);
     }
-    this.outputChannel.end(message, Constants.MODEL_REPOSITORY_COMPONENT);
+    this.outputChannel.end(message, this.component);
 
     if (this.express) {
       this.express.close(Constants.COMPANY_REPOSITORY_PAGE);
     }
   }
 
-  public async submitFiles(): Promise<void> {
+  public async submitModels(): Promise<void> {
     const folder: string = await UI.selectRootFolder(UIConstants.SELECT_ROOT_FOLDER_LABEL);
     // const fileInfos: ModelFileInfo[] = await Utility.listModelFiles();
+    const fileInfos: string[] = await Utility.listModelFiles(folder);
+    vscode.window.showInformationMessage(`${fileInfos}`);
   }
 
   public async searchModel(
-    modelType: string,
-    isCompany: boolean,
+    type: ModelType,
+    publicRepository: boolean,
     keyword: string = "",
-    pageSize: number = 20,
+    pageSize: number = Constants.DEFAULT_PAGE_SIZE,
     continuationToken: string | null = null,
   ): Promise<SearchResult> {
-    const type: ModelType = DeviceModelManager.convertToModelType(modelType);
-    if (!type) {
-      throw new BadRequestError("unrecognized modelType");
-    }
     if (pageSize <= 0) {
       throw new BadRequestError("pageSize should be greater than 0");
     }
 
     const subject = `Search ${type} by keyword "${keyword}" from ${
-      isCompany ? RepositoryType.Company : RepositoryType.Public
+      publicRepository ? RepositoryType.Public : RepositoryType.Company
     }`;
-    this.outputChannel.start(subject, Constants.MODEL_REPOSITORY_COMPONENT);
+    this.outputChannel.start(subject, this.component);
 
     let result: SearchResult;
     try {
-      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(isCompany);
+      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(publicRepository);
       result = await ModelRepositoryClient.searchModel(repoInfo, type, keyword, pageSize, continuationToken);
     } catch (error) {
-      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), Constants.MODEL_REPOSITORY_COMPONENT);
+      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), this.component);
     }
 
     const message = ColorizedChannel.generateMessage(subject);
-    this.outputChannel.end(message, Constants.DEVICE_MODEL_COMPONENT);
+    this.outputChannel.end(message, this.component);
     return result;
   }
 
-  public async deleteModels(isCompany: boolean, modelIds: string[]): Promise<void> {
-    if (!isCompany) {
+  public async deleteModels(publicRepository: boolean, modelIds: string[]): Promise<void> {
+    if (publicRepository) {
       throw new BadRequestError(`${RepositoryType.Public} not support delete operation`);
     }
     ModelRepositoryManager.validateModelIds(modelIds);
 
     try {
-      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(isCompany);
+      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(publicRepository);
       await this.doDeleteLoopSilently(repoInfo, modelIds);
     } catch (error) {
       const subject = `Delete models from ${RepositoryType.Company}`;
-      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), Constants.MODEL_REPOSITORY_COMPONENT);
+      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), this.component);
     }
   }
 
-  public async downloadModels(isCompany: boolean, modelIds: string[]): Promise<void> {
+  public async downloadModels(publicRepository: boolean, modelIds: string[]): Promise<void> {
     ModelRepositoryManager.validateModelIds(modelIds);
 
     const folder: string = await UI.selectRootFolder(UIConstants.SELECT_ROOT_FOLDER_LABEL);
 
     try {
-      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(isCompany);
+      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(publicRepository);
       await this.doDownloadLoopSilently([repoInfo], modelIds, folder);
     } catch (error) {
-      const subject = `Download models from ${isCompany ? RepositoryType.Company : RepositoryType.Public}`;
-      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), Constants.MODEL_REPOSITORY_COMPONENT);
+      const subject = `Download models from ${publicRepository ? RepositoryType.Public : RepositoryType.Company}`;
+      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), this.component);
     }
   }
 
@@ -218,19 +218,16 @@ export class ModelRepositoryManager {
     // download interface files
   }
 
-  private async doDownloadLoopSilently(repoInfos: RepositoryInfo[], modelIds: string[], folder: string) {
+  private async doDownloadLoopSilently(repoInfos: RepositoryInfo[], modelIds: string[], folder: string): Promise<void> {
     for (const modelId of modelIds) {
       const subject = `Download model by id ${modelId}`;
-      this.outputChannel.start(subject, Constants.MODEL_REPOSITORY_COMPONENT);
+      this.outputChannel.start(subject, this.component);
 
       try {
         await this.doDownloadModel(repoInfos, modelId, folder);
-        this.outputChannel.end(ColorizedChannel.generateMessage(subject), Constants.MODEL_REPOSITORY_COMPONENT);
+        this.outputChannel.end(ColorizedChannel.generateMessage(subject), this.component);
       } catch (error) {
-        this.outputChannel.error(
-          ColorizedChannel.generateMessage(subject, error),
-          Constants.MODEL_REPOSITORY_COMPONENT,
-        );
+        this.outputChannel.error(ColorizedChannel.generateMessage(subject, error), this.component);
       }
     }
   }
@@ -258,16 +255,13 @@ export class ModelRepositoryManager {
   private async doDeleteLoopSilently(repoInfo: RepositoryInfo, modelIds: string[]): Promise<void> {
     for (const modelId of modelIds) {
       const subject = `Delete model by id ${modelId}`;
-      this.outputChannel.start(subject, Constants.MODEL_REPOSITORY_COMPONENT);
+      this.outputChannel.start(subject, this.component);
 
       try {
         await ModelRepositoryClient.deleteModel(repoInfo, modelId);
-        this.outputChannel.end(ColorizedChannel.generateMessage(subject), Constants.MODEL_REPOSITORY_COMPONENT);
+        this.outputChannel.end(ColorizedChannel.generateMessage(subject), this.component);
       } catch (error) {
-        this.outputChannel.error(
-          ColorizedChannel.generateMessage(subject, error),
-          Constants.MODEL_REPOSITORY_COMPONENT,
-        );
+        this.outputChannel.error(ColorizedChannel.generateMessage(subject, error), this.component);
       }
     }
   }

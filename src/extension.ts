@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { BadRequestError } from "./common/badRequestError";
 import { ColorizedChannel } from "./common/colorizedChannel";
 import { Command } from "./common/command";
 import { Constants } from "./common/constants";
@@ -11,6 +10,7 @@ import { ProcessError } from "./common/processError";
 import { TelemetryClient, TelemetryContext } from "./common/telemetryClient";
 import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
+import { SearchResult } from "./modelRepository/modelRepositoryInterface";
 import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
 import { MessageType, UI } from "./views/ui";
 
@@ -29,8 +29,8 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel,
     nsat,
     true,
-    Command.CREATE_INTERFACE,
-    (): Promise<void> => {
+    Command.CreateInterface,
+    async (): Promise<void> => {
       return deviceModelManager.createModel(ModelType.Interface);
     },
   );
@@ -41,9 +41,115 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel,
     nsat,
     true,
-    Command.CREATE_CAPABILITY_MODEL,
-    (): Promise<void> => {
+    Command.CreateCapabilityModel,
+    async (): Promise<void> => {
       return deviceModelManager.createModel(ModelType.CapabilityModel);
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.OpenRepository,
+    async (): Promise<void> => {
+      return modelRepositoryManager.signIn();
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.SignOutRepository,
+    async (): Promise<void> => {
+      return modelRepositoryManager.signOut();
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.SubmitFiles,
+    async (): Promise<void> => {
+      return modelRepositoryManager.submitModels();
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.DeleteModels,
+    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
+      return modelRepositoryManager.deleteModels(publicRepository, modelIds);
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.DownloadModels,
+    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
+      return modelRepositoryManager.downloadModels(publicRepository, modelIds);
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.SearchInterface,
+    async (
+      publicRepository: boolean,
+      keyword?: string,
+      pageSize?: number,
+      continuationToken?: string,
+    ): Promise<SearchResult> => {
+      return modelRepositoryManager.searchModel(
+        ModelType.Interface,
+        publicRepository,
+        keyword,
+        pageSize,
+        continuationToken,
+      );
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.SearchCapabilityModel,
+    async (
+      publicRepository: boolean,
+      keyword?: string,
+      pageSize?: number,
+      continuationToken?: string,
+    ): Promise<SearchResult> => {
+      return modelRepositoryManager.searchModel(
+        ModelType.CapabilityModel,
+        publicRepository,
+        keyword,
+        pageSize,
+        continuationToken,
+      );
     },
   );
 }
@@ -60,11 +166,9 @@ function initCommand(
   callback: (...args: any[]) => Promise<any>,
 ): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand(command.id, async (...args: any[]) => {
+    vscode.commands.registerCommand(command, async (...args: any[]) => {
       const telemetryContext: TelemetryContext = telemetryClient.createContext();
-      telemetryClient.sendEvent(`${command.id}.start`);
-      outputChannel.show();
-      outputChannel.start(`Trigger command ${command.description}`);
+      telemetryClient.sendEvent(`${command}.start`);
 
       try {
         return await callback(...args);
@@ -83,8 +187,8 @@ function initCommand(
         }
       } finally {
         telemetryClient.closeContext(telemetryContext);
-        telemetryClient.sendEvent(`${command.id}.end`, telemetryContext);
-        outputChannel.end(`Complete command ${command.description}`);
+        telemetryClient.sendEvent(`${command}.end`, telemetryContext);
+        outputChannel.show();
         if (enableSurvey) {
           nsat.takeSurvey(context);
         }

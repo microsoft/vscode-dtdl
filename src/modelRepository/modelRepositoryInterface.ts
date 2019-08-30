@@ -25,7 +25,7 @@ export interface DigitalTwinModelBase {
   publisherId: string;
   publisherName: string;
   createdOn: string;
-  lastUpdated: string;
+  updatedOn: string;
 }
 
 export interface SearchOptions {

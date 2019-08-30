@@ -4,6 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
+import { ModelFileInfo } from "../modelRepository/modelRepositoryManager";
 import { Constants } from "./constants";
 
 export class Utility {
@@ -15,7 +16,7 @@ export class Utility {
     const template: string = await fs.readFile(templatePath, Constants.UTF8);
     const content: string = Utility.replaceAll(template, replacement);
     const jsonContent = JSON.parse(content);
-    await fs.writeFile(filePath, JSON.stringify(jsonContent, null, 2), { encoding: Constants.UTF8 });
+    await fs.writeJson(filePath, jsonContent, { spaces: Constants.JSON_SPACE, encoding: Constants.UTF8 });
   }
 
   public static replaceAll(str: string, replacement: Map<string, string>, caseInsensitive: boolean = false): string {
@@ -62,11 +63,7 @@ export class Utility {
     const replacement = new Map<string, string>();
     replacement.set(":", "_");
     const modelName: string = Utility.replaceAll(modelId, replacement);
-    // TODO:(erichen): check if @type works
     const type: ModelType = DeviceModelManager.convertToModelType(content[Constants.SCHEMA_TYPE_KEY]);
-    if (!type) {
-      throw new Error("Invalid model type");
-    }
 
     let candidate: string = DeviceModelManager.generateModelFilename(modelName, type);
     let counter: number = 0;
@@ -78,7 +75,19 @@ export class Utility {
       candidate = DeviceModelManager.generateModelFilename(`${modelName}_${counter}`, type);
     }
 
-    await fs.writeFile(path.join(folder, candidate), JSON.stringify(content, null, 2), { encoding: Constants.UTF8 });
+    await fs.writeJson(path.join(folder, candidate), content, {
+      spaces: Constants.JSON_SPACE,
+      encoding: Constants.UTF8,
+    });
+  }
+
+  public static async listModelFiles(folder: string): Promise<string[]> {
+    const fileInfos: string[] = [];
+    const files: string[] = await fs.readdir(folder);
+    for (const file of files) {
+      fileInfos.push(file);
+    }
+    return fileInfos;
   }
 
   private constructor() {}
