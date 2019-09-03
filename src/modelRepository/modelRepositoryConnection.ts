@@ -43,29 +43,14 @@ export class ModelRepositoryConnection {
       map[name] = value;
     }
 
-    return new ModelRepositoryConnection(
+    const connection = new ModelRepositoryConnection(
       map[HOSTNAME_PROPERTY],
       map[REPOSITORY_ID_PROPERTY],
       map[SHARED_ACCESS_KEY_NAME_PROPERTY],
       map[SHARED_ACCESS_KEY_PROPERTY],
     );
-  }
-
-  public static validate(connection: ModelRepositoryConnection): void {
-    if (!connection.hostName || !HOSTNAME_REGEX.test(connection.hostName)) {
-      throw new Error(`${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${HOSTNAME_PROPERTY}`);
-    }
-    if (!connection.repositoryId) {
-      throw new Error(`${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${REPOSITORY_ID_PROPERTY}`);
-    }
-    if (!connection.sharedAccessKeyName || !SHARED_ACCESS_KEY_NAME_REGEX.test(connection.sharedAccessKeyName)) {
-      throw new Error(
-        `${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${SHARED_ACCESS_KEY_NAME_PROPERTY}`,
-      );
-    }
-    if (!connection.sharedAccessKey) {
-      throw new Error(`${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${SHARED_ACCESS_KEY_PROPERTY}`);
-    }
+    connection.validate();
+    return connection;
   }
 
   private readonly expiry: string;
@@ -91,5 +76,22 @@ export class ModelRepositoryConnection {
       "SharedAccessSignature " +
       `sr=${endpoint}&sig=${hash}&se=${this.expiry}&skn=${this.sharedAccessKeyName}&rid=${this.repositoryId}`
     );
+  }
+
+  private validate(): void {
+    if (!this.hostName || !HOSTNAME_REGEX.test(this.hostName)) {
+      throw new Error(`${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${HOSTNAME_PROPERTY}`);
+    }
+    if (!this.repositoryId) {
+      throw new Error(`${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${REPOSITORY_ID_PROPERTY}`);
+    }
+    if (!this.sharedAccessKeyName || !SHARED_ACCESS_KEY_NAME_REGEX.test(this.sharedAccessKeyName)) {
+      throw new Error(
+        `${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${SHARED_ACCESS_KEY_NAME_PROPERTY}`,
+      );
+    }
+    if (!this.sharedAccessKey) {
+      throw new Error(`${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${SHARED_ACCESS_KEY_PROPERTY}`);
+    }
   }
 }

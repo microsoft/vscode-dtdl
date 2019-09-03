@@ -79,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
     true,
     Command.SubmitFiles,
     async (): Promise<void> => {
-      return modelRepositoryManager.submitModels();
+      return modelRepositoryManager.submitFiles();
     },
   );
 

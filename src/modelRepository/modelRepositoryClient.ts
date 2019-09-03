@@ -72,10 +72,9 @@ export class ModelRepositoryClient {
     });
   }
 
-  public static async updateModel(repoInfo: RepositoryInfo, modelId: string, content: string): Promise<string> {
+  public static async updateModel(repoInfo: RepositoryInfo, modelId: string, content: any): Promise<string> {
     const options: request.OptionsWithUri = ModelRepositoryClient.buildOptions(HttpMethod.Put, repoInfo, modelId);
-    const payload = JSON.parse(content);
-    options.body = payload;
+    options.body = content;
 
     return new Promise<string>((resolve, reject) => {
       request(options)

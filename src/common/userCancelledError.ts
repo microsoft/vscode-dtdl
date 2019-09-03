@@ -3,7 +3,7 @@
 
 export class UserCancelledError extends Error {
   constructor(operation?: string) {
-    const message = operation ? ` on [${operation}]` : "";
+    const message = operation ? ` [${operation}]` : "";
     super("User cancelled the operation" + message);
     this.name = "UserCancelledError";
   }

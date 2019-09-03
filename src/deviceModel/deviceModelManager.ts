@@ -17,24 +17,20 @@ export enum ModelType {
 
 export class DeviceModelManager {
   public static convertToModelType(name: string): ModelType {
-    const type: ModelType = ModelType[name as keyof typeof ModelType];
-    if (!type) {
-      throw new Error(Constants.MODEL_TYPE_INVALID_MSG);
-    }
-    return type;
+    return ModelType[name as keyof typeof ModelType];
   }
 
   public static generateModelId(name: string): string {
-    return `urn:{your name}:${name}:1`;
+    return `urn:{companyName}:${name}:1`;
   }
 
-  public static generateModelFilename(name: string, type: ModelType): string {
+  public static generateModelFileName(name: string, type: ModelType): string {
     const fileType: string = type.replace(/\s+/g, "").toLowerCase();
     return `${name}.${fileType}.json`;
   }
 
-  public static getTemplateFilename(type: ModelType): string {
-    return DeviceModelManager.generateModelFilename(Constants.SAMPLE_FILENAME, type);
+  public static getTemplateFileName(type: ModelType): string {
+    return DeviceModelManager.generateModelFileName(Constants.SAMPLE_FILE_NAME, type);
   }
 
   private readonly component: string;
@@ -46,27 +42,26 @@ export class DeviceModelManager {
     const folder: string = await UI.selectRootFolder(UIConstants.SELECT_ROOT_FOLDER_LABEL);
     const name: string = await UI.inputModelName(UIConstants.INPUT_MODEL_NAME_LABEL, type, folder);
 
-    const subject = `Create ${type} ${name} in folder ${folder}`;
-    this.outputChannel.start(subject, this.component);
+    const operation = `Create ${type} ${name} in folder ${folder}`;
+    this.outputChannel.start(operation, this.component);
 
     let filePath: string;
     try {
       filePath = await this.doCreateModel(type, folder, name);
     } catch (error) {
-      throw new ProcessError(ColorizedChannel.generateMessage(subject, error), this.component);
+      throw new ProcessError(operation, error, this.component);
     }
 
     await UI.openAndShowTextDocument(filePath);
-    const message: string = ColorizedChannel.generateMessage(subject);
-    UI.showNotification(MessageType.Info, message);
-    this.outputChannel.end(message, this.component);
+    UI.showNotification(MessageType.Info, ColorizedChannel.formatMessage(operation));
+    this.outputChannel.end(operation, this.component);
   }
 
   private async doCreateModel(type: ModelType, folder: string, name: string): Promise<string> {
     const modelId: string = DeviceModelManager.generateModelId(name);
-    const filePath: string = path.join(folder, DeviceModelManager.generateModelFilename(name, type));
+    const filePath: string = path.join(folder, DeviceModelManager.generateModelFileName(name, type));
     const templatePath: string = this.context.asAbsolutePath(
-      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFilename(type)),
+      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName(type)),
     );
     const replacement = new Map<string, string>();
     replacement.set(Constants.DIGITAL_TWIN_ID_PLACEHOLDER, modelId);

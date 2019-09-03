@@ -4,11 +4,13 @@
 import * as vscode from "vscode";
 
 export class ColorizedChannel {
-  public static generateMessage(subject: string, error?: Error): string {
-    const message: string = error
-      ? subject.charAt(0).toLowerCase() + subject.slice(1)
-      : subject.charAt(0).toUpperCase() + subject.slice(1);
-    return error ? `Fail to ${message}. Error: ${error.message}` : `${message} successfully`;
+  public static formatMessage(operation: string, error?: Error): string {
+    if (error) {
+      const message: string = operation.charAt(0).toLowerCase() + operation.slice(1);
+      return `Fail to ${message}. Error: ${error.message}`;
+    } else {
+      return `${operation} successfully`;
+    }
   }
 
   private static buildTag(name: string | undefined): string {
@@ -20,14 +22,14 @@ export class ColorizedChannel {
     this.channel = vscode.window.createOutputChannel(name);
   }
 
-  public start(message: string, component?: string): void {
+  public start(operation: string, component?: string): void {
     const tag: string = ColorizedChannel.buildTag(component);
-    this.channel.appendLine(`[Start]${tag} ${message}`);
+    this.channel.appendLine(`[Start]${tag} ${operation}`);
   }
 
-  public end(message: string, component?: string): void {
+  public end(operation: string, component?: string): void {
     const tag: string = ColorizedChannel.buildTag(component);
-    this.channel.appendLine(`[Done]${tag} ${message}`);
+    this.channel.appendLine(`[Done]${tag} ${ColorizedChannel.formatMessage(operation)}`);
   }
 
   public warn(message: string, component?: string): void {
@@ -35,8 +37,9 @@ export class ColorizedChannel {
     this.channel.appendLine(`[Warn]${tag} ${message}`);
   }
 
-  public error(message: string, component?: string): void {
+  public error(operation: string, component?: string, error?: Error): void {
     const tag: string = ColorizedChannel.buildTag(component);
+    const message: string = error ? ColorizedChannel.formatMessage(operation, error) : operation;
     this.channel.appendLine(`[Error]${tag} ${message}`);
   }
 

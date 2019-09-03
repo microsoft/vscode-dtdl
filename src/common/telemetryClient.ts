@@ -30,14 +30,13 @@ export class TelemetryClient {
     return userDomain.endsWith(INTERNAL_USER_DOMAIN);
   }
 
-  private client: TelemetryReporter | undefined;
+  private client: TelemetryReporter | null = null;
   private isInternal: boolean = false;
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = require(context.asAbsolutePath(PACKAGE_JSON_PATH));
     if (!packageJSON) {
       return;
     }
-
     if (!TelemetryClient.validatePackageJSON(packageJSON)) {
       return;
     }
@@ -54,7 +53,6 @@ export class TelemetryClient {
     if (!this.client) {
       return;
     }
-
     if (telemetryContext) {
       this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
     } else {

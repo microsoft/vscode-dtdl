@@ -10,7 +10,7 @@ export class Constants {
   public static readonly DEFAULT_PAGE_SIZE = 50;
   public static readonly RESOURCE_FOLDER = "resources";
   public static readonly TEMPLATE_FOLDER = "templates";
-  public static readonly SAMPLE_FILENAME = "sample";
+  public static readonly SAMPLE_FILE_NAME = "sample";
 
   public static readonly DEVICE_MODEL_COMPONENT = "Device Model";
   public static readonly MODEL_REPOSITORY_COMPONENT = "Model Repository";

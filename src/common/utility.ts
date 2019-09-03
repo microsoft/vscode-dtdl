@@ -29,7 +29,7 @@ export class Utility {
     });
   }
 
-  public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | undefined> {
+  public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | null> {
     if (!name || name.trim() === "") {
       return `Name ${Constants.NOT_EMPTY_MSG}`;
     }
@@ -38,19 +38,19 @@ export class Utility {
     }
 
     if (folder) {
-      const filename: string = DeviceModelManager.generateModelFilename(name, type);
+      const filename: string = DeviceModelManager.generateModelFileName(name, type);
       if (await fs.pathExists(path.join(folder, filename))) {
         return `${type} ${name} already exists in folder ${folder}`;
       }
     }
-    return undefined;
+    return null;
   }
 
-  public static async validateConnctionString(name: string): Promise<string | undefined> {
+  public static validateNotEmpty(name: string, placeholder: string): string | null {
     if (!name || name.trim() === "") {
-      return `Connection string ${Constants.NOT_EMPTY_MSG}`;
+      return `${placeholder} ${Constants.NOT_EMPTY_MSG}`;
     }
-    return undefined;
+    return null;
   }
 
   public static enforceHttps(url: string): string {
@@ -60,19 +60,21 @@ export class Utility {
   }
 
   public static async createModelFile(folder: string, modelId: string, content: any): Promise<void> {
+    const type: ModelType = DeviceModelManager.convertToModelType(content[Constants.SCHEMA_TYPE_KEY]);
+    if (!type) {
+      throw new Error(Constants.MODEL_TYPE_INVALID_MSG);
+    }
     const replacement = new Map<string, string>();
     replacement.set(":", "_");
     const modelName: string = Utility.replaceAll(modelId, replacement);
-    const type: ModelType = DeviceModelManager.convertToModelType(content[Constants.SCHEMA_TYPE_KEY]);
-
-    let candidate: string = DeviceModelManager.generateModelFilename(modelName, type);
+    let candidate: string = DeviceModelManager.generateModelFileName(modelName, type);
     let counter: number = 0;
     while (true) {
       if (!(await fs.pathExists(path.join(folder, candidate)))) {
         break;
       }
       counter++;
-      candidate = DeviceModelManager.generateModelFilename(`${modelName}_${counter}`, type);
+      candidate = DeviceModelManager.generateModelFileName(`${modelName}_${counter}`, type);
     }
 
     await fs.writeJson(path.join(folder, candidate), content, {
@@ -81,13 +83,23 @@ export class Utility {
     });
   }
 
-  public static async listModelFiles(folder: string): Promise<string[]> {
-    const fileInfos: string[] = [];
-    const files: string[] = await fs.readdir(folder);
-    for (const file of files) {
-      fileInfos.push(file);
+  public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | null> {
+    const content = await fs.readJson(filePath, { encoding: Constants.UTF8 });
+    const modelId: string = content[Constants.SCHEMA_ID_KEY];
+    const context: string = content[Constants.SCHEMA_CONTEXT_KEY];
+    const modelType: ModelType = DeviceModelManager.convertToModelType(content[Constants.SCHEMA_TYPE_KEY]);
+    if (modelId && context && modelType) {
+      return {
+        id: modelId,
+        type: modelType,
+        filePath,
+      };
     }
-    return fileInfos;
+    return null;
+  }
+
+  public static async getJsonContent(filePath: string): Promise<any> {
+    return fs.readJson(filePath, { encoding: Constants.UTF8 });
   }
 
   private constructor() {}
