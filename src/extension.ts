@@ -1,39 +1,198 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 import * as vscode from "vscode";
+import { ColorizedChannel } from "./common/colorizedChannel";
+import { Command } from "./common/command";
+import { Constants } from "./common/constants";
+import { NSAT } from "./common/nsat";
+import { ProcessError } from "./common/processError";
+import { TelemetryClient, TelemetryContext } from "./common/telemetryClient";
+import { UserCancelledError } from "./common/userCancelledError";
+import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
+import { SearchResult } from "./modelRepository/modelRepositoryInterface";
+import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
+import { MessageType, UI } from "./views/ui";
 
-import * as constants from "./common/constants";
-
-import { pnpChannel } from "./common/outputChannel";
-
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "iot-pnp" is now active!');
+  const outputChannel = new ColorizedChannel(Constants.CHANNEL_NAME);
+  const telemetryClient = new TelemetryClient(context);
+  const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
+  const deviceModelManager = new DeviceModelManager(context, outputChannel);
+  const modelRepositoryManager = new ModelRepositoryManager(context, outputChannel, Constants.WEB_VIEW_PATH);
 
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand(
-    "extension.helloWorld",
-    () => {
-      // The code you place here will be executed every time your command is executed
+  telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
 
-      // Display a message box to the user
-      let message = "Hello World!";
-      pnpChannel.start(constants.EXTENSION_NAME, message);
-      pnpChannel.end(constants.EXTENSION_NAME, message);
-      pnpChannel.info(message);
-      pnpChannel.warn(constants.EXTENSION_NAME, message);
-      pnpChannel.error(constants.EXTENSION_NAME, message);
-      pnpChannel.show();
-    }
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.CreateInterface,
+    async (): Promise<void> => {
+      return deviceModelManager.createModel(ModelType.Interface);
+    },
   );
 
-  context.subscriptions.push(disposable);
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.CreateCapabilityModel,
+    async (): Promise<void> => {
+      return deviceModelManager.createModel(ModelType.CapabilityModel);
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.OpenRepository,
+    async (): Promise<void> => {
+      return modelRepositoryManager.signIn();
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.SignOutRepository,
+    async (): Promise<void> => {
+      return modelRepositoryManager.signOut();
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    Command.SubmitFiles,
+    async (): Promise<void> => {
+      return modelRepositoryManager.submitFiles();
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.DeleteModels,
+    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
+      return modelRepositoryManager.deleteModels(publicRepository, modelIds);
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.DownloadModels,
+    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
+      return modelRepositoryManager.downloadModels(publicRepository, modelIds);
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.SearchInterface,
+    async (
+      publicRepository: boolean,
+      keyword?: string,
+      pageSize?: number,
+      continuationToken?: string,
+    ): Promise<SearchResult> => {
+      return modelRepositoryManager.searchModel(
+        ModelType.Interface,
+        publicRepository,
+        keyword,
+        pageSize,
+        continuationToken,
+      );
+    },
+  );
+
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    false,
+    Command.SearchCapabilityModel,
+    async (
+      publicRepository: boolean,
+      keyword?: string,
+      pageSize?: number,
+      continuationToken?: string,
+    ): Promise<SearchResult> => {
+      return modelRepositoryManager.searchModel(
+        ModelType.CapabilityModel,
+        publicRepository,
+        keyword,
+        pageSize,
+        continuationToken,
+      );
+    },
+  );
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
+
+function initCommand(
+  context: vscode.ExtensionContext,
+  telemetryClient: TelemetryClient,
+  outputChannel: ColorizedChannel,
+  nsat: NSAT,
+  enableSurvey: boolean,
+  command: Command,
+  callback: (...args: any[]) => Promise<any>,
+): void {
+  context.subscriptions.push(
+    vscode.commands.registerCommand(command, async (...args: any[]) => {
+      const telemetryContext: TelemetryContext = telemetryClient.createContext();
+      telemetryClient.sendEvent(`${command}.start`);
+
+      try {
+        return await callback(...args);
+      } catch (error) {
+        if (error instanceof UserCancelledError) {
+          outputChannel.warn(error.message);
+        } else {
+          telemetryClient.setErrorContext(telemetryContext, error);
+          UI.showNotification(MessageType.Error, error.message);
+          if (error instanceof ProcessError) {
+            const message = `${error.message}\nStack: ${error.stack}`;
+            outputChannel.error(message, error.component);
+          } else {
+            outputChannel.error(error.message);
+          }
+        }
+      } finally {
+        telemetryClient.closeContext(telemetryContext);
+        telemetryClient.sendEvent(`${command}.end`, telemetryContext);
+        outputChannel.show();
+        if (enableSurvey) {
+          nsat.takeSurvey(context);
+        }
+      }
+    }),
+  );
+}

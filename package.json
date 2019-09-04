@@ -1,28 +1,78 @@
 {
-  "name": "iot-pnp",
-  "displayName": "iot-pnp",
-  "description": "IoT Plug and Play",
+  "name": "azure-digital-twins",
+  "displayName": "IoT Plug and Play",
+  "description": "Author IoT Plug and Play models, publish and manage with Model Repository",
   "version": "0.0.1",
+  "publisher": "vsciot-vscode",
+  "aiKey": "5b869bc6-ca93-4f24-aa87-92871a3a616e",
+  "icon": "logo.png",
+  "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
     "vscode": "^1.36.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/vscode-azure-digital-twins.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Microsoft/vscode-azure-digital-twins/issues"
+  },
+  "homepage": "https://github.com/Microsoft/vscode-azure-digital-twins/blob/master/README.md",
   "categories": [
+    "Azure",
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.helloWorld"
+    "onCommand:azure-digital-twins.createInterface",
+    "onCommand:azure-digital-twins.createCapabilityModel",
+    "onCommand:azure-digital-twins.openRepository",
+    "onCommand:azure-digital-twins.signOutRepository",
+    "onCommand:azure-digital-twins.submitFiles"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/extension",
   "contributes": {
     "commands": [
       {
-        "command": "extension.helloWorld",
-        "title": "Hello World"
+        "command": "azure-digital-twins.createInterface",
+        "title": "Create Interface",
+        "category": "IoT Plug and Play"
+      },
+      {
+        "command": "azure-digital-twins.createCapabilityModel",
+        "title": "Create Capability Model",
+        "category": "IoT Plug and Play"
+      },
+      {
+        "command": "azure-digital-twins.openRepository",
+        "title": "Open Model Repository",
+        "category": "IoT Plug and Play"
+      },
+      {
+        "command": "azure-digital-twins.signOutRepository",
+        "title": "Sign out Model Repository",
+        "category": "IoT Plug and Play"
+      },
+      {
+        "command": "azure-digital-twins.submitFiles",
+        "title": "Submit Files to Model Repository",
+        "category": "IoT Plug and Play"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "IoT Plug and Play Configuration",
+        "properties": {
+          "azure-digital-twins.publicRepositoryUrl": {
+            "type": "string",
+            "default": "https://repo.azureiotrepository.com",
+            "description": "Set the public model repository url."
+          }
+        }
       }
     ],
     "languages": [
       {
-        "id": "pnp-channel",
+        "id": "colorized-channel",
         "mimetypes": [
           "text/x-code-output"
         ]
@@ -30,9 +80,9 @@
     ],
     "grammars": [
       {
-        "language": "pnp-channel",
-        "scopeName": "text.channel.pnp",
-        "path": "./syntaxes/pnp.channel.tmLanguage"
+        "language": "colorized-channel",
+        "scopeName": "text.channel.colorized",
+        "path": "./syntaxes/colorized.channel.tmLanguage"
       }
     ]
   },
@@ -40,18 +90,35 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile",
+    "tslint": "tslint -t verbose src/**/*.ts",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@types/fs-extra": "^7.0.0",
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
     "@types/vscode": "^1.36.0",
+    "@types/request-promise": "^4.1.44",
+    "@types/keytar": "^4.4.0",
+    "cz-conventional-changelog": "^3.0.2",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
-    "typescript": "^3.3.1",
     "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
     "vscode-test": "^1.0.0-next.0"
+  },
+  "dependencies": {
+    "vscode-extension-telemetry": "^0.1.0",
+    "fs-extra": "^7.0.1",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4",
+    "vscode-express": "^1.0.1",
+    "keytar": "^4.13.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
