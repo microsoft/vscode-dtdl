@@ -30,7 +30,7 @@ export class TelemetryClient {
     return userDomain.endsWith(INTERNAL_USER_DOMAIN);
   }
 
-  private client: TelemetryReporter | null = null;
+  private client: TelemetryReporter | undefined;
   private isInternal: boolean = false;
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = require(context.asAbsolutePath(PACKAGE_JSON_PATH));

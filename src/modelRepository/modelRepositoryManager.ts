@@ -36,6 +36,10 @@ export interface ModelFileInfo {
   filePath: string;
 }
 
+interface SubmitOptions {
+  overwrite: boolean;
+}
+
 export class ModelRepositoryManager {
   private static async buildRepositoryInfo(publicRepository: boolean): Promise<RepositoryInfo> {
     if (publicRepository) {
@@ -142,7 +146,7 @@ export class ModelRepositoryManager {
   }
 
   public async submitFiles(): Promise<void> {
-    const files: string[] | null = await UI.selectModelFiles(UIConstants.SELECT_MODELS_LABEL);
+    const files: string[] | undefined = await UI.selectModelFiles(UIConstants.SELECT_MODELS_LABEL);
     if (!files || files.length === 0) {
       return;
     }
@@ -247,7 +251,7 @@ export class ModelRepositoryManager {
   }
 
   private async doDownloadModel(repoInfos: RepositoryInfo[], modelId: string, folder: string): Promise<void> {
-    let result: GetResult | null = null;
+    let result: GetResult | undefined;
     for (const repoInfo of repoInfos) {
       try {
         result = await ModelRepositoryClient.getModel(repoInfo, modelId, true);
@@ -300,7 +304,7 @@ export class ModelRepositoryManager {
     const content = await Utility.getJsonContent(file);
     const modelId: string = content[Constants.SCHEMA_ID_KEY];
 
-    let result: GetResult | null = null;
+    let result: GetResult | undefined;
     try {
       result = await ModelRepositoryClient.getModel(repoInfo, modelId, true);
     } catch (error) {
@@ -329,8 +333,4 @@ export class ModelRepositoryManager {
     }
     await ModelRepositoryClient.updateModel(repoInfo, modelId, content);
   }
-}
-
-interface SubmitOptions {
-  overwrite: boolean;
 }

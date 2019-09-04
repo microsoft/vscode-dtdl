@@ -29,7 +29,7 @@ export class Utility {
     });
   }
 
-  public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | null> {
+  public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | undefined> {
     if (!name || name.trim() === "") {
       return `Name ${Constants.NOT_EMPTY_MSG}`;
     }
@@ -43,14 +43,14 @@ export class Utility {
         return `${type} ${name} already exists in folder ${folder}`;
       }
     }
-    return null;
+    return undefined;
   }
 
-  public static validateNotEmpty(name: string, placeholder: string): string | null {
+  public static validateNotEmpty(name: string, placeholder: string): string | undefined {
     if (!name || name.trim() === "") {
       return `${placeholder} ${Constants.NOT_EMPTY_MSG}`;
     }
-    return null;
+    return undefined;
   }
 
   public static enforceHttps(url: string): string {
@@ -64,6 +64,7 @@ export class Utility {
     if (!type) {
       throw new Error(Constants.MODEL_TYPE_INVALID_MSG);
     }
+
     const replacement = new Map<string, string>();
     replacement.set(":", "_");
     const modelName: string = Utility.replaceAll(modelId, replacement);
@@ -83,7 +84,7 @@ export class Utility {
     });
   }
 
-  public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | null> {
+  public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | undefined> {
     const content = await fs.readJson(filePath, { encoding: Constants.UTF8 });
     const modelId: string = content[Constants.SCHEMA_ID_KEY];
     const context: string = content[Constants.SCHEMA_CONTEXT_KEY];
@@ -95,7 +96,7 @@ export class Utility {
         filePath,
       };
     }
-    return null;
+    return undefined;
   }
 
   public static async getJsonContent(filePath: string): Promise<any> {

@@ -22,6 +22,10 @@ export enum ChoiceType {
   Cancel = "Cancel",
 }
 
+interface QuickPickItemWithData<T> extends vscode.QuickPickItem {
+  data: T;
+}
+
 export class UI {
   public static async openAndShowTextDocument(filePath: string): Promise<void> {
     const folder: string = path.dirname(filePath);
@@ -107,7 +111,7 @@ export class UI {
   public static async showInputBox(
     label: string,
     placeHolder: string,
-    validateInput?: (s: string) => string | null | Promise<string | null>,
+    validateInput?: (s: string) => string | undefined | Promise<string | undefined>,
     value?: string,
     ignoreFocusOut: boolean = true,
   ): Promise<string> {
@@ -133,18 +137,18 @@ export class UI {
     return await UI.showInputBox(label, UIConstants.REPOSITORY_CONNECTION_STRING_TEMPLATE, validateInput);
   }
 
-  public static async selectModelFiles(label: string, type?: ModelType): Promise<string[] | null> {
+  public static async selectModelFiles(label: string, type?: ModelType): Promise<string[] | undefined> {
     const files: vscode.Uri[] = await vscode.workspace.findFiles(UIConstants.MODEL_FILE_GLOB);
     if (files.length === 0) {
       UI.showNotification(MessageType.Warn, UIConstants.MODELS_NOT_FOUND_MSG);
-      return null;
+      return undefined;
     }
 
     // process in parallel
     const items: Array<QuickPickItemWithData<string>> = [];
     await Promise.all(
       files.map(async (f) => {
-        const fileInfo: ModelFileInfo | null = await Utility.getModelFileInfo(f.path);
+        const fileInfo: ModelFileInfo | undefined = await Utility.getModelFileInfo(f.path);
         if (fileInfo) {
           if (!type || type === fileInfo.type) {
             items.push({
@@ -158,7 +162,7 @@ export class UI {
     );
     if (items.length === 0) {
       UI.showNotification(MessageType.Warn, UIConstants.MODELS_NOT_FOUND_MSG);
-      return null;
+      return undefined;
     }
 
     const selected: Array<QuickPickItemWithData<string>> | undefined = await vscode.window.showQuickPick(items, {
@@ -195,8 +199,4 @@ export class UI {
   }
 
   private constructor() {}
-}
-
-interface QuickPickItemWithData<T> extends vscode.QuickPickItem {
-  data: T;
 }
