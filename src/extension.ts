@@ -10,9 +10,14 @@ import { ProcessError } from "./common/processError";
 import { TelemetryClient, TelemetryContext } from "./common/telemetryClient";
 import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
+import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCompletionItemProvider";
+import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnosticProvider";
+import { DigitalTwinGraph } from "./intelliSense/digitalTwinGraph";
+import { DigitalTwinHoverProvider } from "./intelliSense/digitalTwinHoverProvider";
 import { SearchResult } from "./modelRepository/modelRepositoryInterface";
 import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
 import { MessageType, UI } from "./views/ui";
+import { UIConstants } from "./views/uiConstants";
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = new ColorizedChannel(Constants.CHANNEL_NAME);
@@ -22,6 +27,10 @@ export function activate(context: vscode.ExtensionContext) {
   const modelRepositoryManager = new ModelRepositoryManager(context, outputChannel, Constants.WEB_VIEW_PATH);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
+  context.subscriptions.push(outputChannel);
+  context.subscriptions.push(telemetryClient);
+
+  initIntelliSense(context);
 
   initCommand(
     context,
@@ -179,7 +188,7 @@ function initCommand(
           telemetryClient.setErrorContext(telemetryContext, error);
           UI.showNotification(MessageType.Error, error.message);
           if (error instanceof ProcessError) {
-            const message = `${error.message}\nStack: ${error.stack}`;
+            const message = `${error.message}\n${error.stack}`;
             outputChannel.error(message, error.component);
           } else {
             outputChannel.error(error.message);
@@ -194,5 +203,42 @@ function initCommand(
         }
       }
     }),
+  );
+}
+
+function initIntelliSense(context: vscode.ExtensionContext): void {
+  const graph: DigitalTwinGraph = DigitalTwinGraph.getInstance(context);
+  if (!graph.initialized) {
+    UI.showNotification(MessageType.Warn, UIConstants.INTELLISENSE_NOT_ENABLED_MSG);
+    return;
+  }
+
+  const selector: vscode.DocumentSelector = {
+    language: "json",
+    scheme: "file",
+  };
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(selector, new DigitalTwinCompletionItemProvider(context), '"'),
+  );
+  context.subscriptions.push(vscode.languages.registerHoverProvider(selector, new DigitalTwinHoverProvider(context)));
+
+  const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection();
+  const diagnosticProvider = new DigitalTwinDiagnosticProvider(context);
+  const activateTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+  if (activateTextEditor) {
+    diagnosticProvider.updateDiagnostics(activateTextEditor.document, diagnosticCollection);
+  }
+  context.subscriptions.push(diagnosticCollection);
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((event) => {
+      if (event) {
+        diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection);
+      }
+    }),
+  );
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument((document) =>
+      diagnosticProvider.updateDiagnostics(document, diagnosticCollection),
+    ),
   );
 }

@@ -67,8 +67,8 @@ export class ModelRepositoryConnection {
   public generateAccessToken(): string {
     const endpoint: string = encodeURIComponent(this.hostName);
     const payload: string = [encodeURIComponent(this.repositoryId), endpoint, this.expiry].join("\n").toLowerCase();
-    const signature = new Buffer(payload, Constants.UTF8);
-    const secret = new Buffer(this.sharedAccessKey, BASE64);
+    const signature: Buffer = Buffer.from(payload, Constants.UTF8);
+    const secret: Buffer = Buffer.from(this.sharedAccessKey, BASE64);
     const hmac: Hmac = createHmac(SHA256, secret);
     hmac.update(signature);
     const hash: string = encodeURIComponent(hmac.digest(BASE64));

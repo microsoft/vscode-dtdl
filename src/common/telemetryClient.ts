@@ -80,4 +80,10 @@ export class TelemetryClient {
   public closeContext(context: TelemetryContext) {
     context.measurements.duration = (Date.now() - context.start) / MILLISECOND;
   }
+
+  public dispose(): void {
+    if (this.client) {
+      this.client.dispose();
+    }
+  }
 }

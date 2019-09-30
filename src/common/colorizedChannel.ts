@@ -50,4 +50,10 @@ export class ColorizedChannel {
   public show(): void {
     this.channel.show();
   }
+
+  public dispose(): void {
+    if (this.channel) {
+      this.channel.dispose();
+    }
+  }
 }

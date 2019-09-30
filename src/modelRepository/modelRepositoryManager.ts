@@ -12,6 +12,7 @@ import { ProcessError } from "../common/processError";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
 import { ModelType } from "../deviceModel/deviceModelManager";
+import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
 import { ChoiceType, MessageType, UI } from "../views/ui";
 import { UIConstants } from "../views/uiConstants";
 import { ModelRepositoryClient } from "./modelRepositoryClient";
@@ -302,7 +303,7 @@ export class ModelRepositoryManager {
 
   private async doSubmitModel(repoInfo: RepositoryInfo, file: string, option: SubmitOptions): Promise<void> {
     const content = await Utility.getJsonContent(file);
-    const modelId: string = content[Constants.SCHEMA_ID_KEY];
+    const modelId: string = content[DigitalTwinConstants.ID];
 
     let result: GetResult | undefined;
     try {
