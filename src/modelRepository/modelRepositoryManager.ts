@@ -83,7 +83,7 @@ export class ModelRepositoryManager {
       accessToken: connection.generateAccessToken(),
     };
     // test connection by calling searchModel
-    await ModelRepositoryClient.searchModel(repoInfo, ModelType.Interface, "", 1, null);
+    await ModelRepositoryClient.searchModel(repoInfo, ModelType.Interface, Constants.EMPTY_STRING, 1, null);
     if (newConnection) {
       await CredentialStore.set(Constants.MODEL_REPOSITORY_CONNECTION_KEY, connectionString);
     }
@@ -175,7 +175,7 @@ export class ModelRepositoryManager {
   public async searchModel(
     type: ModelType,
     publicRepository: boolean,
-    keyword: string = "",
+    keyword: string = Constants.EMPTY_STRING,
     pageSize: number = Constants.DEFAULT_PAGE_SIZE,
     continuationToken: string | null = null,
   ): Promise<SearchResult> {

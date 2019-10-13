@@ -4,8 +4,20 @@
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { JsonNodeType } from "./digitalTwinDiagnosticProvider";
 import { DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
+
+export enum JsonNodeType {
+  Object = "object",
+  Array = "array",
+  String = "string",
+  Number = "number",
+  Boolean = "boolean",
+}
+
+export interface PropertyPair {
+  name: parser.Node;
+  value: parser.Node;
+}
 
 export class IntelliSenseUtility {
   public static initGraph(context: vscode.ExtensionContext): boolean {
@@ -40,8 +52,20 @@ export class IntelliSenseUtility {
     return IntelliSenseUtility.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
   }
 
-  public static getPropertyNode(propertyName: string): PropertyNode | undefined {
-    return IntelliSenseUtility.graph.getPropertyNode(propertyName);
+  public static getPropertyNode(name: string): PropertyNode | undefined {
+    const id: string = IntelliSenseUtility.graph.getNodeId(name) || name;
+    return IntelliSenseUtility.graph.getPropertyNode(id);
+  }
+
+  public static parseProperty(jsonNode: parser.Node): PropertyPair | undefined {
+    if (!jsonNode.children || jsonNode.children.length !== 2) {
+      return undefined;
+    }
+    return { name: jsonNode.children[0], value: jsonNode.children[1] };
+  }
+
+  public static getNodeRange(document: vscode.TextDocument, node: parser.Node): vscode.Range {
+    return new vscode.Range(document.positionAt(node.offset), document.positionAt(node.offset + node.length));
   }
 
   private static graph: DigitalTwinGraph;

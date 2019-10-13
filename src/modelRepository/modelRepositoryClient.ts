@@ -121,7 +121,7 @@ export class ModelRepositoryClient {
     if (repoInfo.repositoryId) {
       qs.repositoryId = repoInfo.repositoryId;
     }
-    const accessToken = repoInfo.accessToken ? repoInfo.accessToken : "";
+    const accessToken = repoInfo.accessToken || Constants.EMPTY_STRING;
     const options: request.OptionsWithUri = {
       method,
       uri,

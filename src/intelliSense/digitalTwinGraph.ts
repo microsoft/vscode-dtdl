@@ -21,6 +21,7 @@ export interface PropertyNode {
   id: string;
   label?: string;
   isArray?: boolean;
+  comment?: string;
   range?: ClassNode[];
   constraint?: ConstraintNode;
 }
@@ -56,7 +57,7 @@ enum EdgeType {
   Label = "http://www.w3.org/2000/01/rdf-schema#label",
   Domain = "http://www.w3.org/2000/01/rdf-schema#domain",
   SubClassOf = "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-  Comment = "http://www.w3.org/2000/01/rdf-schema#comment", // Comment hasn't been used yet in DTDL
+  Comment = "http://www.w3.org/2000/01/rdf-schema#comment",
 }
 
 export class DigitalTwinGraph {
@@ -73,7 +74,7 @@ export class DigitalTwinGraph {
   }
 
   public static getClassType(classNode: ClassNode): string {
-    return classNode.label ? classNode.label : classNode.id;
+    return classNode.label || classNode.id;
   }
 
   public static getValidTypes(propertyNode: PropertyNode): string[] {
@@ -122,12 +123,14 @@ export class DigitalTwinGraph {
   private propertyNodes: Map<string, PropertyNode>;
   private contextNodes: Map<string, ContextNode>;
   private constraintNodes: Map<string, ConstraintNode>;
+  private reversedIndex: Map<string, string>;
   private vocabulary: string;
   private constructor() {
     this.classNodes = new Map<string, ClassNode>();
     this.propertyNodes = new Map<string, PropertyNode>();
     this.contextNodes = new Map<string, ContextNode>();
     this.constraintNodes = new Map<string, ConstraintNode>();
+    this.reversedIndex = new Map<string, string>();
     this.vocabulary = Constants.EMPTY_STRING;
   }
 
@@ -137,6 +140,10 @@ export class DigitalTwinGraph {
 
   public getPropertyNode(id: string): PropertyNode | undefined {
     return this.propertyNodes.get(id);
+  }
+
+  public getNodeId(name: string): string {
+    return this.reversedIndex.get(name) || Constants.EMPTY_STRING;
   }
 
   private init(context: vscode.ExtensionContext): void {
@@ -161,17 +168,21 @@ export class DigitalTwinGraph {
     const context = contextJson[DigitalTwinConstants.CONTEXT];
     this.vocabulary = context[DigitalTwinConstants.VOCABULARY] as string;
 
+    let id: string;
     for (const key in context) {
       if (DigitalTwinGraph.isReservedName(key)) {
         continue;
       }
       const value = context[key];
       if (typeof value === "string") {
-        this.contextNodes.set(this.getId(value), { name: key, isArray: false });
+        id = this.getId(value);
+        this.contextNodes.set(id, { name: key, isArray: false });
       } else {
         const isArray: boolean = DigitalTwinGraph.isArrayType(value);
-        this.contextNodes.set(this.getId(value[DigitalTwinConstants.ID] as string), { name: key, isArray });
+        id = this.getId(value[DigitalTwinConstants.ID] as string);
+        this.contextNodes.set(id, { name: key, isArray });
       }
+      this.reversedIndex.set(key, id);
     }
   }
 
@@ -214,6 +225,9 @@ export class DigitalTwinGraph {
         break;
       case EdgeType.SubClassOf:
         this.handleEdgeOfSubClassOf(edge);
+        break;
+      case EdgeType.Comment:
+        this.handleEdgeOfComment(edge);
         break;
       default:
     }
@@ -322,6 +336,22 @@ export class DigitalTwinGraph {
       baseClassNode.children = [];
     }
     baseClassNode.children.push(classNode);
+  }
+
+  /**
+   * handle data of Comment edge
+   * 1. set comment of property node
+   * @param edge edge data
+   */
+  private handleEdgeOfComment(edge: any): void {
+    const id: string = edge.SourceNode.Id as string;
+    const comment: string = edge.TargetNode.Value as string;
+
+    // TODO:(erichen): need to check if comment only exist in property
+    const propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
+    if (propertyNode) {
+      propertyNode.comment = comment;
+    }
   }
 
   private ensureClassNode(id: string): ClassNode {

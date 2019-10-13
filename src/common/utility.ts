@@ -26,12 +26,12 @@ export class Utility {
     const pattern = new RegExp(keys.join("|"), flag);
     return str.replace(pattern, (matched) => {
       const value: string | undefined = replacement.get(matched);
-      return value ? value : matched;
+      return value || matched;
     });
   }
 
   public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | undefined> {
-    if (!name || name.trim() === "") {
+    if (!name || name.trim() === Constants.EMPTY_STRING) {
       return `Name ${Constants.NOT_EMPTY_MSG}`;
     }
     if (!Constants.MODEL_NAME_REGEX.test(name)) {
@@ -48,7 +48,7 @@ export class Utility {
   }
 
   public static validateNotEmpty(name: string, placeholder: string): string | undefined {
-    if (!name || name.trim() === "") {
+    if (!name || name.trim() === Constants.EMPTY_STRING) {
       return `${placeholder} ${Constants.NOT_EMPTY_MSG}`;
     }
     return undefined;

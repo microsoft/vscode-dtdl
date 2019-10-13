@@ -6,20 +6,7 @@ import * as vscode from "vscode";
 import { Constants } from "../common/constants";
 import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants";
 import { ClassNode, DigitalTwinGraph, PropertyNode, ValueSchema } from "./digitalTwinGraph";
-import { IntelliSenseUtility } from "./intelliSenseUtility";
-
-export enum JsonNodeType {
-  Object = "object",
-  Array = "array",
-  String = "string",
-  Number = "number",
-  Boolean = "boolean",
-}
-
-interface PropertyPair {
-  name: parser.Node;
-  value: parser.Node;
-}
+import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseUtility";
 
 interface Problem {
   offset: number;
@@ -54,13 +41,6 @@ export class DigitalTwinDiagnosticProvider {
     return classes;
   }
 
-  private static parseProperty(jsonNode: parser.Node): PropertyPair | undefined {
-    if (!jsonNode.children || jsonNode.children.length !== 2) {
-      return undefined;
-    }
-    return { name: jsonNode.children[0], value: jsonNode.children[1] };
-  }
-
   private static getNamePropertyPair(jsonNode: parser.Node): PropertyPair | undefined {
     if (jsonNode.type !== JsonNodeType.Object || !jsonNode.children || jsonNode.children.length === 0) {
       return undefined;
@@ -68,7 +48,7 @@ export class DigitalTwinDiagnosticProvider {
 
     let propertyPair: PropertyPair | undefined;
     for (const child of jsonNode.children) {
-      propertyPair = DigitalTwinDiagnosticProvider.parseProperty(child);
+      propertyPair = IntelliSenseUtility.parseProperty(child);
       if (!propertyPair) {
         continue;
       }
@@ -235,7 +215,7 @@ export class DigitalTwinDiagnosticProvider {
     let propertyPair: PropertyPair | undefined;
     let propertyNode: PropertyNode | undefined;
     for (const child of jsonNode.children) {
-      propertyPair = DigitalTwinDiagnosticProvider.parseProperty(child);
+      propertyPair = IntelliSenseUtility.parseProperty(child);
       if (!propertyPair) {
         continue;
       }

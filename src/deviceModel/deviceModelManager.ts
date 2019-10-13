@@ -25,7 +25,7 @@ export class DeviceModelManager {
   }
 
   public static generateModelFileName(name: string, type: ModelType): string {
-    const fileType: string = type.replace(/\s+/g, "").toLowerCase();
+    const fileType: string = type.replace(/\s+/g, Constants.EMPTY_STRING).toLowerCase();
     return `${name}.${fileType}.json`;
   }
 

@@ -68,7 +68,7 @@ export class UI {
     }
     items.push({ label: UIConstants.BROWSE_LABEL, description: "" });
     const selected: vscode.QuickPickItem = await UI.showQuickPick(label, items);
-    return selected.description ? selected.description : await UI.showOpenDialog(label);
+    return selected.description || (await UI.showOpenDialog(label));
   }
 
   public static async showQuickPick(label: string, items: vscode.QuickPickItem[]): Promise<vscode.QuickPickItem> {
