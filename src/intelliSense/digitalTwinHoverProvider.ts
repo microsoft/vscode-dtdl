@@ -4,13 +4,13 @@
 import * as vscode from "vscode";
 
 export class DigitalTwinHoverProvider implements vscode.HoverProvider {
-  constructor(private readonly context: vscode.ExtensionContext) {}
-
   public provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.Hover> {
-    return null;
+    if (!document) {
+      return undefined;
+    }
   }
 }

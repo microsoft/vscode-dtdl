@@ -35,8 +35,8 @@ export class ModelRepositoryConnection {
       if (index <= 0) {
         throw new Error(Constants.CONNECTION_STRING_INVALID_FORMAT_MSG);
       }
-      const name: string = property.substring(0, index);
-      const value: string = property.substring(index + 1);
+      const name: string = property.slice(0, index);
+      const value: string = property.slice(index + 1);
       if (!name || !value) {
         throw new Error(Constants.CONNECTION_STRING_INVALID_FORMAT_MSG);
       }

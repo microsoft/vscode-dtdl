@@ -4,8 +4,6 @@
 import * as vscode from "vscode";
 
 export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemProvider {
-  constructor(private readonly context: vscode.ExtensionContext) {}
-
   public provideCompletionItems(
     document: vscode.TextDocument,
     position: vscode.Position,

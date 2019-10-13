@@ -8,16 +8,16 @@ const MILLISECOND = 1000;
 const PACKAGE_JSON_PATH = "./package.json";
 const INTERNAL_USER_DOMAIN = "microsoft.com";
 
-export interface TelemetryContext {
-  start: number;
-  properties: { [key: string]: string };
-  measurements: { [key: string]: number };
-}
-
 export enum TelemetryResult {
   Succeeded = "Succeeded",
   Failed = "Failed",
   Cancelled = "Cancelled",
+}
+
+export interface TelemetryContext {
+  start: number;
+  properties: { [key: string]: string };
+  measurements: { [key: string]: number };
 }
 
 export class TelemetryClient {

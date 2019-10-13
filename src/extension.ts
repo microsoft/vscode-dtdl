@@ -14,6 +14,7 @@ import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCom
 import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnosticProvider";
 import { DigitalTwinGraph } from "./intelliSense/digitalTwinGraph";
 import { DigitalTwinHoverProvider } from "./intelliSense/digitalTwinHoverProvider";
+import { IntelliSenseUtility } from "./intelliSense/intelliSenseUtility";
 import { SearchResult } from "./modelRepository/modelRepositoryInterface";
 import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
 import { MessageType, UI } from "./views/ui";
@@ -207,8 +208,7 @@ function initCommand(
 }
 
 function initIntelliSense(context: vscode.ExtensionContext): void {
-  const graph: DigitalTwinGraph = DigitalTwinGraph.getInstance(context);
-  if (!graph.initialized) {
+  if (!IntelliSenseUtility.initGraph(context)) {
     UI.showNotification(MessageType.Warn, UIConstants.INTELLISENSE_NOT_ENABLED_MSG);
     return;
   }
@@ -218,12 +218,15 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     scheme: "file",
   };
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(selector, new DigitalTwinCompletionItemProvider(context), '"'),
+    vscode.languages.registerCompletionItemProvider(selector, new DigitalTwinCompletionItemProvider(), '"'),
   );
-  context.subscriptions.push(vscode.languages.registerHoverProvider(selector, new DigitalTwinHoverProvider(context)));
+  context.subscriptions.push(vscode.languages.registerHoverProvider(selector, new DigitalTwinHoverProvider()));
 
-  const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection();
-  const diagnosticProvider = new DigitalTwinDiagnosticProvider(context);
+  let pendingDiagnostic: NodeJS.Timer;
+  const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
+    Constants.CHANNEL_NAME,
+  );
+  const diagnosticProvider = new DigitalTwinDiagnosticProvider();
   const activateTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
   if (activateTextEditor) {
     diagnosticProvider.updateDiagnostics(activateTextEditor.document, diagnosticCollection);
@@ -237,8 +240,19 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     }),
   );
   context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument((document) =>
-      diagnosticProvider.updateDiagnostics(document, diagnosticCollection),
-    ),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event) {
+        if (pendingDiagnostic) {
+          clearTimeout(pendingDiagnostic);
+        }
+        pendingDiagnostic = setTimeout(
+          () => diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection),
+          Constants.DEFAULT_TIMER_MS,
+        );
+      }
+    }),
+  );
+  context.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument((document) => diagnosticCollection.delete(document.uri)),
   );
 }

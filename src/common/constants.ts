@@ -5,9 +5,12 @@ export class Constants {
   public static readonly EXTENSION_NAME = "azure-digital-twins";
   public static readonly CHANNEL_NAME = "IoT Plug and Play";
   public static readonly UTF8 = "utf8";
+  public static readonly EMPTY_STRING = "";
+  public static readonly LINE_FEED = "\n";
   public static readonly JSON_SPACE = 2;
   public static readonly NOT_FOUND_CODE = 404;
   public static readonly DEFAULT_PAGE_SIZE = 50;
+  public static readonly DEFAULT_TIMER_MS = 1000;
   public static readonly RESOURCE_FOLDER = "resources";
   public static readonly TEMPLATE_FOLDER = "templates";
   public static readonly DEFINITION_FOLDER = "definitions";
