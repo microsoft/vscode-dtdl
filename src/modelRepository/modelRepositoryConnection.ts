@@ -35,8 +35,8 @@ export class ModelRepositoryConnection {
       if (index <= 0) {
         throw new Error(Constants.CONNECTION_STRING_INVALID_FORMAT_MSG);
       }
-      const name: string = property.substring(0, index);
-      const value: string = property.substring(index + 1);
+      const name: string = property.slice(0, index);
+      const value: string = property.slice(index + 1);
       if (!name || !value) {
         throw new Error(Constants.CONNECTION_STRING_INVALID_FORMAT_MSG);
       }
@@ -67,8 +67,8 @@ export class ModelRepositoryConnection {
   public generateAccessToken(): string {
     const endpoint: string = encodeURIComponent(this.hostName);
     const payload: string = [encodeURIComponent(this.repositoryId), endpoint, this.expiry].join("\n").toLowerCase();
-    const signature = new Buffer(payload, Constants.UTF8);
-    const secret = new Buffer(this.sharedAccessKey, BASE64);
+    const signature: Buffer = Buffer.from(payload, Constants.UTF8);
+    const secret: Buffer = Buffer.from(this.sharedAccessKey, BASE64);
     const hmac: Hmac = createHmac(SHA256, secret);
     hmac.update(signature);
     const hash: string = encodeURIComponent(hmac.digest(BASE64));

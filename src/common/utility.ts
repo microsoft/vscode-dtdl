@@ -4,6 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
+import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
 import { ModelFileInfo } from "../modelRepository/modelRepositoryManager";
 import { Constants } from "./constants";
 
@@ -25,12 +26,12 @@ export class Utility {
     const pattern = new RegExp(keys.join("|"), flag);
     return str.replace(pattern, (matched) => {
       const value: string | undefined = replacement.get(matched);
-      return value ? value : matched;
+      return value || matched;
     });
   }
 
-  public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | null> {
-    if (!name || name.trim() === "") {
+  public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | undefined> {
+    if (!name || name.trim() === Constants.EMPTY_STRING) {
       return `Name ${Constants.NOT_EMPTY_MSG}`;
     }
     if (!Constants.MODEL_NAME_REGEX.test(name)) {
@@ -43,14 +44,14 @@ export class Utility {
         return `${type} ${name} already exists in folder ${folder}`;
       }
     }
-    return null;
+    return undefined;
   }
 
-  public static validateNotEmpty(name: string, placeholder: string): string | null {
-    if (!name || name.trim() === "") {
+  public static validateNotEmpty(name: string, placeholder: string): string | undefined {
+    if (!name || name.trim() === Constants.EMPTY_STRING) {
       return `${placeholder} ${Constants.NOT_EMPTY_MSG}`;
     }
-    return null;
+    return undefined;
   }
 
   public static enforceHttps(url: string): string {
@@ -60,10 +61,11 @@ export class Utility {
   }
 
   public static async createModelFile(folder: string, modelId: string, content: any): Promise<void> {
-    const type: ModelType = DeviceModelManager.convertToModelType(content[Constants.SCHEMA_TYPE_KEY]);
+    const type: ModelType = DeviceModelManager.convertToModelType(content[DigitalTwinConstants.TYPE]);
     if (!type) {
       throw new Error(Constants.MODEL_TYPE_INVALID_MSG);
     }
+
     const replacement = new Map<string, string>();
     replacement.set(":", "_");
     const modelName: string = Utility.replaceAll(modelId, replacement);
@@ -83,11 +85,11 @@ export class Utility {
     });
   }
 
-  public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | null> {
+  public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | undefined> {
     const content = await fs.readJson(filePath, { encoding: Constants.UTF8 });
-    const modelId: string = content[Constants.SCHEMA_ID_KEY];
-    const context: string = content[Constants.SCHEMA_CONTEXT_KEY];
-    const modelType: ModelType = DeviceModelManager.convertToModelType(content[Constants.SCHEMA_TYPE_KEY]);
+    const modelId: string = content[DigitalTwinConstants.ID];
+    const context: string = content[DigitalTwinConstants.CONTEXT];
+    const modelType: ModelType = DeviceModelManager.convertToModelType(content[DigitalTwinConstants.TYPE]);
     if (modelId && context && modelType) {
       return {
         id: modelId,
@@ -95,11 +97,15 @@ export class Utility {
         filePath,
       };
     }
-    return null;
+    return undefined;
   }
 
   public static async getJsonContent(filePath: string): Promise<any> {
     return fs.readJson(filePath, { encoding: Constants.UTF8 });
+  }
+
+  public static getJsonContentSync(filePath: string): any {
+    return fs.readJsonSync(filePath, { encoding: Constants.UTF8 });
   }
 
   private constructor() {}

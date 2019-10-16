@@ -8,16 +8,16 @@ const MILLISECOND = 1000;
 const PACKAGE_JSON_PATH = "./package.json";
 const INTERNAL_USER_DOMAIN = "microsoft.com";
 
-export interface TelemetryContext {
-  start: number;
-  properties: { [key: string]: string };
-  measurements: { [key: string]: number };
-}
-
 export enum TelemetryResult {
   Succeeded = "Succeeded",
   Failed = "Failed",
   Cancelled = "Cancelled",
+}
+
+export interface TelemetryContext {
+  start: number;
+  properties: { [key: string]: string };
+  measurements: { [key: string]: number };
 }
 
 export class TelemetryClient {
@@ -30,7 +30,7 @@ export class TelemetryClient {
     return userDomain.endsWith(INTERNAL_USER_DOMAIN);
   }
 
-  private client: TelemetryReporter | null = null;
+  private client: TelemetryReporter | undefined;
   private isInternal: boolean = false;
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = require(context.asAbsolutePath(PACKAGE_JSON_PATH));
@@ -79,5 +79,11 @@ export class TelemetryClient {
 
   public closeContext(context: TelemetryContext) {
     context.measurements.duration = (Date.now() - context.start) / MILLISECOND;
+  }
+
+  public dispose(): void {
+    if (this.client) {
+      this.client.dispose();
+    }
   }
 }

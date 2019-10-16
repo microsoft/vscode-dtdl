@@ -114,7 +114,8 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "vscode-express": "^1.0.1",
-    "keytar": "^4.13.0"
+    "keytar": "^4.13.0",
+    "jsonc-parser": "^2.1.1"
   },
   "config": {
     "commitizen": {

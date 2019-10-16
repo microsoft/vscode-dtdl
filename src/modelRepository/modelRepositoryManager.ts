@@ -12,6 +12,7 @@ import { ProcessError } from "../common/processError";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
 import { ModelType } from "../deviceModel/deviceModelManager";
+import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
 import { ChoiceType, MessageType, UI } from "../views/ui";
 import { UIConstants } from "../views/uiConstants";
 import { ModelRepositoryClient } from "./modelRepositoryClient";
@@ -34,6 +35,10 @@ export interface ModelFileInfo {
   id: string;
   type: ModelType;
   filePath: string;
+}
+
+interface SubmitOptions {
+  overwrite: boolean;
 }
 
 export class ModelRepositoryManager {
@@ -78,7 +83,7 @@ export class ModelRepositoryManager {
       accessToken: connection.generateAccessToken(),
     };
     // test connection by calling searchModel
-    await ModelRepositoryClient.searchModel(repoInfo, ModelType.Interface, "", 1, null);
+    await ModelRepositoryClient.searchModel(repoInfo, ModelType.Interface, Constants.EMPTY_STRING, 1, null);
     if (newConnection) {
       await CredentialStore.set(Constants.MODEL_REPOSITORY_CONNECTION_KEY, connectionString);
     }
@@ -142,7 +147,7 @@ export class ModelRepositoryManager {
   }
 
   public async submitFiles(): Promise<void> {
-    const files: string[] | null = await UI.selectModelFiles(UIConstants.SELECT_MODELS_LABEL);
+    const files: string[] | undefined = await UI.selectModelFiles(UIConstants.SELECT_MODELS_LABEL);
     if (!files || files.length === 0) {
       return;
     }
@@ -170,7 +175,7 @@ export class ModelRepositoryManager {
   public async searchModel(
     type: ModelType,
     publicRepository: boolean,
-    keyword: string = "",
+    keyword: string = Constants.EMPTY_STRING,
     pageSize: number = Constants.DEFAULT_PAGE_SIZE,
     continuationToken: string | null = null,
   ): Promise<SearchResult> {
@@ -247,7 +252,7 @@ export class ModelRepositoryManager {
   }
 
   private async doDownloadModel(repoInfos: RepositoryInfo[], modelId: string, folder: string): Promise<void> {
-    let result: GetResult | null = null;
+    let result: GetResult | undefined;
     for (const repoInfo of repoInfos) {
       try {
         result = await ModelRepositoryClient.getModel(repoInfo, modelId, true);
@@ -298,9 +303,9 @@ export class ModelRepositoryManager {
 
   private async doSubmitModel(repoInfo: RepositoryInfo, file: string, option: SubmitOptions): Promise<void> {
     const content = await Utility.getJsonContent(file);
-    const modelId: string = content[Constants.SCHEMA_ID_KEY];
+    const modelId: string = content[DigitalTwinConstants.ID];
 
-    let result: GetResult | null = null;
+    let result: GetResult | undefined;
     try {
       result = await ModelRepositoryClient.getModel(repoInfo, modelId, true);
     } catch (error) {
@@ -329,8 +334,4 @@ export class ModelRepositoryManager {
     }
     await ModelRepositoryClient.updateModel(repoInfo, modelId, content);
   }
-}
-
-interface SubmitOptions {
-  overwrite: boolean;
 }
