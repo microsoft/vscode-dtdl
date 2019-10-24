@@ -6,6 +6,7 @@ export class Constants {
   public static readonly CHANNEL_NAME = "IoT Plug and Play";
   public static readonly UTF8 = "utf8";
   public static readonly EMPTY_STRING = "";
+  public static readonly DEFAULT_SEPARATOR = ",";
   public static readonly LINE_FEED = "\n";
   public static readonly JSON_SPACE = 2;
   public static readonly NOT_FOUND_CODE = 404;

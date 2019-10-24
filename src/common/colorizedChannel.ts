@@ -13,7 +13,7 @@ export class ColorizedChannel {
     }
   }
 
-  private static buildTag(name: string | undefined): string {
+  private static createTag(name: string | undefined): string {
     return name ? `[${name}]` : "";
   }
 
@@ -23,22 +23,22 @@ export class ColorizedChannel {
   }
 
   public start(operation: string, component?: string): void {
-    const tag: string = ColorizedChannel.buildTag(component);
+    const tag: string = ColorizedChannel.createTag(component);
     this.channel.appendLine(`[Start]${tag} ${operation}`);
   }
 
   public end(operation: string, component?: string): void {
-    const tag: string = ColorizedChannel.buildTag(component);
+    const tag: string = ColorizedChannel.createTag(component);
     this.channel.appendLine(`[Done]${tag} ${ColorizedChannel.formatMessage(operation)}`);
   }
 
   public warn(message: string, component?: string): void {
-    const tag: string = ColorizedChannel.buildTag(component);
+    const tag: string = ColorizedChannel.createTag(component);
     this.channel.appendLine(`[Warn]${tag} ${message}`);
   }
 
   public error(operation: string, component?: string, error?: Error): void {
-    const tag: string = ColorizedChannel.buildTag(component);
+    const tag: string = ColorizedChannel.createTag(component);
     const message: string = error ? ColorizedChannel.formatMessage(operation, error) : operation;
     this.channel.appendLine(`[Error]${tag} ${message}`);
   }

@@ -42,7 +42,7 @@ interface SubmitOptions {
 }
 
 export class ModelRepositoryManager {
-  private static async buildRepositoryInfo(publicRepository: boolean): Promise<RepositoryInfo> {
+  private static async createRepositoryInfo(publicRepository: boolean): Promise<RepositoryInfo> {
     if (publicRepository) {
       const url: string | undefined = Configuration.getProperty<string>(Constants.PUBLIC_REPOSITORY_URL);
       if (!url) {
@@ -164,7 +164,7 @@ export class ModelRepositoryManager {
     }
 
     try {
-      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(false);
+      const repoInfo: RepositoryInfo = await ModelRepositoryManager.createRepositoryInfo(false);
       await this.doSubmitLoopSilently(repoInfo, files);
     } catch (error) {
       const operation = `Submit models to ${RepositoryType.Company}`;
@@ -190,7 +190,7 @@ export class ModelRepositoryManager {
 
     let result: SearchResult;
     try {
-      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(publicRepository);
+      const repoInfo: RepositoryInfo = await ModelRepositoryManager.createRepositoryInfo(publicRepository);
       result = await ModelRepositoryClient.searchModel(repoInfo, type, keyword, pageSize, continuationToken);
     } catch (error) {
       throw new ProcessError(operation, error, this.component);
@@ -207,7 +207,7 @@ export class ModelRepositoryManager {
     ModelRepositoryManager.validateModelIds(modelIds);
 
     try {
-      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(publicRepository);
+      const repoInfo: RepositoryInfo = await ModelRepositoryManager.createRepositoryInfo(publicRepository);
       await this.doDeleteLoopSilently(repoInfo, modelIds);
     } catch (error) {
       const operation = `Delete models from ${RepositoryType.Company}`;
@@ -221,7 +221,7 @@ export class ModelRepositoryManager {
     const folder: string = await UI.selectRootFolder(UIConstants.SELECT_ROOT_FOLDER_LABEL);
 
     try {
-      const repoInfo: RepositoryInfo = await ModelRepositoryManager.buildRepositoryInfo(publicRepository);
+      const repoInfo: RepositoryInfo = await ModelRepositoryManager.createRepositoryInfo(publicRepository);
       await this.doDownloadLoopSilently([repoInfo], modelIds, folder);
     } catch (error) {
       const operation = `Download models from ${publicRepository ? RepositoryType.Public : RepositoryType.Company}`;

@@ -22,7 +22,7 @@ enum HttpMethod {
 
 export class ModelRepositoryClient {
   public static async getModel(repoInfo: RepositoryInfo, modelId: string, expand: boolean = false): Promise<GetResult> {
-    const options: request.OptionsWithUri = ModelRepositoryClient.buildOptions(HttpMethod.Get, repoInfo, modelId);
+    const options: request.OptionsWithUri = ModelRepositoryClient.createOptions(HttpMethod.Get, repoInfo, modelId);
     if (expand) {
       options.qs.expand = "true";
     }
@@ -50,7 +50,7 @@ export class ModelRepositoryClient {
     pageSize: number,
     continuationToken: string | null,
   ): Promise<SearchResult> {
-    const options: request.OptionsWithUri = ModelRepositoryClient.buildOptions(HttpMethod.Post, repoInfo);
+    const options: request.OptionsWithUri = ModelRepositoryClient.createOptions(HttpMethod.Post, repoInfo);
     const modelFilterType: MetaModelType = ModelRepositoryClient.convertToMetaModelType(type);
     const payload: SearchOptions = {
       searchKeyword: keyword,
@@ -73,7 +73,7 @@ export class ModelRepositoryClient {
   }
 
   public static async updateModel(repoInfo: RepositoryInfo, modelId: string, content: any): Promise<string> {
-    const options: request.OptionsWithUri = ModelRepositoryClient.buildOptions(HttpMethod.Put, repoInfo, modelId);
+    const options: request.OptionsWithUri = ModelRepositoryClient.createOptions(HttpMethod.Put, repoInfo, modelId);
     options.body = content;
 
     return new Promise<string>((resolve, reject) => {
@@ -89,7 +89,7 @@ export class ModelRepositoryClient {
   }
 
   public static async deleteModel(repoInfo: RepositoryInfo, modelId: string): Promise<void> {
-    const options: request.OptionsWithUri = ModelRepositoryClient.buildOptions(HttpMethod.Delete, repoInfo, modelId);
+    const options: request.OptionsWithUri = ModelRepositoryClient.createOptions(HttpMethod.Delete, repoInfo, modelId);
 
     return new Promise<void>((resolve, reject) => {
       request(options)
@@ -113,7 +113,7 @@ export class ModelRepositoryClient {
     }
   }
 
-  private static buildOptions(method: HttpMethod, repoInfo: RepositoryInfo, modelId?: string): request.OptionsWithUri {
+  private static createOptions(method: HttpMethod, repoInfo: RepositoryInfo, modelId?: string): request.OptionsWithUri {
     const uri = modelId
       ? `${repoInfo.hostname}/${MODEL_PATH}/${encodeURIComponent(modelId)}`
       : `${repoInfo.hostname}/${SEARCH_PATH}`;

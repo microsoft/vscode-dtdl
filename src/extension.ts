@@ -12,7 +12,6 @@ import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
 import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCompletionItemProvider";
 import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnosticProvider";
-import { DigitalTwinGraph } from "./intelliSense/digitalTwinGraph";
 import { DigitalTwinHoverProvider } from "./intelliSense/digitalTwinHoverProvider";
 import { IntelliSenseUtility } from "./intelliSense/intelliSenseUtility";
 import { SearchResult } from "./modelRepository/modelRepositoryInterface";

@@ -69,10 +69,6 @@ export class DigitalTwinGraph {
     return DigitalTwinGraph.instance;
   }
 
-  public static isReservedName(name: string): boolean {
-    return name.startsWith(DigitalTwinConstants.RESERVED);
-  }
-
   public static getClassType(classNode: ClassNode): string {
     return classNode.label || classNode.id;
   }
@@ -85,11 +81,18 @@ export class DigitalTwinGraph {
       if (c.label) {
         return c.label;
       } else {
-        // get last section of id
+        // get the name of XMLSchema
         const index: number = c.id.lastIndexOf(DigitalTwinConstants.SCHEMA_SEPARATOR);
         return index === -1 ? c.id : c.id.slice(index + 1);
       }
     });
+  }
+
+  public static isObjectClass(classNode: ClassNode): boolean {
+    if (classNode.isAbstract || classNode.enums || !classNode.label) {
+      return false;
+    }
+    return true;
   }
 
   private static instance: DigitalTwinGraph;
@@ -110,6 +113,10 @@ export class DigitalTwinGraph {
       return container === DigitalTwinConstants.LIST || container === DigitalTwinConstants.SET;
     }
     return false;
+  }
+
+  private static isReservedName(name: string): boolean {
+    return name.startsWith(DigitalTwinConstants.RESERVED);
   }
 
   private static readConfiguration(context: vscode.ExtensionContext, fileName: string): any {
@@ -138,12 +145,14 @@ export class DigitalTwinGraph {
     return this.vocabulary !== Constants.EMPTY_STRING;
   }
 
-  public getPropertyNode(id: string): PropertyNode | undefined {
+  public getPropertyNode(name: string): PropertyNode | undefined {
+    const id: string = this.reversedIndex.get(name) || name;
     return this.propertyNodes.get(id);
   }
 
-  public getNodeId(name: string): string {
-    return this.reversedIndex.get(name) || Constants.EMPTY_STRING;
+  public getClassNode(name: string): ClassNode | undefined {
+    const id: string = this.reversedIndex.get(name) || this.getId(name);
+    return this.classNodes.get(id);
   }
 
   private init(context: vscode.ExtensionContext): void {
@@ -162,6 +171,10 @@ export class DigitalTwinGraph {
     this.buildContext(contextJson);
     this.buildConstraint(constraintJson);
     this.buildGraph(graphJson);
+  }
+
+  private getId(section: string): string {
+    return this.vocabulary + section;
   }
 
   private buildContext(contextJson: any): void {
@@ -184,10 +197,6 @@ export class DigitalTwinGraph {
       }
       this.reversedIndex.set(key, id);
     }
-  }
-
-  private getId(section: string): string {
-    return this.vocabulary + section;
   }
 
   private buildConstraint(constraintJson: any): void {

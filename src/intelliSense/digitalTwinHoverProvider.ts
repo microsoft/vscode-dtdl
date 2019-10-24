@@ -35,14 +35,14 @@ export class DigitalTwinHoverProvider implements vscode.HoverProvider {
     if (!jsonNode) {
       return undefined;
     }
-    const currentNode: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));
-    // parent is property node
-    if (currentNode && currentNode.parent) {
-      const propertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(currentNode.parent);
+    const node: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));
+    if (node && node.parent) {
+      const propertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(node.parent);
       if (propertyPair) {
-        const content: string = DigitalTwinHoverProvider.getContent(propertyPair.name.value as string);
+        const propertyName: string = IntelliSenseUtility.resolvePropertyName(propertyPair);
+        const content: string = DigitalTwinHoverProvider.getContent(propertyName);
         if (content) {
-          return new vscode.Hover(content, IntelliSenseUtility.getNodeRange(document, currentNode.parent));
+          return new vscode.Hover(content, IntelliSenseUtility.getNodeRange(document, node.parent));
         }
       }
     }
