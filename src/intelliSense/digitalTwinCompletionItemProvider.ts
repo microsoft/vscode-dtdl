@@ -10,6 +10,25 @@ import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseU
 
 export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemProvider {
   /**
+   * get text for json parser after completion
+   * @param document text document
+   * @param position position
+   */
+  private static getTextForParse(document: vscode.TextDocument, position: vscode.Position): string {
+    const text: string = document.getText();
+    const offset: number = document.offsetAt(position);
+    if (text[offset] === Constants.COMPLETION_TRIGGER) {
+      const edit: parser.Edit = {
+        offset,
+        length: 1,
+        content: Constants.COMPLETION_TRIGGER + Constants.DEFAULT_SEPARATOR,
+      };
+      return parser.applyEdits(text, [edit]);
+    }
+    return text;
+  }
+
+  /**
    * create completion item
    * @param label label
    * @param isProperty identify if kind is property
@@ -74,11 +93,11 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
 
   /**
    * evaluate the separator after offset
-   * @param document text document
+   * @param text text
    * @param offset offset
    */
-  private static evaluateSeparatorAfter(document: vscode.TextDocument, offset: number): string {
-    const scanner: parser.JSONScanner = parser.createScanner(document.getText(), true);
+  private static evaluateSeparatorAfter(text: string, offset: number): string {
+    const scanner: parser.JSONScanner = parser.createScanner(text, true);
     scanner.setPosition(offset);
     const token: parser.SyntaxKind = scanner.scan();
     switch (token) {
@@ -414,7 +433,8 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     token: vscode.CancellationToken,
     context: vscode.CompletionContext,
   ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document);
+    const text: string = DigitalTwinCompletionItemProvider.getTextForParse(document, position);
+    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(text);
     if (!jsonNode) {
       return undefined;
     }
@@ -422,7 +442,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     if (node && node.type === JsonNodeType.String) {
       const range: vscode.Range = DigitalTwinCompletionItemProvider.evaluateOverwriteRange(document, position, node);
       const separator: string = DigitalTwinCompletionItemProvider.evaluateSeparatorAfter(
-        document,
+        document.getText(),
         document.offsetAt(range.end),
       );
       const parent: parser.Node | undefined = node.parent;

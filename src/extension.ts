@@ -217,7 +217,11 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     scheme: "file",
   };
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(selector, new DigitalTwinCompletionItemProvider(), '"'),
+    vscode.languages.registerCompletionItemProvider(
+      selector,
+      new DigitalTwinCompletionItemProvider(),
+      Constants.COMPLETION_TRIGGER,
+    ),
   );
   context.subscriptions.push(vscode.languages.registerHoverProvider(selector, new DigitalTwinHoverProvider()));
 

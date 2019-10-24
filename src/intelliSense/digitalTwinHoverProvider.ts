@@ -31,7 +31,7 @@ export class DigitalTwinHoverProvider implements vscode.HoverProvider {
     position: vscode.Position,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.Hover> {
-    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document);
+    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
     if (!jsonNode) {
       return undefined;
     }

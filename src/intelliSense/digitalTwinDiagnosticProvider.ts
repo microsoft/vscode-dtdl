@@ -331,7 +331,7 @@ export class DigitalTwinDiagnosticProvider {
   }
 
   public updateDiagnostics(document: vscode.TextDocument, collection: vscode.DiagnosticCollection): void {
-    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document);
+    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
     if (!jsonNode) {
       return;
     }

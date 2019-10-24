@@ -36,12 +36,12 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * parse the document and return json node if it is DigitalTwin model
-   * @param document text document
+   * parse the text and return json node if it is DigitalTwin model
+   * @param text text
    */
-  public static parseDigitalTwinModel(document: vscode.TextDocument): parser.Node | undefined {
+  public static parseDigitalTwinModel(text: string): parser.Node | undefined {
     // skip checking errors in order to do IntelliSense at best effort
-    const jsonNode: parser.Node = parser.parseTree(document.getText());
+    const jsonNode: parser.Node = parser.parseTree(text);
     const contextPath: string[] = [DigitalTwinConstants.CONTEXT];
     const contextNode: parser.Node | undefined = parser.findNodeAtLocation(jsonNode, contextPath);
     if (contextNode && IntelliSenseUtility.isDigitalTwinContext(contextNode)) {
