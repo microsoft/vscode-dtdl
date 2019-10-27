@@ -1,17 +1,26 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+/**
+ * Meta model type
+ */
 export enum MetaModelType {
   None = "none",
   Interface = "interface",
   CapabilityModel = "capabilityModel",
 }
 
+/**
+ * Localized data
+ */
 export interface LocalizedData {
   locale: string;
   value: string;
 }
 
+/**
+ * DigitalTwin base class
+ */
 export interface DigitalTwinModelBase {
   contents?: string;
   comment?: string;
@@ -28,6 +37,9 @@ export interface DigitalTwinModelBase {
   updatedOn: string;
 }
 
+/**
+ * Search options
+ */
 export interface SearchOptions {
   searchKeyword: string;
   modelFilterType: MetaModelType;
@@ -35,11 +47,17 @@ export interface SearchOptions {
   pageSize?: number;
 }
 
+/**
+ * Result of search API
+ */
 export interface SearchResult {
   continuationToken?: string;
   results: DigitalTwinModelBase[];
 }
 
+/**
+ * Result of get API
+ */
 export interface GetResult {
   etag: string;
   modelId: string;

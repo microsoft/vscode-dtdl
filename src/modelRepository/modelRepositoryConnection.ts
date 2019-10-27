@@ -19,12 +19,18 @@ const MILLISECONDS = 1000;
 const EXPIRY_IN_MINUTES = 30;
 const SECONDS_PER_MINUTE = 60;
 
+/**
+ * Model repository connection
+ */
 export class ModelRepositoryConnection {
+  /**
+   * parse connection string, validate and return model repository connection
+   * @param connectionString connection string
+   */
   public static parse(connectionString: string): ModelRepositoryConnection {
     if (!connectionString) {
       throw new Error(`Connection string ${Constants.NOT_EMPTY_MSG}`);
     }
-
     const map: { [key: string]: string } = {};
     const properties: string[] = connectionString.split(PROPERTY_SEPARATOR);
     if (properties.length !== PROPERTY_COUNT) {
@@ -42,7 +48,7 @@ export class ModelRepositoryConnection {
       }
       map[name] = value;
     }
-
+    // validate connection
     const connection = new ModelRepositoryConnection(
       map[HOSTNAME_PROPERTY],
       map[REPOSITORY_ID_PROPERTY],
@@ -64,6 +70,9 @@ export class ModelRepositoryConnection {
     this.expiry = (Math.round(now / MILLISECONDS) + EXPIRY_IN_MINUTES * SECONDS_PER_MINUTE).toString();
   }
 
+  /**
+   * generate access token
+   */
   public generateAccessToken(): string {
     const endpoint: string = encodeURIComponent(this.hostName);
     const payload: string = [encodeURIComponent(this.repositoryId), endpoint, this.expiry].join("\n").toLowerCase();
@@ -78,6 +87,9 @@ export class ModelRepositoryConnection {
     );
   }
 
+  /**
+   * validate model repository connection
+   */
   private validate(): void {
     if (!this.hostName || !HOSTNAME_REGEX.test(this.hostName)) {
       throw new Error(`${Constants.CONNECTION_STRING_INVALID_FORMAT_MSG} on property ${HOSTNAME_PROPERTY}`);

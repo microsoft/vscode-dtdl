@@ -13,6 +13,9 @@ const MODEL_PATH = "models";
 const SEARCH_PATH = "models/search";
 const CONTENT_TYPE = "application/json";
 
+/**
+ * Http method type
+ */
 enum HttpMethod {
   Get = "GET",
   Post = "POST",
@@ -20,13 +23,21 @@ enum HttpMethod {
   Delete = "DELETE",
 }
 
+/**
+ * DigitalTwin model repository client
+ */
 export class ModelRepositoryClient {
+  /**
+   * get model from repository
+   * @param repoInfo repository info
+   * @param modelId model id
+   * @param expand identify if expand result
+   */
   public static async getModel(repoInfo: RepositoryInfo, modelId: string, expand: boolean = false): Promise<GetResult> {
     const options: request.OptionsWithUri = ModelRepositoryClient.createOptions(HttpMethod.Get, repoInfo, modelId);
     if (expand) {
       options.qs.expand = "true";
     }
-
     return new Promise<GetResult>((resolve, reject) => {
       request(options)
         .then((response) => {
@@ -43,6 +54,14 @@ export class ModelRepositoryClient {
     });
   }
 
+  /**
+   * search model from repository
+   * @param repoInfo repository info
+   * @param type model type
+   * @param keyword keyword
+   * @param pageSize page size
+   * @param continuationToken continuation token
+   */
   public static async searchModel(
     repoInfo: RepositoryInfo,
     type: ModelType,
@@ -59,7 +78,6 @@ export class ModelRepositoryClient {
       pageSize,
     };
     options.body = payload;
-
     return new Promise<SearchResult>((resolve, reject) => {
       request(options)
         .then((response) => {
@@ -72,10 +90,15 @@ export class ModelRepositoryClient {
     });
   }
 
+  /**
+   * update model in repository
+   * @param repoInfo repository info
+   * @param modelId model id
+   * @param content content to update
+   */
   public static async updateModel(repoInfo: RepositoryInfo, modelId: string, content: any): Promise<string> {
     const options: request.OptionsWithUri = ModelRepositoryClient.createOptions(HttpMethod.Put, repoInfo, modelId);
     options.body = content;
-
     return new Promise<string>((resolve, reject) => {
       request(options)
         .then((response) => {
@@ -88,9 +111,13 @@ export class ModelRepositoryClient {
     });
   }
 
+  /**
+   * delete model from repository
+   * @param repoInfo repository info
+   * @param modelId model id
+   */
   public static async deleteModel(repoInfo: RepositoryInfo, modelId: string): Promise<void> {
     const options: request.OptionsWithUri = ModelRepositoryClient.createOptions(HttpMethod.Delete, repoInfo, modelId);
-
     return new Promise<void>((resolve, reject) => {
       request(options)
         .then(() => {
@@ -102,6 +129,10 @@ export class ModelRepositoryClient {
     });
   }
 
+  /**
+   * convert to meta model type
+   * @param type model type
+   */
   private static convertToMetaModelType(type: ModelType): MetaModelType {
     switch (type) {
       case ModelType.Interface:
@@ -113,6 +144,12 @@ export class ModelRepositoryClient {
     }
   }
 
+  /**
+   * create http request options
+   * @param method http method
+   * @param repoInfo repository info
+   * @param modelId model id
+   */
   private static createOptions(method: HttpMethod, repoInfo: RepositoryInfo, modelId?: string): request.OptionsWithUri {
     const uri = modelId
       ? `${repoInfo.hostname}/${MODEL_PATH}/${encodeURIComponent(modelId)}`

@@ -15,38 +15,40 @@ const DONT_SHOW_DATE_KEY = "nsat/dontShowDate";
 const SKIP_VERSION_KEY = "nsat/skipVersion";
 const IS_CANDIDATE_KEY = "nsat/isCandidate";
 
+/**
+ * User survey client
+ */
 export class NSAT {
   constructor(private readonly surveyUrl: string, private readonly telemetryClient: TelemetryClient) {}
 
+  /**
+   * ask user to take survey
+   * @param context extension context
+   */
   public async takeSurvey(context: ExtensionContext) {
     const packageJSON = require(context.asAbsolutePath(PACKAGE_JSON_PATH));
     if (!packageJSON) {
       return;
     }
-
     const globalState: Memento = context.globalState;
     if (!globalState) {
       return;
     }
-
     const skipVersion: string = globalState.get(SKIP_VERSION_KEY, "");
     if (skipVersion) {
       return;
     }
-
     const date: string = new Date().toDateString();
     const lastSessionDate: string = globalState.get(LAST_SESSION_DATE_KEY, new Date(0).toDateString());
     if (date === lastSessionDate) {
       return;
     }
-
     const sessionCount: number = globalState.get(SESSION_COUNT_KEY, 0) + 1;
     await globalState.update(LAST_SESSION_DATE_KEY, date);
     await globalState.update(SESSION_COUNT_KEY, sessionCount);
     if (sessionCount < SESSION_COUNT_THRESHOLD) {
       return;
     }
-
     const isCandidate: boolean = globalState.get(IS_CANDIDATE_KEY, false) || Math.random() < PROBABILITY;
     await globalState.update(IS_CANDIDATE_KEY, isCandidate);
     const extensionVersion: string = packageJSON.version || UNKNOWN;
@@ -54,7 +56,6 @@ export class NSAT {
       await globalState.update(SKIP_VERSION_KEY, extensionVersion);
       return;
     }
-
     const take = {
       title: "Take Survey",
       run: async () => {
@@ -86,7 +87,6 @@ export class NSAT {
         await globalState.update(DONT_SHOW_DATE_KEY, date);
       },
     };
-
     this.telemetryClient.sendEvent("nsat.survey/userAsked");
     const button = await window.showInformationMessage(
       "Do you mind taking a quick feedback survey about the Azure IoT Edge Extension for VS Code?",

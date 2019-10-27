@@ -8,6 +8,9 @@ import { DigitalTwinConstants } from "./digitalTwinConstants";
 import { ClassNode, DigitalTwinGraph, PropertyNode, ValueSchema } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseUtility";
 
+/**
+ * Completion item provider for DigitalTwin IntelliSense
+ */
 export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemProvider {
   /**
    * get text for json parser after completion
@@ -47,6 +50,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
       label,
       kind: isProperty ? vscode.CompletionItemKind.Property : vscode.CompletionItemKind.Value,
       insertText: new vscode.SnippetString(insertText),
+      // the start of range should not be before position, otherwise completion item will not be shown
       range: new vscode.Range(position, range.end),
     };
     if (position.isAfter(range.start)) {
@@ -130,8 +134,11 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     const exist = new Set<string>();
     const classNode: ClassNode | undefined = DigitalTwinCompletionItemProvider.getObjectType(node, exist);
     if (!classNode) {
-      // suggest @type property
+      // there are two cases when classNode is not defined
+      // 1. there are multiple choice. In this case, ask user to specifiy @type
+      // 2. invalid @type value. In this case, diagnostic shows error and user need to correct value
       if (!exist.has(DigitalTwinConstants.TYPE)) {
+        // suggest @type property
         const dummyNode: PropertyNode = { id: DigitalTwinConstants.TYPE };
         result.push(
           DigitalTwinCompletionItemProvider.createCompletionItem(
@@ -181,54 +188,56 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
    * @param exist existing properties
    */
   private static getObjectType(node: parser.Node, exist: Set<string>): ClassNode | undefined {
-    let objectType: ClassNode | undefined;
     const parent: parser.Node | undefined = node.parent;
-    if (parent && parent.type === JsonNodeType.Object && parent.children) {
-      let propertyName: string;
-      let propertyPair: PropertyPair | undefined;
-      for (const child of parent.children) {
-        if (child === node) {
-          continue;
-        }
-        propertyPair = IntelliSenseUtility.parseProperty(child);
-        if (!propertyPair || !propertyPair.name.value) {
-          continue;
-        }
-        propertyName = propertyPair.name.value as string;
-        exist.add(propertyName);
-        // get from @type property
-        if (propertyName === DigitalTwinConstants.TYPE) {
-          const propertyValue: parser.Node = propertyPair.value;
-          if (propertyValue.type === JsonNodeType.String) {
-            objectType = IntelliSenseUtility.getClasNode(propertyValue.value as string);
-          } else if (propertyValue.type === JsonNodeType.Array && propertyValue.children) {
-            for (const element of propertyValue.children) {
-              if (element.type === JsonNodeType.String) {
-                const type: string = element.value as string;
-                if (type && DigitalTwinConstants.SUPPORT_SEMANTIC_TYPES.has(type)) {
-                  objectType = IntelliSenseUtility.getClasNode(type);
-                }
+    if (!parent || parent.type !== JsonNodeType.Object || !parent.children) {
+      return undefined;
+    }
+    let propertyName: string;
+    let objectType: ClassNode | undefined;
+    let propertyPair: PropertyPair | undefined;
+    for (const child of parent.children) {
+      if (child === node) {
+        continue;
+      }
+      propertyPair = IntelliSenseUtility.parseProperty(child);
+      if (!propertyPair || !propertyPair.name.value) {
+        continue;
+      }
+      propertyName = propertyPair.name.value as string;
+      exist.add(propertyName);
+      // get from @type property
+      if (propertyName === DigitalTwinConstants.TYPE) {
+        const propertyValue: parser.Node = propertyPair.value;
+        if (propertyValue.type === JsonNodeType.String) {
+          objectType = IntelliSenseUtility.getClasNode(propertyValue.value as string);
+        } else if (propertyValue.type === JsonNodeType.Array && propertyValue.children) {
+          // support semantic type array
+          for (const element of propertyValue.children) {
+            if (element.type === JsonNodeType.String) {
+              const type: string = element.value as string;
+              if (type && DigitalTwinConstants.SUPPORT_SEMANTIC_TYPES.has(type)) {
+                objectType = IntelliSenseUtility.getClasNode(type);
               }
             }
           }
         }
       }
-      // infer from outer property
-      if (!objectType) {
-        const propertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getOuterPropertyNode(parent);
-        if (propertyNode) {
-          const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(propertyNode);
-          if (classes.length === 1) {
-            objectType = classes[0];
-          }
+    }
+    // infer from outer property
+    if (!objectType) {
+      const propertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getOuterPropertyNode(parent);
+      if (propertyNode) {
+        const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(propertyNode);
+        if (classes.length === 1) {
+          objectType = classes[0];
         }
       }
-      return objectType;
     }
+    return objectType;
   }
 
   /**
-   * get outer property node from current node
+   * get outer DigitalTwin property node from current node
    * @param node json node
    */
   private static getOuterPropertyNode(node: parser.Node): PropertyNode | undefined {
@@ -241,7 +250,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
   }
 
   /**
-   * format label with required property information
+   * format property label with required information
    * @param label label
    * @param required required properties
    */
@@ -272,11 +281,12 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     if (propertyNode) {
       properties.push(propertyNode);
     }
-    if (required.has(DigitalTwinConstants.TYPE)) {
-      properties.push({ id: DigitalTwinConstants.TYPE });
-    }
     if (required.has(DigitalTwinConstants.CONTEXT)) {
       properties.push({ id: DigitalTwinConstants.CONTEXT });
+    }
+    // suggest @type property for the case that object type is inferred and @type is requried (e.g. inlined Interface)
+    if (required.has(DigitalTwinConstants.TYPE)) {
+      properties.push({ id: DigitalTwinConstants.TYPE });
     }
     for (const property of properties) {
       if (exist.has(property.id)) {
@@ -349,52 +359,34 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     range: vscode.Range,
     separator: string,
   ): vscode.CompletionItem[] {
-    let propertyNode: PropertyNode | undefined;
     const result: vscode.CompletionItem[] = [];
     const propertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(node);
-    if (propertyPair) {
-      let propertyName: string = propertyPair.name.value as string;
-      if (propertyName === DigitalTwinConstants.CONTEXT) {
-        // suggest value of @context property
-        result.push(
-          DigitalTwinCompletionItemProvider.createCompletionItem(
-            DigitalTwinConstants.IOT_MODEL_LABEL,
-            false,
-            DigitalTwinCompletionItemProvider.getInsertTextForValue(DigitalTwinConstants.CONTEXT_TEMPLATE, separator),
-            position,
-            range,
-          ),
-        );
-      } else if (propertyName === DigitalTwinConstants.TYPE) {
-        // suggest value of @type property
-        if (node.parent) {
-          propertyNode = DigitalTwinCompletionItemProvider.getOuterPropertyNode(node.parent);
-          // the most top json node
-          if (!propertyNode) {
-            propertyNode = IntelliSenseUtility.getEntryNode();
-          }
-          if (propertyNode) {
-            const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(propertyNode);
-            for (const classNode of classes) {
-              const value: string = DigitalTwinGraph.getClassType(classNode);
-              result.push(
-                DigitalTwinCompletionItemProvider.createCompletionItem(
-                  value,
-                  false,
-                  DigitalTwinCompletionItemProvider.getInsertTextForValue(value, separator),
-                  position,
-                  range,
-                ),
-              );
-            }
-          }
-        }
-      } else {
-        propertyName = IntelliSenseUtility.resolvePropertyName(propertyPair);
-        propertyNode = IntelliSenseUtility.getPropertyNode(propertyName);
+    if (!propertyPair) {
+      return result;
+    }
+    let propertyNode: PropertyNode | undefined;
+    let propertyName: string = propertyPair.name.value as string;
+    if (propertyName === DigitalTwinConstants.CONTEXT) {
+      // suggest value of @context property
+      result.push(
+        DigitalTwinCompletionItemProvider.createCompletionItem(
+          DigitalTwinConstants.IOT_MODEL_LABEL,
+          false,
+          DigitalTwinCompletionItemProvider.getInsertTextForValue(DigitalTwinConstants.CONTEXT_TEMPLATE, separator),
+          position,
+          range,
+        ),
+      );
+    } else if (propertyName === DigitalTwinConstants.TYPE) {
+      // suggest value of @type property
+      if (node.parent) {
+        // assign to entry node if the json object node is the top node
+        propertyNode =
+          DigitalTwinCompletionItemProvider.getOuterPropertyNode(node.parent) || IntelliSenseUtility.getEntryNode();
         if (propertyNode) {
-          const enums = IntelliSenseUtility.getEnums(propertyNode);
-          for (const value of enums) {
+          const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(propertyNode);
+          for (const classNode of classes) {
+            const value: string = DigitalTwinGraph.getClassType(classNode);
             result.push(
               DigitalTwinCompletionItemProvider.createCompletionItem(
                 value,
@@ -405,6 +397,24 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
               ),
             );
           }
+        }
+      }
+    } else {
+      // suggest property value
+      propertyName = IntelliSenseUtility.resolvePropertyName(propertyPair);
+      propertyNode = IntelliSenseUtility.getPropertyNode(propertyName);
+      if (propertyNode) {
+        const enums = IntelliSenseUtility.getEnums(propertyNode);
+        for (const value of enums) {
+          result.push(
+            DigitalTwinCompletionItemProvider.createCompletionItem(
+              value,
+              false,
+              DigitalTwinCompletionItemProvider.getInsertTextForValue(value, separator),
+              position,
+              range,
+            ),
+          );
         }
       }
     }
@@ -439,22 +449,23 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
       return undefined;
     }
     const node: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));
-    if (node && node.type === JsonNodeType.String) {
-      const range: vscode.Range = DigitalTwinCompletionItemProvider.evaluateOverwriteRange(document, position, node);
-      const separator: string = DigitalTwinCompletionItemProvider.evaluateSeparatorAfter(
-        document.getText(),
-        document.offsetAt(range.end),
-      );
-      const parent: parser.Node | undefined = node.parent;
-      if (parent && parent.type === JsonNodeType.Property && parent.children) {
-        if (node === parent.children[0]) {
-          const includeValue: boolean = parent.children.length < 2;
-          return DigitalTwinCompletionItemProvider.suggestProperty(parent, position, range, includeValue, separator);
-        } else {
-          return DigitalTwinCompletionItemProvider.suggestValue(parent, position, range, separator);
-        }
-      }
+    if (!node || node.type !== JsonNodeType.String) {
+      return undefined;
     }
-    return undefined;
+    const range: vscode.Range = DigitalTwinCompletionItemProvider.evaluateOverwriteRange(document, position, node);
+    const separator: string = DigitalTwinCompletionItemProvider.evaluateSeparatorAfter(
+      document.getText(),
+      document.offsetAt(range.end),
+    );
+    const parent: parser.Node | undefined = node.parent;
+    if (!parent || parent.type !== JsonNodeType.Property || !parent.children) {
+      return undefined;
+    }
+    if (node === parent.children[0]) {
+      const includeValue: boolean = parent.children.length < 2;
+      return DigitalTwinCompletionItemProvider.suggestProperty(parent, position, range, includeValue, separator);
+    } else {
+      return DigitalTwinCompletionItemProvider.suggestValue(parent, position, range, separator);
+    }
   }
 }

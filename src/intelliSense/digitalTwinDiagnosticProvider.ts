@@ -8,25 +8,39 @@ import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants"
 import { ClassNode, DigitalTwinGraph, PropertyNode, ValueSchema } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseUtility";
 
+/**
+ * Diagnostic problem
+ */
 interface Problem {
   offset: number;
   length: number;
   message: string;
 }
 
+/**
+ * Diagnostic provider for DigitalTwin IntelliSense
+ */
 export class DigitalTwinDiagnosticProvider {
-  private static findClassNode(digitalTwinNode: PropertyNode, type: string): ClassNode | undefined {
-    if (digitalTwinNode.range) {
-      return digitalTwinNode.range.find((c) => DigitalTwinGraph.getClassType(c) === type);
+  /**
+   * find class node by type
+   * @param propertyNode DigitalTwin property node
+   * @param type class node type
+   */
+  private static findClassNode(propertyNode: PropertyNode, type: string): ClassNode | undefined {
+    if (propertyNode.range) {
+      return propertyNode.range.find((c) => DigitalTwinGraph.getClassType(c) === type);
     }
     return undefined;
   }
 
+  /**
+   * get property pair of name property
+   * @param jsonNode json node
+   */
   private static getNamePropertyPair(jsonNode: parser.Node): PropertyPair | undefined {
     if (jsonNode.type !== JsonNodeType.Object || !jsonNode.children || jsonNode.children.length === 0) {
       return undefined;
     }
-
     let propertyPair: PropertyPair | undefined;
     for (const child of jsonNode.children) {
       propertyPair = IntelliSenseUtility.parseProperty(child);
@@ -40,6 +54,12 @@ export class DigitalTwinDiagnosticProvider {
     return undefined;
   }
 
+  /**
+   * add problem of invalid type
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static addProblemOfInvalidType(
     jsonNode: parser.Node,
     digitalTwinNode: PropertyNode,
@@ -50,16 +70,34 @@ export class DigitalTwinDiagnosticProvider {
     DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
   }
 
+  /**
+   * add problem of unexpected property
+   * @param jsonNode json node
+   * @param problems problem collection
+   */
   private static addProblemOfUnexpectedProperty(jsonNode: parser.Node, problems: Problem[]): void {
     const message: string = `${jsonNode.value as string} ${DiagnosticMessage.UnexpectedProperty}`;
     DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
   }
 
+  /**
+   * add problem
+   * @param jsonNode json node
+   * @param problems problem collection
+   * @param message diagnostic message
+   * @param isContainer identify if json node is a container (e.g. object or array)
+   */
   private static addProblem(jsonNode: parser.Node, problems: Problem[], message: string, isContainer?: boolean): void {
     const length: number = isContainer ? 0 : jsonNode.length;
     problems.push({ offset: jsonNode.offset, length, message });
   }
 
+  /**
+   * validate json node by DigitalTwin graph, add problem in problem collection
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static validateNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     const nodeType: parser.NodeType = jsonNode.type;
     switch (nodeType) {
@@ -81,6 +119,12 @@ export class DigitalTwinDiagnosticProvider {
     }
   }
 
+  /**
+   * validate json object node
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static validateObjectNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(digitalTwinNode);
     if (classes.length === 0) {
@@ -89,12 +133,11 @@ export class DigitalTwinDiagnosticProvider {
     }
     const typePath: parser.JSONPath = [DigitalTwinConstants.TYPE];
     const typeNode: parser.Node | undefined = parser.findNodeAtLocation(jsonNode, typePath);
-    // @type is required when property range has multiple choice
+    // @type is required when there are multiple choice
     if (!typeNode && classes.length !== 1) {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.MissingType, true);
       return;
     }
-
     // validate @type property
     let classNode: ClassNode | undefined;
     if (typeNode) {
@@ -105,7 +148,6 @@ export class DigitalTwinDiagnosticProvider {
     if (!classNode) {
       return;
     }
-
     // validate other properties
     const exist = new Set<string>();
     DigitalTwinDiagnosticProvider.validateProperties(jsonNode, classNode, problems, exist);
@@ -121,6 +163,13 @@ export class DigitalTwinDiagnosticProvider {
     }
   }
 
+  /**
+   * validate object type and return valid value
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param classes class node collection
+   * @param problems problem collection
+   */
   private static getValidObjectType(
     jsonNode: parser.Node,
     digitalTwinNode: PropertyNode,
@@ -132,11 +181,12 @@ export class DigitalTwinDiagnosticProvider {
     if (jsonNode.type === JsonNodeType.String) {
       classNode = DigitalTwinDiagnosticProvider.findClassNode(dummyNode, jsonNode.value as string);
     } else if (jsonNode.type === JsonNodeType.Array && digitalTwinNode.label === DigitalTwinConstants.CONTENTS) {
-      // contents support semanticType array
+      // support semantic type array
       if (jsonNode.children && jsonNode.children.length === 2) {
         let currentNode: ClassNode | undefined;
         for (const child of jsonNode.children) {
           if (child.type === JsonNodeType.String) {
+            // validate conflict type
             currentNode = DigitalTwinDiagnosticProvider.findClassNode(dummyNode, child.value as string);
             if (currentNode) {
               if (classNode) {
@@ -157,6 +207,13 @@ export class DigitalTwinDiagnosticProvider {
     return classNode;
   }
 
+  /**
+   * validate properties of json object node
+   * @param jsonNode json node
+   * @param classNode class node
+   * @param problems problem colletion
+   * @param exist existing properties
+   */
   private static validateProperties(
     jsonNode: parser.Node,
     classNode: ClassNode,
@@ -211,6 +268,7 @@ export class DigitalTwinDiagnosticProvider {
           // skip since @type is already validated
           break;
         default:
+          // validate expected property
           propertyNode = expectedProperties.get(propertyName);
           if (!propertyNode) {
             DigitalTwinDiagnosticProvider.addProblemOfUnexpectedProperty(propertyPair.name, problems);
@@ -221,6 +279,12 @@ export class DigitalTwinDiagnosticProvider {
     }
   }
 
+  /**
+   * validate json array node
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static validateArrayNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     if (!digitalTwinNode.isArray) {
       DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, digitalTwinNode, problems);
@@ -230,7 +294,7 @@ export class DigitalTwinDiagnosticProvider {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.EmptyArray, true);
       return;
     }
-
+    // validate item constraint
     let message: string;
     if (digitalTwinNode.constraint) {
       if (digitalTwinNode.constraint.minItems && jsonNode.children.length < digitalTwinNode.constraint.minItems) {
@@ -242,12 +306,11 @@ export class DigitalTwinDiagnosticProvider {
         DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message, true);
       }
     }
-
+    // validate item uniqueness by name
     let propertyPair: PropertyPair | undefined;
     let objectName: string;
     const exist = new Set<string>();
     for (const child of jsonNode.children) {
-      // validate item uniqueness by name
       propertyPair = DigitalTwinDiagnosticProvider.getNamePropertyPair(child);
       if (propertyPair) {
         objectName = propertyPair.value.value as string;
@@ -262,11 +325,18 @@ export class DigitalTwinDiagnosticProvider {
     }
   }
 
+  /**
+   * validate json string node
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static validateStringNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     const classNode: ClassNode | undefined = DigitalTwinDiagnosticProvider.findClassNode(
       digitalTwinNode,
       ValueSchema.String,
     );
+    // validate enum
     if (!classNode) {
       DigitalTwinDiagnosticProvider.validateEnumNode(jsonNode, digitalTwinNode, problems);
       return;
@@ -276,7 +346,7 @@ export class DigitalTwinDiagnosticProvider {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.EmptyString);
       return;
     }
-
+    // validate string constraint
     let message: string;
     if (digitalTwinNode.constraint) {
       if (digitalTwinNode.constraint.minLength && value.length < digitalTwinNode.constraint.minLength) {
@@ -298,6 +368,12 @@ export class DigitalTwinDiagnosticProvider {
     }
   }
 
+  /**
+   * validate enum
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static validateEnumNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     const enums: string[] = IntelliSenseUtility.getEnums(digitalTwinNode);
     if (enums.length === 0) {
@@ -308,17 +384,30 @@ export class DigitalTwinDiagnosticProvider {
     }
   }
 
+  /**
+   * validate json number node
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static validateNumberNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     const classNode: ClassNode | undefined = DigitalTwinDiagnosticProvider.findClassNode(
       digitalTwinNode,
       ValueSchema.Int,
     );
+    // validate number is integer
     if (!classNode || !Number.isInteger(jsonNode.value as number)) {
       DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, digitalTwinNode, problems);
       return;
     }
   }
 
+  /**
+   * validate boolean node
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
   private static validateBooleanNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     const classNode: ClassNode | undefined = DigitalTwinDiagnosticProvider.findClassNode(
       digitalTwinNode,
@@ -330,6 +419,11 @@ export class DigitalTwinDiagnosticProvider {
     }
   }
 
+  /**
+   * update diagnostics
+   * @param document text document
+   * @param collection diagnostic collection
+   */
   public updateDiagnostics(document: vscode.TextDocument, collection: vscode.DiagnosticCollection): void {
     const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
     if (!jsonNode) {
@@ -340,6 +434,11 @@ export class DigitalTwinDiagnosticProvider {
     collection.set(document.uri, diagnostics);
   }
 
+  /**
+   * provide diagnostics
+   * @param document text document
+   * @param jsonNode json node
+   */
   private provideDiagnostics(document: vscode.TextDocument, jsonNode: parser.Node): vscode.Diagnostic[] {
     let diagnostics: vscode.Diagnostic[] = [];
     const digitalTwinNode: PropertyNode | undefined = IntelliSenseUtility.getEntryNode();

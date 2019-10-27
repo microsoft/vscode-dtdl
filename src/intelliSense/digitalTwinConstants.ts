@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+/**
+ * Message for diagnostic result
+ */
 export enum DiagnosticMessage {
   MissingType = "@type is missing.",
   InvalidType = "Invalid type. Valid types:",
@@ -20,6 +23,9 @@ export enum DiagnosticMessage {
   ConflictType = "Conflict type:",
 }
 
+/**
+ * Constants for DigitalTwin IntelliSense
+ */
 export class DigitalTwinConstants {
   public static readonly SCHEMA_SEPARATOR = "#";
   public static readonly BASE_CLASS = "Entity";

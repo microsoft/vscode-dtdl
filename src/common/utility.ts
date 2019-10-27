@@ -8,7 +8,16 @@ import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
 import { ModelFileInfo } from "../modelRepository/modelRepositoryManager";
 import { Constants } from "./constants";
 
+/**
+ * Common utility
+ */
 export class Utility {
+  /**
+   * create file from template with replacement
+   * @param templatePath template file path
+   * @param filePath target file path
+   * @param replacement replacement
+   */
   public static async createFileFromTemplate(
     templatePath: string,
     filePath: string,
@@ -20,6 +29,12 @@ export class Utility {
     await fs.writeJson(filePath, jsonContent, { spaces: Constants.JSON_SPACE, encoding: Constants.UTF8 });
   }
 
+  /**
+   * replace all for content
+   * @param str string
+   * @param replacement replacement
+   * @param caseInsensitive identify if it is case insensitive
+   */
   public static replaceAll(str: string, replacement: Map<string, string>, caseInsensitive: boolean = false): string {
     const flag = caseInsensitive ? "ig" : "g";
     const keys = Array.from(replacement.keys());
@@ -30,23 +45,31 @@ export class Utility {
     });
   }
 
-  public static async validateModelName(name: string, type: ModelType, folder?: string): Promise<string | undefined> {
+  /**
+   * validate DigitalTwin model name, return error message if validation fail
+   * @param name model name
+   * @param type model type
+   * @param folder target folder
+   */
+  public static async validateModelName(name: string, type: ModelType, folder: string): Promise<string | undefined> {
     if (!name || name.trim() === Constants.EMPTY_STRING) {
       return `Name ${Constants.NOT_EMPTY_MSG}`;
     }
     if (!Constants.MODEL_NAME_REGEX.test(name)) {
       return `Name can only contain ${Constants.MODEL_NAME_REGEX_DESCRIPTION}`;
     }
-
-    if (folder) {
-      const filename: string = DeviceModelManager.generateModelFileName(name, type);
-      if (await fs.pathExists(path.join(folder, filename))) {
-        return `${type} ${name} already exists in folder ${folder}`;
-      }
+    const filename: string = DeviceModelManager.generateModelFileName(name, type);
+    if (await fs.pathExists(path.join(folder, filename))) {
+      return `${type} ${name} already exists in folder ${folder}`;
     }
     return undefined;
   }
 
+  /**
+   * validate name is not empty, return error message if validation fail
+   * @param name name
+   * @param placeholder placeholder for message
+   */
   public static validateNotEmpty(name: string, placeholder: string): string | undefined {
     if (!name || name.trim() === Constants.EMPTY_STRING) {
       return `${placeholder} ${Constants.NOT_EMPTY_MSG}`;
@@ -54,18 +77,27 @@ export class Utility {
     return undefined;
   }
 
+  /**
+   * enforce url with https protocol
+   * @param url url
+   */
   public static enforceHttps(url: string): string {
     return Constants.URL_PROTOCAL_REGEX.test(url)
       ? url.replace(Constants.URL_PROTOCAL_REGEX, Constants.HTTPS_PROTOCAL)
       : Constants.HTTPS_PROTOCAL + url;
   }
 
+  /**
+   * create DigitalTwin model file
+   * @param folder target folder
+   * @param modelId model id
+   * @param content model content
+   */
   public static async createModelFile(folder: string, modelId: string, content: any): Promise<void> {
     const type: ModelType = DeviceModelManager.convertToModelType(content[DigitalTwinConstants.TYPE]);
     if (!type) {
       throw new Error(Constants.MODEL_TYPE_INVALID_MSG);
     }
-
     const replacement = new Map<string, string>();
     replacement.set(":", "_");
     const modelName: string = Utility.replaceAll(modelId, replacement);
@@ -78,13 +110,16 @@ export class Utility {
       counter++;
       candidate = DeviceModelManager.generateModelFileName(`${modelName}_${counter}`, type);
     }
-
     await fs.writeJson(path.join(folder, candidate), content, {
       spaces: Constants.JSON_SPACE,
       encoding: Constants.UTF8,
     });
   }
 
+  /**
+   * get model file info
+   * @param filePath file path
+   */
   public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | undefined> {
     const content = await fs.readJson(filePath, { encoding: Constants.UTF8 });
     const modelId: string = content[DigitalTwinConstants.ID];
@@ -100,10 +135,18 @@ export class Utility {
     return undefined;
   }
 
+  /**
+   * get json content from file
+   * @param filePath file path
+   */
   public static async getJsonContent(filePath: string): Promise<any> {
     return fs.readJson(filePath, { encoding: Constants.UTF8 });
   }
 
+  /**
+   * get json content from file in synchronous way
+   * @param filePath file path
+   */
   public static getJsonContentSync(filePath: string): any {
     return fs.readJsonSync(filePath, { encoding: Constants.UTF8 });
   }

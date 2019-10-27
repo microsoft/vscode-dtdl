@@ -30,8 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(outputChannel);
   context.subscriptions.push(telemetryClient);
 
+  // register events
   initIntelliSense(context);
-
   initCommand(
     context,
     telemetryClient,
@@ -43,7 +43,6 @@ export function activate(context: vscode.ExtensionContext) {
       return deviceModelManager.createModel(ModelType.Interface);
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -55,7 +54,6 @@ export function activate(context: vscode.ExtensionContext) {
       return deviceModelManager.createModel(ModelType.CapabilityModel);
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -67,7 +65,6 @@ export function activate(context: vscode.ExtensionContext) {
       return modelRepositoryManager.signIn();
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -79,7 +76,6 @@ export function activate(context: vscode.ExtensionContext) {
       return modelRepositoryManager.signOut();
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -91,7 +87,6 @@ export function activate(context: vscode.ExtensionContext) {
       return modelRepositoryManager.submitFiles();
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -103,7 +98,6 @@ export function activate(context: vscode.ExtensionContext) {
       return modelRepositoryManager.deleteModels(publicRepository, modelIds);
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -115,7 +109,6 @@ export function activate(context: vscode.ExtensionContext) {
       return modelRepositoryManager.downloadModels(publicRepository, modelIds);
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -138,7 +131,6 @@ export function activate(context: vscode.ExtensionContext) {
       );
     },
   );
-
   initCommand(
     context,
     telemetryClient,
@@ -178,7 +170,6 @@ function initCommand(
     vscode.commands.registerCommand(command, async (...args: any[]) => {
       const telemetryContext: TelemetryContext = telemetryClient.createContext();
       telemetryClient.sendEvent(`${command}.start`);
-
       try {
         return await callback(...args);
       } catch (error) {
@@ -211,7 +202,7 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     UI.showNotification(MessageType.Warn, UIConstants.INTELLISENSE_NOT_ENABLED_MSG);
     return;
   }
-
+  // register providers of completionItem and hover
   const selector: vscode.DocumentSelector = {
     language: "json",
     scheme: "file",
@@ -224,7 +215,7 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     ),
   );
   context.subscriptions.push(vscode.languages.registerHoverProvider(selector, new DigitalTwinHoverProvider()));
-
+  // register diagnostic
   let pendingDiagnostic: NodeJS.Timer;
   const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
     Constants.CHANNEL_NAME,

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+/**
+ * Common constants
+ */
 export class Constants {
   public static readonly EXTENSION_NAME = "azure-digital-twins";
   public static readonly CHANNEL_NAME = "IoT Plug and Play";

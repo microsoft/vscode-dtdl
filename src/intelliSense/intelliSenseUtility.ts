@@ -7,7 +7,7 @@ import { DigitalTwinConstants } from "./digitalTwinConstants";
 import { ClassNode, DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
 
 /**
- * type of json node
+ * Type of json node
  */
 export enum JsonNodeType {
   Object = "object",
@@ -19,7 +19,7 @@ export enum JsonNodeType {
 }
 
 /**
- * property pair includes name and value
+ * Property pair includes name and value
  */
 export interface PropertyPair {
   name: parser.Node;
@@ -27,7 +27,7 @@ export interface PropertyPair {
 }
 
 /**
- * utility for IntelliSense
+ * Utility for IntelliSense
  */
 export class IntelliSenseUtility {
   public static initGraph(context: vscode.ExtensionContext): boolean {
@@ -36,7 +36,7 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * parse the text and return json node if it is DigitalTwin model
+   * parse the text, return json node if it is DigitalTwin model
    * @param text text
    */
   public static parseDigitalTwinModel(text: string): parser.Node | undefined {
@@ -55,7 +55,7 @@ export class IntelliSenseUtility {
    * @param node json node
    */
   public static isDigitalTwinContext(node: parser.Node): boolean {
-    // Assume @context is string node
+    // assume @context is string node
     if (node.type === JsonNodeType.String) {
       return DigitalTwinConstants.CONTEXT_REGEX.test(node.value as string);
     }
@@ -70,7 +70,7 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get property node of DigitalTwin model
+   * get property node of DigitalTwin model by name
    * @param name property name
    */
   public static getPropertyNode(name: string): PropertyNode | undefined {
@@ -78,7 +78,7 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get class node of DigitalTwin model
+   * get class node of DigitalTwin model by name
    * @param name class name
    */
   public static getClasNode(name: string): ClassNode | undefined {
@@ -86,7 +86,7 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * parse json node and return property pair
+   * parse json node, return property pair
    * @param node json node
    */
   public static parseProperty(node: parser.Node): PropertyPair | undefined {
@@ -106,8 +106,8 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get enums of DigitalTwin property node
-   * @param propertyNode DigitalTwin property node
+   * get enums from property range
+   * @param propertyNode property node
    */
   public static getEnums(propertyNode: PropertyNode): string[] {
     const enums: string[] = [];
@@ -129,8 +129,8 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get object classes of DigitalTwin property node
-   * @param propertyNode DigitalTwin property node
+   * get object classes from property range
+   * @param propertyNode property node
    */
   public static getObjectClasses(propertyNode: PropertyNode): ClassNode[] {
     const classes: ClassNode[] = [];
@@ -187,10 +187,7 @@ export class IntelliSenseUtility {
     if (outerProperty && outerProperty.type === JsonNodeType.Array) {
       outerProperty = outerProperty.parent;
     }
-    if (outerProperty) {
-      return IntelliSenseUtility.parseProperty(outerProperty);
-    }
-    return undefined;
+    return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
   }
 
   private static graph: DigitalTwinGraph;
