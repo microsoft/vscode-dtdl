@@ -3,7 +3,15 @@
 
 import * as vscode from "vscode";
 
+/**
+ * Output channel with colorized message
+ */
 export class ColorizedChannel {
+  /**
+   * format message for operation or error
+   * @param operation user operation
+   * @param error error
+   */
   public static formatMessage(operation: string, error?: Error): string {
     if (error) {
       const message: string = operation.charAt(0).toLowerCase() + operation.slice(1);
@@ -13,7 +21,11 @@ export class ColorizedChannel {
     }
   }
 
-  private static buildTag(name: string | undefined): string {
+  /**
+   * create message tag of component name
+   * @param name component name
+   */
+  private static createTag(name: string | undefined): string {
     return name ? `[${name}]` : "";
   }
 
@@ -22,35 +34,66 @@ export class ColorizedChannel {
     this.channel = vscode.window.createOutputChannel(name);
   }
 
+  /**
+   * Output message of user operation start
+   * @param operation user operation
+   * @param component component name
+   */
   public start(operation: string, component?: string): void {
-    const tag: string = ColorizedChannel.buildTag(component);
+    const tag: string = ColorizedChannel.createTag(component);
     this.channel.appendLine(`[Start]${tag} ${operation}`);
   }
 
+  /**
+   * Output message of user operation end
+   * @param operation user operation
+   * @param component component name
+   */
   public end(operation: string, component?: string): void {
-    const tag: string = ColorizedChannel.buildTag(component);
+    const tag: string = ColorizedChannel.createTag(component);
     this.channel.appendLine(`[Done]${tag} ${ColorizedChannel.formatMessage(operation)}`);
   }
 
-  public warn(message: string, component?: string): void {
-    const tag: string = ColorizedChannel.buildTag(component);
-    this.channel.appendLine(`[Warn]${tag} ${message}`);
-  }
-
-  public error(operation: string, component?: string, error?: Error): void {
-    const tag: string = ColorizedChannel.buildTag(component);
-    const message: string = error ? ColorizedChannel.formatMessage(operation, error) : operation;
-    this.channel.appendLine(`[Error]${tag} ${message}`);
-  }
-
+  /**
+   * Output info message (color: default)
+   * @param operation message
+   */
   public info(message: string): void {
     this.channel.appendLine(message);
   }
 
+  /**
+   * Output warn message (color: yellow)
+   * @param operation message
+   * @param component component name
+   */
+  public warn(message: string, component?: string): void {
+    const tag: string = ColorizedChannel.createTag(component);
+    this.channel.appendLine(`[Warn]${tag} ${message}`);
+  }
+
+  /**
+   * Output error message of operation or error (color: red)
+   * @param operation user operation
+   * @param component component name
+   * @param error error
+   */
+  public error(operation: string, component?: string, error?: Error): void {
+    const tag: string = ColorizedChannel.createTag(component);
+    const message: string = error ? ColorizedChannel.formatMessage(operation, error) : operation;
+    this.channel.appendLine(`[Error]${tag} ${message}`);
+  }
+
+  /**
+   * show channel
+   */
   public show(): void {
     this.channel.show();
   }
 
+  /**
+   * dispose channel
+   */
   public dispose(): void {
     if (this.channel) {
       this.channel.dispose();

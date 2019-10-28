@@ -7,6 +7,9 @@ import { Constants } from "../common/constants";
 import { Utility } from "../common/utility";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
 
+/**
+ * Class node of DigitalTwin graph
+ */
 export interface ClassNode {
   id: string;
   label?: string;
@@ -17,6 +20,9 @@ export interface ClassNode {
   constraint?: ConstraintNode;
 }
 
+/**
+ * Property node of DigitalTwin graph
+ */
 export interface PropertyNode {
   id: string;
   label?: string;
@@ -26,6 +32,9 @@ export interface PropertyNode {
   constraint?: ConstraintNode;
 }
 
+/**
+ * Constraint node of DigitalTwin graph
+ */
 export interface ConstraintNode {
   minItems?: number;
   maxItems?: number;
@@ -35,22 +44,34 @@ export interface ConstraintNode {
   required?: string[];
 }
 
+/**
+ * Context node of DigitalTwin graph
+ */
 interface ContextNode {
   name: string;
   isArray?: boolean;
 }
 
+/**
+ * Value schema definition for DigitalTwin graph
+ */
 export enum ValueSchema {
   String = "http://www.w3.org/2001/XMLSchema#string",
   Int = "http://www.w3.org/2001/XMLSchema#int",
   Boolean = "http://www.w3.org/2001/XMLSchema#boolean",
 }
 
+/**
+ * Node type definition for DigitalTwin graph
+ */
 enum NodeType {
   Class = "http://www.w3.org/2000/01/rdf-schema#Class",
   Property = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
 }
 
+/**
+ * Edge type definition for DigitalTwin graph
+ */
 enum EdgeType {
   Type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
   Range = "http://www.w3.org/2000/01/rdf-schema#range",
@@ -60,7 +81,14 @@ enum EdgeType {
   Comment = "http://www.w3.org/2000/01/rdf-schema#comment",
 }
 
+/**
+ * DigitalTwin graph
+ */
 export class DigitalTwinGraph {
+  /**
+   * get singleton instance of DigitalTwin graph
+   * @param context extension context
+   */
   public static getInstance(context: vscode.ExtensionContext): DigitalTwinGraph {
     if (!DigitalTwinGraph.instance) {
       DigitalTwinGraph.instance = new DigitalTwinGraph();
@@ -69,14 +97,18 @@ export class DigitalTwinGraph {
     return DigitalTwinGraph.instance;
   }
 
-  public static isReservedName(name: string): boolean {
-    return name.startsWith(DigitalTwinConstants.RESERVED);
-  }
-
+  /**
+   * get class type of class node
+   * @param classNode class node
+   */
   public static getClassType(classNode: ClassNode): string {
     return classNode.label || classNode.id;
   }
 
+  /**
+   * get valid types from property node range
+   * @param propertyNode property node
+   */
   public static getValidTypes(propertyNode: PropertyNode): string[] {
     if (!propertyNode.range) {
       return [];
@@ -85,25 +117,51 @@ export class DigitalTwinGraph {
       if (c.label) {
         return c.label;
       } else {
-        // get last section of id
+        // get the name of XMLSchema
         const index: number = c.id.lastIndexOf(DigitalTwinConstants.SCHEMA_SEPARATOR);
         return index === -1 ? c.id : c.id.slice(index + 1);
       }
     });
   }
 
+  /**
+   * check if class node is a object class, not one of the following
+   * 1. abstract class
+   * 2. enum
+   * 3. value schema
+   * @param classNode class node
+   */
+  public static isObjectClass(classNode: ClassNode): boolean {
+    if (classNode.isAbstract || classNode.enums || !classNode.label) {
+      return false;
+    }
+    return true;
+  }
+
   private static instance: DigitalTwinGraph;
 
+  /**
+   * check if json object is a valid constraint node
+   * @param object object data
+   */
   private static isConstraintNode(object: any): object is ConstraintNode {
     return (
       object.minItems || object.maxItems || object.minLength || object.maxLength || object.pattern || object.required
     );
   }
 
+  /**
+   * validate edge
+   * @param edge edge data
+   */
   private static validateEdge(edge: any): boolean {
     return edge.SourceNode && edge.TargetNode && edge.Label;
   }
 
+  /**
+   * check if object is an array
+   * @param object object data
+   */
   private static isArrayType(object: any): boolean {
     const container = object[DigitalTwinConstants.CONTAINER];
     if (container && typeof container === "string") {
@@ -112,6 +170,19 @@ export class DigitalTwinGraph {
     return false;
   }
 
+  /**
+   * check if the name is a reserved name
+   * @param name name
+   */
+  private static isReservedName(name: string): boolean {
+    return name.startsWith(DigitalTwinConstants.RESERVED);
+  }
+
+  /**
+   * read configuration file, return json object
+   * @param context extension context
+   * @param fileName file name
+   */
   private static readConfiguration(context: vscode.ExtensionContext, fileName: string): any {
     const filePath: string = context.asAbsolutePath(
       path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName),
@@ -134,23 +205,40 @@ export class DigitalTwinGraph {
     this.vocabulary = Constants.EMPTY_STRING;
   }
 
+  /**
+   * check if DigitalTwin graph is initialized
+   */
   public initialized(): boolean {
     return this.vocabulary !== Constants.EMPTY_STRING;
   }
 
-  public getPropertyNode(id: string): PropertyNode | undefined {
+  /**
+   * get property node by name
+   * @param name name
+   */
+  public getPropertyNode(name: string): PropertyNode | undefined {
+    const id: string = this.reversedIndex.get(name) || name;
     return this.propertyNodes.get(id);
   }
 
-  public getNodeId(name: string): string {
-    return this.reversedIndex.get(name) || Constants.EMPTY_STRING;
+  /**
+   * get class node by name
+   * @param name name
+   */
+  public getClassNode(name: string): ClassNode | undefined {
+    const id: string = this.reversedIndex.get(name) || this.getId(name);
+    return this.classNodes.get(id);
   }
 
+  /**
+   * inititalize DigitalTwin graph
+   * @param context extension context
+   */
   private init(context: vscode.ExtensionContext): void {
     let contextJson;
     let constraintJson;
     let graphJson;
-
+    // load DigitalTwin definitions by configuration file
     try {
       contextJson = DigitalTwinGraph.readConfiguration(context, Constants.CONTEXT_FILE_NAME);
       constraintJson = DigitalTwinGraph.readConfiguration(context, Constants.CONSTRAINT_FILE_NAME);
@@ -158,17 +246,28 @@ export class DigitalTwinGraph {
     } catch (error) {
       return;
     }
-
+    // build graph by definitions
     this.buildContext(contextJson);
     this.buildConstraint(constraintJson);
     this.buildGraph(graphJson);
   }
 
+  /**
+   * get node id of DigitalTwin graph
+   * @param name name
+   */
+  private getId(name: string): string {
+    return this.vocabulary + name;
+  }
+
+  /**
+   * build context nodes by id and reversed index
+   * @param contextJson json object of context definition
+   */
   private buildContext(contextJson: any): void {
+    let id: string;
     const context = contextJson[DigitalTwinConstants.CONTEXT];
     this.vocabulary = context[DigitalTwinConstants.VOCABULARY] as string;
-
-    let id: string;
     for (const key in context) {
       if (DigitalTwinGraph.isReservedName(key)) {
         continue;
@@ -186,10 +285,10 @@ export class DigitalTwinGraph {
     }
   }
 
-  private getId(section: string): string {
-    return this.vocabulary + section;
-  }
-
+  /**
+   * build constraint nodes by name
+   * @param constraintJson json object of constraint definition
+   */
   private buildConstraint(constraintJson: any): void {
     for (const key in constraintJson) {
       if (DigitalTwinGraph.isConstraintNode(constraintJson[key])) {
@@ -198,6 +297,10 @@ export class DigitalTwinGraph {
     }
   }
 
+  /**
+   * build DigitalTwin graph on definitions of context, constraint and graph
+   * @param graphJson json object of graph definition
+   */
   private buildGraph(graphJson: any): void {
     for (const edge of graphJson.Edges) {
       if (DigitalTwinGraph.validateEdge(edge)) {
@@ -209,6 +312,10 @@ export class DigitalTwinGraph {
     this.buildEntryNode();
   }
 
+  /**
+   * handle data of edge
+   * @param edge edge data
+   */
   private handleEdge(edge: any): void {
     switch (edge.Label) {
       case EdgeType.Type:
@@ -242,7 +349,6 @@ export class DigitalTwinGraph {
   private handleEdgeOfType(edge: any): void {
     const id: string = edge.SourceNode.Id as string;
     const type: string = edge.TargetNode.Id as string;
-
     switch (type) {
       case NodeType.Class:
         this.ensureClassNode(id);
@@ -251,6 +357,7 @@ export class DigitalTwinGraph {
         this.ensurePropertyNode(id);
         break;
       default:
+        // mark target class as enum node
         const contextNode: ContextNode | undefined = this.contextNodes.get(id);
         const enumValue: string = contextNode ? contextNode.name : id;
         const enumNode: ClassNode = this.ensureClassNode(type);
@@ -270,13 +377,11 @@ export class DigitalTwinGraph {
   private handleEdgeOfLabel(edge: any): void {
     const id: string = edge.SourceNode.Id as string;
     const label: string = edge.TargetNode.Value as string;
-
     const propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
-    // skip property node
+    // skip property node since the value has been set in Type edge
     if (propertyNode) {
       return;
     }
-
     const classNode: ClassNode = this.ensureClassNode(id);
     if (!classNode.label) {
       classNode.label = label;
@@ -295,7 +400,6 @@ export class DigitalTwinGraph {
   private handleEdgeOfDomain(edge: any): void {
     const id: string = edge.SourceNode.Id as string;
     const classId: string = edge.TargetNode.Id as string;
-
     const propertyNode: PropertyNode = this.ensurePropertyNode(id);
     const classNode: ClassNode = this.ensureClassNode(classId);
     if (!classNode.properties) {
@@ -312,7 +416,6 @@ export class DigitalTwinGraph {
   private handleEdgeOfRange(edge: any): void {
     const id: string = edge.SourceNode.Id as string;
     const classId: string = edge.TargetNode.Id as string;
-
     const propertyNode: PropertyNode = this.ensurePropertyNode(id);
     const classNode: ClassNode = this.ensureClassNode(classId);
     if (!propertyNode.range) {
@@ -329,7 +432,6 @@ export class DigitalTwinGraph {
   private handleEdgeOfSubClassOf(edge: any): void {
     const id: string = edge.SourceNode.Id as string;
     const baseId: string = edge.TargetNode.Id as string;
-
     const classNode: ClassNode = this.ensureClassNode(id);
     const baseClassNode: ClassNode = this.ensureClassNode(baseId);
     if (!baseClassNode.children) {
@@ -346,14 +448,17 @@ export class DigitalTwinGraph {
   private handleEdgeOfComment(edge: any): void {
     const id: string = edge.SourceNode.Id as string;
     const comment: string = edge.TargetNode.Value as string;
-
-    // TODO:(erichen): need to check if comment only exist in property
+    // TODO:(erichen): need to check if comment only exists in property
     const propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
     if (propertyNode) {
       propertyNode.comment = comment;
     }
   }
 
+  /**
+   * ensure class node exist, create if not exist
+   * @param id node id
+   */
   private ensureClassNode(id: string): ClassNode {
     let classNode: ClassNode | undefined = this.classNodes.get(id);
     if (!classNode) {
@@ -371,6 +476,10 @@ export class DigitalTwinGraph {
     return classNode;
   }
 
+  /**
+   * ensure property node exist, create if not exist
+   * @param id node id
+   */
   private ensurePropertyNode(id: string): PropertyNode {
     let propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
     if (!propertyNode) {
@@ -389,14 +498,17 @@ export class DigitalTwinGraph {
     return propertyNode;
   }
 
+  /**
+   * adjust node to meet DigitalTwin special definition
+   */
   private adjustNode(): void {
     // build reserved property
     const stringNode: ClassNode = this.ensureClassNode(ValueSchema.String);
     this.buildReservedProperty(DigitalTwinConstants.ID, stringNode);
 
-    // set abstract class
-    this.setAbstractClass(DigitalTwinConstants.SCHEMA_NODE);
-    this.setAbstractClass(DigitalTwinConstants.UNIT_NODE);
+    // mark abstract class
+    this.markAbstractClass(DigitalTwinConstants.SCHEMA_NODE);
+    this.markAbstractClass(DigitalTwinConstants.UNIT_NODE);
 
     // update label and range of interfaceSchema property
     const propertyNode: PropertyNode | undefined = this.propertyNodes.get(
@@ -411,6 +523,11 @@ export class DigitalTwinGraph {
     }
   }
 
+  /**
+   * build reserved property
+   * @param id node id
+   * @param classNode class node of reserved property range
+   */
   private buildReservedProperty(id: string, classNode: ClassNode): void {
     const propertyNode: PropertyNode = { id, range: [classNode] };
     const constraintNode: ConstraintNode | undefined = this.constraintNodes.get(id);
@@ -420,19 +537,25 @@ export class DigitalTwinGraph {
     this.propertyNodes.set(id, propertyNode);
   }
 
-  private setAbstractClass(name: string): void {
+  /**
+   * mark class node as abstract class
+   * @param name class node name
+   */
+  private markAbstractClass(name: string): void {
     const classNode: ClassNode | undefined = this.classNodes.get(this.getId(name));
     if (classNode) {
       classNode.isAbstract = true;
     }
   }
 
+  /**
+   * expand properties from base class node
+   */
   private expandProperties(): void {
     let classNode: ClassNode | undefined = this.classNodes.get(this.getId(DigitalTwinConstants.BASE_CLASS));
     if (!classNode) {
       return;
     }
-
     const queue: ClassNode[] = [];
     while (classNode) {
       if (classNode.children) {
@@ -454,6 +577,9 @@ export class DigitalTwinGraph {
     }
   }
 
+  /**
+   * build entry node of DigitalTwin graph
+   */
   private buildEntryNode(): void {
     const interfaceNode: ClassNode | undefined = this.classNodes.get(this.getId(DigitalTwinConstants.INTERFACE_NODE));
     const capabilityModelNode: ClassNode | undefined = this.classNodes.get(

@@ -27,7 +27,8 @@
     "onCommand:azure-digital-twins.createCapabilityModel",
     "onCommand:azure-digital-twins.openRepository",
     "onCommand:azure-digital-twins.signOutRepository",
-    "onCommand:azure-digital-twins.submitFiles"
+    "onCommand:azure-digital-twins.submitFiles",
+    "workspaceContains:**/*.json"
   ],
   "main": "./out/extension",
   "contributes": {
@@ -68,6 +69,12 @@
             "description": "Set the public model repository url."
           }
         }
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "*.json",
+        "url": "./resources/templates/emptySchema.json"
       }
     ],
     "languages": [

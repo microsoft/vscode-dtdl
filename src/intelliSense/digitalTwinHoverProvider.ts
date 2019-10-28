@@ -8,7 +8,14 @@ import { DigitalTwinConstants } from "./digitalTwinConstants";
 import { PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, PropertyPair } from "./intelliSenseUtility";
 
+/**
+ * Hover provider for DigitalTwin IntelliSense
+ */
 export class DigitalTwinHoverProvider implements vscode.HoverProvider {
+  /**
+   * get hover content
+   * @param propertyName property name
+   */
   private static getContent(propertyName: string): string {
     if (!propertyName) {
       return Constants.EMPTY_STRING;
@@ -26,26 +33,31 @@ export class DigitalTwinHoverProvider implements vscode.HoverProvider {
     }
   }
 
+  /**
+   * provide hover
+   * @param document text document
+   * @param position position
+   * @param token cancellation token
+   */
   public provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
   ): vscode.ProviderResult<vscode.Hover> {
-    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document);
+    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
     if (!jsonNode) {
       return undefined;
     }
-    const currentNode: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));
-    // parent is property node
-    if (currentNode && currentNode.parent) {
-      const propertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(currentNode.parent);
-      if (propertyPair) {
-        const content: string = DigitalTwinHoverProvider.getContent(propertyPair.name.value as string);
-        if (content) {
-          return new vscode.Hover(content, IntelliSenseUtility.getNodeRange(document, currentNode.parent));
-        }
-      }
+    const node: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));
+    if (!node || !node.parent) {
+      return undefined;
     }
-    return undefined;
+    const propertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(node.parent);
+    if (!propertyPair) {
+      return undefined;
+    }
+    const propertyName: string = IntelliSenseUtility.resolvePropertyName(propertyPair);
+    const content: string = DigitalTwinHoverProvider.getContent(propertyName);
+    return content ? new vscode.Hover(content, IntelliSenseUtility.getNodeRange(document, node.parent)) : undefined;
   }
 }

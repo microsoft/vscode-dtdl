@@ -4,34 +4,44 @@
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
+import { ClassNode, DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
 
+/**
+ * Type of json node
+ */
 export enum JsonNodeType {
   Object = "object",
   Array = "array",
   String = "string",
   Number = "number",
   Boolean = "boolean",
+  Property = "property",
 }
 
+/**
+ * Property pair includes name and value
+ */
 export interface PropertyPair {
   name: parser.Node;
   value: parser.Node;
 }
 
+/**
+ * Utility for IntelliSense
+ */
 export class IntelliSenseUtility {
   public static initGraph(context: vscode.ExtensionContext): boolean {
     IntelliSenseUtility.graph = DigitalTwinGraph.getInstance(context);
     return IntelliSenseUtility.graph.initialized();
   }
 
-  public static parseDigitalTwinModel(document: vscode.TextDocument): parser.Node | undefined {
-    const errors: parser.ParseError[] = [];
-    const jsonNode: parser.Node = parser.parseTree(document.getText(), errors);
-    if (errors.length > 0) {
-      return undefined;
-    }
-
+  /**
+   * parse the text, return json node if it is DigitalTwin model
+   * @param text text
+   */
+  public static parseDigitalTwinModel(text: string): parser.Node | undefined {
+    // skip checking errors in order to do IntelliSense at best effort
+    const jsonNode: parser.Node = parser.parseTree(text);
     const contextPath: string[] = [DigitalTwinConstants.CONTEXT];
     const contextNode: parser.Node | undefined = parser.findNodeAtLocation(jsonNode, contextPath);
     if (contextNode && IntelliSenseUtility.isDigitalTwinContext(contextNode)) {
@@ -40,32 +50,144 @@ export class IntelliSenseUtility {
     return undefined;
   }
 
-  public static isDigitalTwinContext(contextNode: parser.Node): boolean {
-    // Assume @context is string node
-    if (contextNode.type === JsonNodeType.String) {
-      return DigitalTwinConstants.CONTEXT_REGEX.test(contextNode.value as string);
+  /**
+   * check if json node has DigitalTwin context
+   * @param node json node
+   */
+  public static isDigitalTwinContext(node: parser.Node): boolean {
+    // assume @context is string node
+    if (node.type === JsonNodeType.String) {
+      return DigitalTwinConstants.CONTEXT_REGEX.test(node.value as string);
     }
     return false;
   }
 
+  /**
+   * get entry node of DigitalTwin model
+   */
   public static getEntryNode(): PropertyNode | undefined {
-    return IntelliSenseUtility.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
+    return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
   }
 
+  /**
+   * get property node of DigitalTwin model by name
+   * @param name property name
+   */
   public static getPropertyNode(name: string): PropertyNode | undefined {
-    const id: string = IntelliSenseUtility.graph.getNodeId(name) || name;
-    return IntelliSenseUtility.graph.getPropertyNode(id);
+    return IntelliSenseUtility.graph.getPropertyNode(name);
   }
 
-  public static parseProperty(jsonNode: parser.Node): PropertyPair | undefined {
-    if (!jsonNode.children || jsonNode.children.length !== 2) {
+  /**
+   * get class node of DigitalTwin model by name
+   * @param name class name
+   */
+  public static getClasNode(name: string): ClassNode | undefined {
+    return IntelliSenseUtility.graph.getClassNode(name);
+  }
+
+  /**
+   * parse json node, return property pair
+   * @param node json node
+   */
+  public static parseProperty(node: parser.Node): PropertyPair | undefined {
+    if (node.type !== JsonNodeType.Property || !node.children || node.children.length !== 2) {
       return undefined;
     }
-    return { name: jsonNode.children[0], value: jsonNode.children[1] };
+    return { name: node.children[0], value: node.children[1] };
   }
 
+  /**
+   * get the range of json node
+   * @param document text document
+   * @param node json node
+   */
   public static getNodeRange(document: vscode.TextDocument, node: parser.Node): vscode.Range {
     return new vscode.Range(document.positionAt(node.offset), document.positionAt(node.offset + node.length));
+  }
+
+  /**
+   * get enums from property range
+   * @param propertyNode property node
+   */
+  public static getEnums(propertyNode: PropertyNode): string[] {
+    const enums: string[] = [];
+    if (!propertyNode.range) {
+      return enums;
+    }
+    for (const classNode of propertyNode.range) {
+      if (classNode.enums) {
+        enums.push(...classNode.enums);
+      } else if (classNode.isAbstract && classNode.children) {
+        for (const child of classNode.children) {
+          if (child.enums) {
+            enums.push(...child.enums);
+          }
+        }
+      }
+    }
+    return enums;
+  }
+
+  /**
+   * get object classes from property range
+   * @param propertyNode property node
+   */
+  public static getObjectClasses(propertyNode: PropertyNode): ClassNode[] {
+    const classes: ClassNode[] = [];
+    if (!propertyNode.range) {
+      return classes;
+    }
+    for (const classNode of propertyNode.range) {
+      if (DigitalTwinGraph.isObjectClass(classNode)) {
+        classes.push(classNode);
+      } else if (classNode.isAbstract && classNode.children) {
+        for (const child of classNode.children) {
+          if (!child.enums) {
+            classes.push(child);
+          }
+        }
+      }
+    }
+    return classes;
+  }
+
+  /**
+   * resolve property name for schema and interfaceSchema
+   * @param propertyPair property pair
+   */
+  public static resolvePropertyName(propertyPair: PropertyPair): string {
+    let propertyName: string = propertyPair.name.value as string;
+    if (propertyName !== DigitalTwinConstants.SCHEMA) {
+      return propertyName;
+    }
+    let node: parser.Node = propertyPair.name;
+    // get outer object node
+    if (node.parent && node.parent.parent) {
+      node = node.parent.parent;
+      const outPropertyPair: PropertyPair | undefined = IntelliSenseUtility.getOuterPropertyPair(node);
+      if (outPropertyPair) {
+        const name: string = outPropertyPair.name.value as string;
+        if (name === DigitalTwinConstants.IMPLEMENTS) {
+          propertyName = DigitalTwinConstants.INTERFACE_SCHEMA;
+        }
+      }
+    }
+    return propertyName;
+  }
+
+  /**
+   * get outer property pair from current node
+   * @param node json node
+   */
+  public static getOuterPropertyPair(node: parser.Node): PropertyPair | undefined {
+    if (node.type !== JsonNodeType.Object) {
+      return undefined;
+    }
+    let outerProperty: parser.Node | undefined = node.parent;
+    if (outerProperty && outerProperty.type === JsonNodeType.Array) {
+      outerProperty = outerProperty.parent;
+    }
+    return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
   }
 
   private static graph: DigitalTwinGraph;
