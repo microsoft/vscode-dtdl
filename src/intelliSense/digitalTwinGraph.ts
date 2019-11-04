@@ -89,10 +89,10 @@ export class DigitalTwinGraph {
    * get singleton instance of DigitalTwin graph
    * @param context extension context
    */
-  public static getInstance(context: vscode.ExtensionContext): DigitalTwinGraph {
+  public static async getInstance(context: vscode.ExtensionContext): Promise<DigitalTwinGraph> {
     if (!DigitalTwinGraph.instance) {
       DigitalTwinGraph.instance = new DigitalTwinGraph();
-      DigitalTwinGraph.instance.init(context);
+      await DigitalTwinGraph.instance.init(context);
     }
     return DigitalTwinGraph.instance;
   }
@@ -179,15 +179,15 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * read configuration file, return json object
+   * resolve definition
    * @param context extension context
    * @param fileName file name
    */
-  private static readConfiguration(context: vscode.ExtensionContext, fileName: string): any {
+  private static async resolveDefinition(context: vscode.ExtensionContext, fileName: string): Promise<any> {
     const filePath: string = context.asAbsolutePath(
       path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName),
     );
-    return Utility.getJsonContentSync(filePath);
+    return await Utility.getJsonContent(filePath);
   }
 
   private classNodes: Map<string, ClassNode>;
@@ -234,15 +234,15 @@ export class DigitalTwinGraph {
    * inititalize DigitalTwin graph
    * @param context extension context
    */
-  private init(context: vscode.ExtensionContext): void {
+  private async init(context: vscode.ExtensionContext): Promise<void> {
     let contextJson;
     let constraintJson;
     let graphJson;
-    // load DigitalTwin definitions by configuration file
+    // load definition file
     try {
-      contextJson = DigitalTwinGraph.readConfiguration(context, Constants.CONTEXT_FILE_NAME);
-      constraintJson = DigitalTwinGraph.readConfiguration(context, Constants.CONSTRAINT_FILE_NAME);
-      graphJson = DigitalTwinGraph.readConfiguration(context, Constants.GRAPH_FILE_NAME);
+      contextJson = await DigitalTwinGraph.resolveDefinition(context, Constants.CONTEXT_FILE_NAME);
+      constraintJson = await DigitalTwinGraph.resolveDefinition(context, Constants.CONSTRAINT_FILE_NAME);
+      graphJson = await DigitalTwinGraph.resolveDefinition(context, Constants.GRAPH_FILE_NAME);
     } catch (error) {
       return;
     }

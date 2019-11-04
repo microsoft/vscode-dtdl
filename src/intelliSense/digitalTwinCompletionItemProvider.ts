@@ -281,10 +281,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     if (propertyNode) {
       properties.push(propertyNode);
     }
-    if (required.has(DigitalTwinConstants.CONTEXT)) {
-      properties.push({ id: DigitalTwinConstants.CONTEXT });
-    }
-    // suggest @type property for the case that object type is inferred and @type is requried (e.g. inlined Interface)
+    // suggest @type property for inline Interface
     if (required.has(DigitalTwinConstants.TYPE)) {
       properties.push({ id: DigitalTwinConstants.TYPE });
     }

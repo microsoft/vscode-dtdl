@@ -198,10 +198,8 @@ function initCommand(
 }
 
 function initIntelliSense(context: vscode.ExtensionContext): void {
-  if (!IntelliSenseUtility.initGraph(context)) {
-    UI.showNotification(MessageType.Warn, UIConstants.INTELLISENSE_NOT_ENABLED_MSG);
-    return;
-  }
+  // init DigitalTwin graph
+  IntelliSenseUtility.initGraph(context);
   // register providers of completionItem and hover
   const selector: vscode.DocumentSelector = {
     language: "json",
@@ -221,9 +219,9 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     Constants.CHANNEL_NAME,
   );
   const diagnosticProvider = new DigitalTwinDiagnosticProvider();
-  const activateTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-  if (activateTextEditor) {
-    diagnosticProvider.updateDiagnostics(activateTextEditor.document, diagnosticCollection);
+  const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    diagnosticProvider.updateDiagnostics(activeTextEditor.document, diagnosticCollection);
   }
   context.subscriptions.push(diagnosticCollection);
   context.subscriptions.push(

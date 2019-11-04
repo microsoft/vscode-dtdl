@@ -143,13 +143,5 @@ export class Utility {
     return fs.readJson(filePath, { encoding: Constants.UTF8 });
   }
 
-  /**
-   * get json content from file in synchronous way
-   * @param filePath file path
-   */
-  public static getJsonContentSync(filePath: string): any {
-    return fs.readJsonSync(filePath, { encoding: Constants.UTF8 });
-  }
-
   private constructor() {}
 }

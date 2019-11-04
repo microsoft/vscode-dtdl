@@ -201,7 +201,13 @@ export class UI {
     const items: Array<QuickPickItemWithData<string>> = [];
     await Promise.all(
       files.map(async (f) => {
-        const fileInfo: ModelFileInfo | undefined = await Utility.getModelFileInfo(f.path);
+        let fileInfo: ModelFileInfo | undefined;
+        try {
+          fileInfo = await Utility.getModelFileInfo(f.fsPath);
+        } catch {
+          // skip if file is not a valid json
+          return;
+        }
         if (fileInfo) {
           if (!type || type === fileInfo.type) {
             items.push({

@@ -153,7 +153,12 @@ export class DigitalTwinDiagnosticProvider {
     DigitalTwinDiagnosticProvider.validateProperties(jsonNode, classNode, problems, exist);
     // validate required property
     if (classNode.constraint && classNode.constraint.required) {
-      const requiredProperty: string[] = classNode.constraint.required.filter((p) => !exist.has(p));
+      const requiredProperty: string[] = classNode.constraint.required.filter((p) => {
+        // @context is not required for inline Interface
+        const isInterfaceSchem: boolean =
+          p === DigitalTwinConstants.CONTEXT && digitalTwinNode.label === DigitalTwinConstants.SCHEMA;
+        return !exist.has(p) && !isInterfaceSchem;
+      });
       if (requiredProperty.length > 0) {
         const message: string = [DiagnosticMessage.MissingRequiredProperties, ...requiredProperty].join(
           Constants.LINE_FEED,
@@ -425,11 +430,12 @@ export class DigitalTwinDiagnosticProvider {
    * @param collection diagnostic collection
    */
   public updateDiagnostics(document: vscode.TextDocument, collection: vscode.DiagnosticCollection): void {
+    // clean diagnostic cache
+    collection.delete(document.uri);
     const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
     if (!jsonNode) {
       return;
     }
-    collection.delete(document.uri);
     const diagnostics: vscode.Diagnostic[] = this.provideDiagnostics(document, jsonNode);
     collection.set(document.uri, diagnostics);
   }

@@ -21,5 +21,4 @@ export class UIConstants {
     "No device model is found in current workspace. Please open the folder that contains models and try again";
   public static readonly ASK_TO_SAVE_MSG = "The following files contain unsaved changes, do you want to save them?";
   public static readonly ASK_TO_OVERWRITE_MSG = "do you want to overwrite it?";
-  public static readonly INTELLISENSE_NOT_ENABLED_MSG = "Fail to enable intelliSense";
 }
