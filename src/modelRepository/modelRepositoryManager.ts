@@ -226,10 +226,14 @@ export class ModelRepositoryManager {
       throw new BadRequestError("pageSize should be greater than 0");
     }
 
+    // only show output when keyword is defined
+    const showOutput: boolean = keyword ? true : false;
     const operation = `Search ${type} by keyword "${keyword}" from ${
       publicRepository ? RepositoryType.Public : RepositoryType.Company
     }`;
-    this.outputChannel.start(operation, this.component);
+    if (showOutput) {
+      this.outputChannel.start(operation, this.component);
+    }
 
     let result: SearchResult;
     try {
@@ -239,7 +243,9 @@ export class ModelRepositoryManager {
       throw new ProcessError(operation, error, this.component);
     }
 
-    this.outputChannel.end(operation, this.component);
+    if (showOutput) {
+      this.outputChannel.end(operation, this.component);
+    }
     return result;
   }
 

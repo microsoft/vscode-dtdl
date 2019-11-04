@@ -179,11 +179,11 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * read configuration file, return json object
+   * read definition file, return json object
    * @param context extension context
    * @param fileName file name
    */
-  private static readConfiguration(context: vscode.ExtensionContext, fileName: string): any {
+  private static readDefinition(context: vscode.ExtensionContext, fileName: string): any {
     const filePath: string = context.asAbsolutePath(
       path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName),
     );
@@ -240,9 +240,9 @@ export class DigitalTwinGraph {
     let graphJson;
     // load DigitalTwin definitions by configuration file
     try {
-      contextJson = DigitalTwinGraph.readConfiguration(context, Constants.CONTEXT_FILE_NAME);
-      constraintJson = DigitalTwinGraph.readConfiguration(context, Constants.CONSTRAINT_FILE_NAME);
-      graphJson = DigitalTwinGraph.readConfiguration(context, Constants.GRAPH_FILE_NAME);
+      contextJson = DigitalTwinGraph.readDefinition(context, Constants.CONTEXT_FILE_NAME);
+      constraintJson = DigitalTwinGraph.readDefinition(context, Constants.CONSTRAINT_FILE_NAME);
+      graphJson = DigitalTwinGraph.readDefinition(context, Constants.GRAPH_FILE_NAME);
     } catch (error) {
       return;
     }

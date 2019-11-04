@@ -221,9 +221,9 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     Constants.CHANNEL_NAME,
   );
   const diagnosticProvider = new DigitalTwinDiagnosticProvider();
-  const activateTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-  if (activateTextEditor) {
-    diagnosticProvider.updateDiagnostics(activateTextEditor.document, diagnosticCollection);
+  const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+  if (activeTextEditor) {
+    diagnosticProvider.updateDiagnostics(activeTextEditor.document, diagnosticCollection);
   }
   context.subscriptions.push(diagnosticCollection);
   context.subscriptions.push(
