@@ -30,9 +30,8 @@ export interface PropertyPair {
  * Utility for IntelliSense
  */
 export class IntelliSenseUtility {
-  public static initGraph(context: vscode.ExtensionContext): boolean {
-    IntelliSenseUtility.graph = DigitalTwinGraph.getInstance(context);
-    return IntelliSenseUtility.graph.initialized();
+  public static async initGraph(context: vscode.ExtensionContext): Promise<void> {
+    IntelliSenseUtility.graph = await DigitalTwinGraph.getInstance(context);
   }
 
   /**
@@ -66,6 +65,9 @@ export class IntelliSenseUtility {
    * get entry node of DigitalTwin model
    */
   public static getEntryNode(): PropertyNode | undefined {
+    if (!IntelliSenseUtility.graph) {
+      return undefined;
+    }
     return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
   }
 
@@ -74,6 +76,9 @@ export class IntelliSenseUtility {
    * @param name property name
    */
   public static getPropertyNode(name: string): PropertyNode | undefined {
+    if (!IntelliSenseUtility.graph) {
+      return undefined;
+    }
     return IntelliSenseUtility.graph.getPropertyNode(name);
   }
 
@@ -82,6 +87,9 @@ export class IntelliSenseUtility {
    * @param name class name
    */
   public static getClasNode(name: string): ClassNode | undefined {
+    if (!IntelliSenseUtility.graph) {
+      return undefined;
+    }
     return IntelliSenseUtility.graph.getClassNode(name);
   }
 

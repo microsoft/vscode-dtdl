@@ -203,7 +203,7 @@ export class UI {
       files.map(async (f) => {
         let fileInfo: ModelFileInfo | undefined;
         try {
-          fileInfo = await Utility.getModelFileInfo(f.path);
+          fileInfo = await Utility.getModelFileInfo(f.fsPath);
         } catch {
           // skip if file is not a valid json
           return;
