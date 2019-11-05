@@ -48,6 +48,9 @@ export class DigitalTwinHoverProvider implements vscode.HoverProvider {
     if (!jsonNode) {
       return undefined;
     }
+    if (!IntelliSenseUtility.enabled()) {
+      return undefined;
+    }
     const node: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));
     if (!node || !node.parent) {
       return undefined;
