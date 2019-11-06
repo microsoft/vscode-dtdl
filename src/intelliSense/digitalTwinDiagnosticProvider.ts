@@ -436,6 +436,9 @@ export class DigitalTwinDiagnosticProvider {
     if (!jsonNode) {
       return;
     }
+    if (!IntelliSenseUtility.enabled()) {
+      return;
+    }
     const diagnostics: vscode.Diagnostic[] = this.provideDiagnostics(document, jsonNode);
     collection.set(document.uri, diagnostics);
   }

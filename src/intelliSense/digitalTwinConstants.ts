@@ -50,6 +50,7 @@ export class DigitalTwinConstants {
   public static readonly UNIT_NODE = "Unit";
   public static readonly INTERFACE_SCHEMA_NODE = "InterfaceInstance/schema";
   public static readonly WORD_STOP = ' \t\n\r\v":{[,';
+  public static readonly REQUIRED_PROPERTY_LABEL = "(required)";
   public static readonly IOT_MODEL_LABEL = "IoTModel";
   public static readonly CONTEXT_TEMPLATE = "http://azureiot.com/v1/contexts/IoTModel.json";
   public static readonly CONTEXT_REGEX = new RegExp("^http://azureiot.com/v[0-9]+/contexts/IoTModel.json$");

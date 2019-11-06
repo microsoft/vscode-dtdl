@@ -142,7 +142,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
         const dummyNode: PropertyNode = { id: DigitalTwinConstants.TYPE };
         result.push(
           DigitalTwinCompletionItemProvider.createCompletionItem(
-            dummyNode.id,
+            `${dummyNode.id} ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}`,
             true,
             DigitalTwinCompletionItemProvider.getInsertTextForProperty(dummyNode, includeValue, separator),
             position,
@@ -255,7 +255,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
    * @param required required properties
    */
   private static formatLabel(label: string, required: Set<string>): string {
-    return required.has(label) ? `${label} (required)` : label;
+    return required.has(label) ? `${label} ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}` : label;
   }
 
   /**
@@ -443,6 +443,9 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     const text: string = DigitalTwinCompletionItemProvider.getTextForParse(document, position);
     const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(text);
     if (!jsonNode) {
+      return undefined;
+    }
+    if (!IntelliSenseUtility.enabled()) {
       return undefined;
     }
     const node: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));

@@ -30,8 +30,42 @@ export interface PropertyPair {
  * Utility for IntelliSense
  */
 export class IntelliSenseUtility {
+  /**
+   * init DigitalTwin graph
+   * @param context extension context
+   */
   public static async initGraph(context: vscode.ExtensionContext): Promise<void> {
     IntelliSenseUtility.graph = await DigitalTwinGraph.getInstance(context);
+  }
+
+  /**
+   * check if IntelliSense has been enabled
+   */
+  public static enabled(): boolean {
+    return IntelliSenseUtility.graph && IntelliSenseUtility.graph.initialized();
+  }
+
+  /**
+   * get entry node of DigitalTwin model
+   */
+  public static getEntryNode(): PropertyNode | undefined {
+    return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
+  }
+
+  /**
+   * get property node of DigitalTwin model by name
+   * @param name property name
+   */
+  public static getPropertyNode(name: string): PropertyNode | undefined {
+    return IntelliSenseUtility.graph.getPropertyNode(name);
+  }
+
+  /**
+   * get class node of DigitalTwin model by name
+   * @param name class name
+   */
+  public static getClasNode(name: string): ClassNode | undefined {
+    return IntelliSenseUtility.graph.getClassNode(name);
   }
 
   /**
@@ -59,38 +93,6 @@ export class IntelliSenseUtility {
       return DigitalTwinConstants.CONTEXT_REGEX.test(node.value as string);
     }
     return false;
-  }
-
-  /**
-   * get entry node of DigitalTwin model
-   */
-  public static getEntryNode(): PropertyNode | undefined {
-    if (!IntelliSenseUtility.graph) {
-      return undefined;
-    }
-    return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
-  }
-
-  /**
-   * get property node of DigitalTwin model by name
-   * @param name property name
-   */
-  public static getPropertyNode(name: string): PropertyNode | undefined {
-    if (!IntelliSenseUtility.graph) {
-      return undefined;
-    }
-    return IntelliSenseUtility.graph.getPropertyNode(name);
-  }
-
-  /**
-   * get class node of DigitalTwin model by name
-   * @param name class name
-   */
-  public static getClasNode(name: string): ClassNode | undefined {
-    if (!IntelliSenseUtility.graph) {
-      return undefined;
-    }
-    return IntelliSenseUtility.graph.getClassNode(name);
   }
 
   /**
