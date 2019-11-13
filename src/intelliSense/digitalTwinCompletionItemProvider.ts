@@ -130,7 +130,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     includeValue: boolean,
     separator: string,
   ): vscode.CompletionItem[] {
-    const result: vscode.CompletionItem[] = [];
+    const completionItems: vscode.CompletionItem[] = [];
     const exist = new Set<string>();
     const classNode: ClassNode | undefined = DigitalTwinCompletionItemProvider.getObjectType(node, exist);
     if (!classNode) {
@@ -140,7 +140,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
       if (!exist.has(DigitalTwinConstants.TYPE)) {
         // suggest @type property
         const dummyNode: PropertyNode = { id: DigitalTwinConstants.TYPE };
-        result.push(
+        completionItems.push(
           DigitalTwinCompletionItemProvider.createCompletionItem(
             `${dummyNode.id} ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}`,
             true,
@@ -159,7 +159,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
         if (!child.label || exist.has(child.label)) {
           continue;
         }
-        result.push(
+        completionItems.push(
           DigitalTwinCompletionItemProvider.createCompletionItem(
             DigitalTwinCompletionItemProvider.formatLabel(child.label, required),
             true,
@@ -177,9 +177,9 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
         exist,
         required,
       );
-      result.push(...suggestion);
+      completionItems.push(...suggestion);
     }
-    return result;
+    return completionItems;
   }
 
   /**
@@ -275,7 +275,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     exist: Set<string>,
     required: Set<string>,
   ): vscode.CompletionItem[] {
-    const result: vscode.CompletionItem[] = [];
+    const completionItems: vscode.CompletionItem[] = [];
     const properties: PropertyNode[] = [];
     const propertyNode: PropertyNode | undefined = IntelliSenseUtility.getPropertyNode(DigitalTwinConstants.ID);
     if (propertyNode) {
@@ -289,7 +289,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
       if (exist.has(property.id)) {
         continue;
       }
-      result.push(
+      completionItems.push(
         DigitalTwinCompletionItemProvider.createCompletionItem(
           DigitalTwinCompletionItemProvider.formatLabel(property.id, required),
           true,
@@ -299,7 +299,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
         ),
       );
     }
-    return result;
+    return completionItems;
   }
 
   /**
@@ -356,16 +356,16 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     range: vscode.Range,
     separator: string,
   ): vscode.CompletionItem[] {
-    const result: vscode.CompletionItem[] = [];
+    const completionItems: vscode.CompletionItem[] = [];
     const propertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(node);
     if (!propertyPair) {
-      return result;
+      return completionItems;
     }
     let propertyNode: PropertyNode | undefined;
     let propertyName: string = propertyPair.name.value as string;
     if (propertyName === DigitalTwinConstants.CONTEXT) {
       // suggest value of @context property
-      result.push(
+      completionItems.push(
         DigitalTwinCompletionItemProvider.createCompletionItem(
           DigitalTwinConstants.IOT_MODEL_LABEL,
           false,
@@ -384,7 +384,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
           const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(propertyNode);
           for (const classNode of classes) {
             const value: string = DigitalTwinGraph.getClassType(classNode);
-            result.push(
+            completionItems.push(
               DigitalTwinCompletionItemProvider.createCompletionItem(
                 value,
                 false,
@@ -403,7 +403,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
       if (propertyNode) {
         const enums = IntelliSenseUtility.getEnums(propertyNode);
         for (const value of enums) {
-          result.push(
+          completionItems.push(
             DigitalTwinCompletionItemProvider.createCompletionItem(
               value,
               false,
@@ -415,7 +415,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
         }
       }
     }
-    return result;
+    return completionItems;
   }
 
   /**

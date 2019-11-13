@@ -96,21 +96,22 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
     "tslint": "tslint -t verbose src/**/*.ts",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@types/fs-extra": "^7.0.0",
     "@types/glob": "^7.1.1",
+    "@types/keytar": "^4.4.0",
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
-    "@types/vscode": "^1.36.0",
     "@types/request-promise": "^4.1.44",
-    "@types/keytar": "^4.4.0",
+    "@types/vscode": "^1.36.0",
     "cz-conventional-changelog": "^3.0.2",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
+    "prettier": "^1.19.1",
+    "prettier-tslint": "^0.4.2",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1",
     "vscode-test": "^1.0.0-next.0"

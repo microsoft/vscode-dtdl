@@ -7,26 +7,20 @@
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
-      "stopOnEntry": false,
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/out/src/**/*.js"],
-      "preLaunchTask": "npm: watch"
+      "outFiles": ["${workspaceFolder/out/**/*.js"]
     },
     {
       "name": "Extension Tests",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": [
-        "${workspaceRoot}/test/resources/project1/project.code-workspace",
-        "--extensionDevelopmentPath=${workspaceRoot}",
-        "--extensionTestsPath=${workspaceRoot}/out/test"
-      ],
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}", "--extensionTestsPath=${workspaceFolder}/out/test"],
       "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/out/test/**/*.js"],
-      "preLaunchTask": "npm: watch"
+      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+      "preLaunchTask": "npm: compile"
     }
   ]
 }

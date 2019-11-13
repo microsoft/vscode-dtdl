@@ -7,8 +7,8 @@ import { ColorizedChannel } from "../common/colorizedChannel";
 import { Constants } from "../common/constants";
 import { ProcessError } from "../common/processError";
 import { Utility } from "../common/utility";
-import { MessageType, UI } from "../views/ui";
-import { UIConstants } from "../views/uiConstants";
+import { MessageType, UI } from "../view/ui";
+import { UIConstants } from "../view/uiConstants";
 
 /**
  * DigitalTwin model type
