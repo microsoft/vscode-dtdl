@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+import { ApiProvider } from "./api/apiProvider";
 import { ColorizedChannel } from "./common/colorizedChannel";
 import { Command } from "./common/command";
 import { Constants } from "./common/constants";
@@ -16,8 +17,7 @@ import { DigitalTwinHoverProvider } from "./intelliSense/digitalTwinHoverProvide
 import { IntelliSenseUtility } from "./intelliSense/intelliSenseUtility";
 import { SearchResult } from "./modelRepository/modelRepositoryInterface";
 import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
-import { MessageType, UI } from "./views/ui";
-import { UIConstants } from "./views/uiConstants";
+import { MessageType, UI } from "./view/ui";
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = new ColorizedChannel(Constants.CHANNEL_NAME);
@@ -25,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
   const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
   const deviceModelManager = new DeviceModelManager(context, outputChannel);
   const modelRepositoryManager = new ModelRepositoryManager(context, outputChannel, Constants.WEB_VIEW_PATH);
+  const apiProvider = new ApiProvider(modelRepositoryManager);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
   context.subscriptions.push(outputChannel);
@@ -153,6 +154,8 @@ export function activate(context: vscode.ExtensionContext) {
       );
     },
   );
+  // provide api integration
+  return { apiProvider };
 }
 
 export function deactivate() {}

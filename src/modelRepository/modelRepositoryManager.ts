@@ -13,8 +13,8 @@ import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
 import { ModelType } from "../deviceModel/deviceModelManager";
 import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
-import { ChoiceType, MessageType, UI } from "../views/ui";
-import { UIConstants } from "../views/uiConstants";
+import { ChoiceType, MessageType, UI } from "../view/ui";
+import { UIConstants } from "../view/uiConstants";
 import { ModelRepositoryClient } from "./modelRepositoryClient";
 import { ModelRepositoryConnection } from "./modelRepositoryConnection";
 import { GetResult, SearchResult } from "./modelRepositoryInterface";
@@ -78,14 +78,21 @@ export class ModelRepositoryManager {
       if (!connectionString) {
         throw new Error(Constants.CONNECTION_STRING_NOT_FOUND_MSG);
       }
-      const connection: ModelRepositoryConnection = ModelRepositoryConnection.parse(connectionString);
-      return {
-        hostname: Utility.enforceHttps(connection.hostName),
-        apiVersion: Constants.MODEL_REPOSITORY_API_VERSION,
-        repositoryId: connection.repositoryId,
-        accessToken: connection.generateAccessToken(),
-      };
+      return ModelRepositoryManager.getCompanyRepositoryInfo(connectionString);
     }
+  }
+
+  /**
+   * get available repository info, company repository is prior to public repository
+   */
+  private static async getAvailableRepositoryInfo(): Promise<RepositoryInfo[]> {
+    const repoInfos: RepositoryInfo[] = [];
+    const connectionString: string | null = await CredentialStore.get(Constants.MODEL_REPOSITORY_CONNECTION_KEY);
+    if (connectionString) {
+      repoInfos.push(ModelRepositoryManager.getCompanyRepositoryInfo(connectionString));
+    }
+    repoInfos.push(await ModelRepositoryManager.createRepositoryInfo(true));
+    return repoInfos;
   }
 
   /**
@@ -98,18 +105,26 @@ export class ModelRepositoryManager {
       connectionString = await UI.inputConnectionString(UIConstants.INPUT_REPOSITORY_CONNECTION_STRING_LABEL);
       newConnection = true;
     }
-    const connection: ModelRepositoryConnection = ModelRepositoryConnection.parse(connectionString);
-    const repoInfo: RepositoryInfo = {
-      hostname: Utility.enforceHttps(connection.hostName),
-      apiVersion: Constants.MODEL_REPOSITORY_API_VERSION,
-      repositoryId: connection.repositoryId,
-      accessToken: connection.generateAccessToken(),
-    };
+    const repoInfo: RepositoryInfo = ModelRepositoryManager.getCompanyRepositoryInfo(connectionString);
     // test connection by calling searchModel
     await ModelRepositoryClient.searchModel(repoInfo, ModelType.Interface, Constants.EMPTY_STRING, 1, null);
     if (newConnection) {
       await CredentialStore.set(Constants.MODEL_REPOSITORY_CONNECTION_KEY, connectionString);
     }
+  }
+
+  /**
+   * get company repository info
+   * @param connectionString connection string
+   */
+  private static getCompanyRepositoryInfo(connectionString: string): RepositoryInfo {
+    const connection: ModelRepositoryConnection = ModelRepositoryConnection.parse(connectionString);
+    return {
+      hostname: Utility.enforceHttps(connection.hostName),
+      apiVersion: Constants.MODEL_REPOSITORY_API_VERSION,
+      repositoryId: connection.repositoryId,
+      accessToken: connection.generateAccessToken(),
+    };
   }
 
   /**
@@ -258,7 +273,6 @@ export class ModelRepositoryManager {
     if (publicRepository) {
       throw new BadRequestError(`${RepositoryType.Public} not support delete operation`);
     }
-
     ModelRepositoryManager.validateModelIds(modelIds);
 
     try {
@@ -290,16 +304,42 @@ export class ModelRepositoryManager {
   }
 
   /**
-   * download denpendent interface models from capability model
-   * @param folder folder to download models
-   * @param filePath capability model file path
+   * download dependent interface of capability model, throw exception when interface not found
+   * @param folder folder to download interface
+   * @param capabilityModelFile capability model file path
    */
-  public async downloadDependentInterface(folder: string, filePath: string): Promise<void> {
-    // TODO:(erichen): for code gen integration, used as api
-    // get existing interface files
-    // find dependent interface file list from dcm file
-    // diff the files to download
-    // download interface files
+  public async downloadDependentInterface(folder: string, capabilityModelFile: string): Promise<void> {
+    if (!folder || !capabilityModelFile) {
+      throw new BadRequestError(`folder and capabilityModelFile ${Constants.NOT_EMPTY_MSG}`);
+    }
+    // get implemented interface of capability model
+    const content = await Utility.getJsonContent(capabilityModelFile);
+    const implementedInterface = content[DigitalTwinConstants.IMPLEMENTS];
+    if (!implementedInterface || implementedInterface.length === 0) {
+      throw new BadRequestError("no implemented interface found in capability model");
+    }
+
+    // get existing interface file in workspace
+    const repoInfos: RepositoryInfo[] = await ModelRepositoryManager.getAvailableRepositoryInfo();
+    const fileInfos: ModelFileInfo[] = await UI.findModelFiles(ModelType.Interface);
+    const exist = new Set<string>(fileInfos.map((f) => f.id));
+    let schema: any;
+    let found: boolean;
+    let message: string;
+    for (const item of implementedInterface) {
+      schema = item[DigitalTwinConstants.SCHEMA];
+      if (typeof schema !== "string" || exist.has(schema)) {
+        continue;
+      }
+      found = await this.doDownloadModel(repoInfos, schema, folder);
+      if (!found) {
+        message = `interface ${schema} not found`;
+        if (repoInfos.length === 1) {
+          message = `${message}. ${Constants.NEED_OPEN_COMPANY_REPOSITORY_MSG}`;
+        }
+        throw new BadRequestError(message);
+      }
+    }
   }
 
   /**
@@ -323,12 +363,12 @@ export class ModelRepositoryManager {
   }
 
   /**
-   * download model from repository
+   * download model from repository, return false if model not found
    * @param repoInfos repository info list
    * @param modelId model id
    * @param folder folder to download model
    */
-  private async doDownloadModel(repoInfos: RepositoryInfo[], modelId: string, folder: string): Promise<void> {
+  private async doDownloadModel(repoInfos: RepositoryInfo[], modelId: string, folder: string): Promise<boolean> {
     let result: GetResult | undefined;
     for (const repoInfo of repoInfos) {
       try {
@@ -346,7 +386,9 @@ export class ModelRepositoryManager {
     }
     if (result) {
       await Utility.createModelFile(folder, result.modelId, result.content);
+      return true;
     }
+    return false;
   }
 
   /**

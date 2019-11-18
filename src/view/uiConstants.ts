@@ -10,6 +10,7 @@ export class UIConstants {
   public static readonly BROWSE_LABEL = "Browse...";
   public static readonly SELECT_REPOSITORY_LABEL = "Select model repository";
   public static readonly SELECT_MODELS_LABEL = "Select device models";
+  public static readonly SELECT_CAPABILITY_MODEL_LABEL = "Select a capability model";
   public static readonly INPUT_REPOSITORY_CONNECTION_STRING_LABEL = "Input company repository connection string";
   public static readonly SAVE_FILE_CHANGE_LABEL = "Save file change";
   public static readonly MODEL_REPOSITORY_TITLE = "IoT Plug and Play Model Repository";

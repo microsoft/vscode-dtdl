@@ -121,7 +121,7 @@ export class Utility {
    * @param filePath file path
    */
   public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | undefined> {
-    const content = await fs.readJson(filePath, { encoding: Constants.UTF8 });
+    const content = await Utility.getJsonContent(filePath);
     const modelId: string = content[DigitalTwinConstants.ID];
     const context: string = content[DigitalTwinConstants.CONTEXT];
     const modelType: ModelType = DeviceModelManager.convertToModelType(content[DigitalTwinConstants.TYPE]);

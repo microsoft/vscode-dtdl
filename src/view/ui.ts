@@ -3,6 +3,7 @@
 
 import * as path from "path";
 import * as vscode from "vscode";
+import { Constants } from "../common/constants";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
 import { ModelType } from "../deviceModel/deviceModelManager";
@@ -90,7 +91,7 @@ export class UI {
         };
       });
     }
-    items.push({ label: UIConstants.BROWSE_LABEL, description: "" });
+    items.push({ label: UIConstants.BROWSE_LABEL, description: Constants.EMPTY_STRING });
     const selected: vscode.QuickPickItem = await UI.showQuickPick(label, items);
     return selected.description || (await UI.showOpenDialog(label));
   }
@@ -105,11 +106,11 @@ export class UI {
       placeHolder: label,
       ignoreFocusOut: true,
     };
-    const result: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
-    if (!result) {
+    const selected: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
+    if (!selected) {
       throw new UserCancelledError(label);
     }
-    return result;
+    return selected;
   }
 
   /**
@@ -125,11 +126,11 @@ export class UI {
       canSelectFolders: true,
       canSelectMany: false,
     };
-    const results: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
-    if (!results || results.length === 0) {
+    const selected: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
+    if (!selected || selected.length === 0) {
       throw new UserCancelledError(label);
     }
-    return results[0].fsPath;
+    return selected[0].fsPath;
   }
 
   /**
@@ -168,11 +169,11 @@ export class UI {
       value,
       ignoreFocusOut,
     };
-    const result: string | undefined = await vscode.window.showInputBox(options);
-    if (!result) {
+    const input: string | undefined = await vscode.window.showInputBox(options);
+    if (!input) {
       throw new UserCancelledError(label);
     }
-    return result;
+    return input;
   }
 
   /**
@@ -187,42 +188,23 @@ export class UI {
   }
 
   /**
-   * select model files
+   * select model files by type
    * @param label label
    * @param type model type
    */
   public static async selectModelFiles(label: string, type?: ModelType): Promise<string[] | undefined> {
-    const files: vscode.Uri[] = await vscode.workspace.findFiles(UIConstants.MODEL_FILE_GLOB);
-    if (files.length === 0) {
+    const fileInfos: ModelFileInfo[] = await UI.findModelFiles(type);
+    if (fileInfos.length === 0) {
       UI.showNotification(MessageType.Warn, UIConstants.MODELS_NOT_FOUND_MSG);
       return undefined;
     }
-    // process in parallel
-    const items: Array<QuickPickItemWithData<string>> = [];
-    await Promise.all(
-      files.map(async (f) => {
-        let fileInfo: ModelFileInfo | undefined;
-        try {
-          fileInfo = await Utility.getModelFileInfo(f.fsPath);
-        } catch {
-          // skip if file is not a valid json
-          return;
-        }
-        if (fileInfo) {
-          if (!type || type === fileInfo.type) {
-            items.push({
-              label: path.basename(fileInfo.filePath),
-              description: fileInfo.id,
-              data: fileInfo.filePath,
-            });
-          }
-        }
-      }),
-    );
-    if (items.length === 0) {
-      UI.showNotification(MessageType.Warn, UIConstants.MODELS_NOT_FOUND_MSG);
-      return undefined;
-    }
+    const items: Array<QuickPickItemWithData<string>> = fileInfos.map((f) => {
+      return {
+        label: path.basename(f.filePath),
+        description: f.id,
+        data: f.filePath,
+      };
+    });
     const selected: Array<QuickPickItemWithData<string>> | undefined = await vscode.window.showQuickPick(items, {
       placeHolder: label,
       ignoreFocusOut: true,
@@ -233,6 +215,67 @@ export class UI {
       throw new UserCancelledError(label);
     }
     return selected.map((s) => s.data);
+  }
+
+  /**
+   * select one model file
+   * @param label label
+   * @param type model type
+   */
+  public static async selectOneModelFile(label: string, type?: ModelType): Promise<string> {
+    const fileInfos: ModelFileInfo[] = await UI.findModelFiles(type);
+    if (fileInfos.length === 0) {
+      UI.showNotification(MessageType.Warn, UIConstants.MODELS_NOT_FOUND_MSG);
+      return Constants.EMPTY_STRING;
+    }
+    const items: Array<QuickPickItemWithData<string>> = fileInfos.map((f) => {
+      return {
+        label: path.basename(f.filePath),
+        description: f.id,
+        data: f.filePath,
+      };
+    });
+    const selected: QuickPickItemWithData<string> | undefined = await vscode.window.showQuickPick(items, {
+      placeHolder: label,
+      ignoreFocusOut: true,
+      canPickMany: false,
+      matchOnDescription: true,
+    });
+    if (!selected) {
+      throw new UserCancelledError(label);
+    }
+    return selected.data;
+  }
+
+  /**
+   * find model files by type
+   * @param type model type
+   */
+  public static async findModelFiles(type?: ModelType): Promise<ModelFileInfo[]> {
+    const fileInfos: ModelFileInfo[] = [];
+    const files: vscode.Uri[] = await vscode.workspace.findFiles(UIConstants.MODEL_FILE_GLOB);
+    if (files.length === 0) {
+      return fileInfos;
+    }
+    // process in parallel
+    await Promise.all(
+      files.map(async (f) => {
+        let fileInfo: ModelFileInfo | undefined;
+        try {
+          fileInfo = await Utility.getModelFileInfo(f.fsPath);
+        } catch {
+          // skip if file is not a valid json
+          return;
+        }
+        if (!fileInfo) {
+          return;
+        }
+        if (!type || type === fileInfo.type) {
+          fileInfos.push(fileInfo);
+        }
+      }),
+    );
+    return fileInfos;
   }
 
   /**
