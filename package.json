@@ -30,7 +30,7 @@
     "onCommand:azure-digital-twins.submitFiles",
     "workspaceContains:**/*.json"
   ],
-  "main": "./out/extension",
+  "main": "./dist/extension",
   "contributes": {
     "commands": [
       {
@@ -94,10 +94,12 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "webpack --mode production",
     "compile": "tsc -p ./",
     "tslint": "tslint -t verbose src/**/*.ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch"
   },
   "devDependencies": {
     "@types/fs-extra": "^7.0.0",
@@ -112,9 +114,12 @@
     "mocha": "^6.1.4",
     "prettier": "^1.19.1",
     "prettier-tslint": "^0.4.2",
+    "ts-loader": "^6.2.1",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1",
-    "vscode-test": "^1.0.0-next.0"
+    "vscode-test": "^1.0.0-next.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "dependencies": {
     "vscode-extension-telemetry": "^0.1.0",

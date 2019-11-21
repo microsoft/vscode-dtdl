@@ -43,7 +43,7 @@ export class Constants {
   public static readonly MODEL_TYPE_INVALID_MSG = "Invalid model type";
   public static readonly NEED_OPEN_COMPANY_REPOSITORY_MSG = "Please open company repository and try again";
 
-  public static readonly NSAT_SURVEY_URL = "https://aka.ms/vscode-azure-digital-twins-survey";
+  public static readonly NSAT_SURVEY_URL = "https://aka.ms/vscode-iot-workbench-survey";
   public static readonly WEB_VIEW_PATH = "assets/modelRepository";
   public static readonly COMPANY_REPOSITORY_PAGE = "index.html";
   public static readonly PUBLIC_REPOSITORY_PAGE = "index.html?public";
