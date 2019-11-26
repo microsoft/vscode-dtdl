@@ -39,10 +39,10 @@ steps:
     displayName: Compile Sources
 
   - script: |
-      npm test --silent
-    displayName: Run Unit Tests
-
-  - script: |
       # node scripts/genAiKey.js
       vsce package
     displayName: Build VSIX Package
+
+  - script: |
+      npm test --silent
+    displayName: Run Tests
