@@ -4,6 +4,7 @@
 node_modules
 out/
 src/
+scripts/
 .gitignore
 package-lock.json
 tsconfig.json

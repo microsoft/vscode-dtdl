@@ -1,5 +1,6 @@
-trigger:
+pr:
   - master
+  - develop
 
 strategy:
   matrix:
@@ -16,22 +17,32 @@ pool:
 steps:
   - task: NodeTool@0
     inputs:
-      versionSpec: "8.x"
+      versionSpec: "12.13.0"
     displayName: "Install Node.js"
 
   - bash: |
       /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-      echo ">>> Started xvfb"
     displayName: Start xvfb
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  - bash: |
-      echo ">>> Compile vscode-test"
-      yarn && yarn compile
-      echo ">>> Compiled vscode-test"
-      cd sample
-      echo ">>> Run sample integration test"
-      yarn && yarn compile && yarn test
-    displayName: Run Tests
-    env:
-      DISPLAY: ":99.0"
+  - script: |
+      npm install -g vsce
+      npm install
+    displayName: Install dependencies and vsce
+
+  - script: |
+      npm run tslint
+    displayName: Run TSLint Checks
+
+  - script: |
+      npm run compile
+    displayName: Compile Sources
+
+  - script: |
+      npm test --silent
+    displayName: Run Unit Tests
+
+  - script: |
+      # node scripts/genAiKey.js
+      vsce package
+    displayName: Build VSIX Package
