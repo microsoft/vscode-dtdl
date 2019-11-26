@@ -6,8 +6,6 @@ import { TelemetryClient } from "./telemetryClient";
 
 const PROBABILITY = 1;
 const SESSION_COUNT_THRESHOLD = 2;
-const UNKNOWN = "unknown";
-const PACKAGE_JSON_PATH = "./package.json";
 const SESSION_COUNT_KEY = "nsat/sessionCount";
 const LAST_SESSION_DATE_KEY = "nsat/lastSessionDate";
 const TAKE_SURVEY_DATE_KEY = "nsat/takeSurveyDate";
@@ -26,10 +24,6 @@ export class NSAT {
    * @param context extension context
    */
   public async takeSurvey(context: ExtensionContext) {
-    const packageJSON = require(context.asAbsolutePath(PACKAGE_JSON_PATH));
-    if (!packageJSON) {
-      return;
-    }
     const globalState: Memento = context.globalState;
     if (!globalState) {
       return;
@@ -51,7 +45,7 @@ export class NSAT {
     }
     const isCandidate: boolean = globalState.get(IS_CANDIDATE_KEY, false) || Math.random() < PROBABILITY;
     await globalState.update(IS_CANDIDATE_KEY, isCandidate);
-    const extensionVersion: string = packageJSON.version || UNKNOWN;
+    const extensionVersion: string = this.telemetryClient.extensionVersion;
     if (!isCandidate) {
       await globalState.update(SKIP_VERSION_KEY, extensionVersion);
       return;

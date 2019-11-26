@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+import * as fs from "fs";
 import * as vscode from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
-
-const MILLISECOND = 1000;
-const PACKAGE_JSON_PATH = "./package.json";
-const INTERNAL_USER_DOMAIN = "microsoft.com";
 
 /**
  * Operation result of telemetry
@@ -43,24 +40,22 @@ export class TelemetryClient {
    */
   private static isInternalUser(): boolean {
     const userDomain: string = process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : "";
-    return userDomain.endsWith(INTERNAL_USER_DOMAIN);
+    return userDomain.endsWith("microsoft.com");
   }
+
+  public extensionId: string = "";
+  public extensionVersion: string = "unknown";
 
   private client: TelemetryReporter | undefined;
   private isInternal: boolean = false;
   constructor(context: vscode.ExtensionContext) {
-    const packageJSON = require(context.asAbsolutePath(PACKAGE_JSON_PATH));
-    if (!packageJSON) {
+    const packageJSON = JSON.parse(fs.readFileSync(context.asAbsolutePath("./package.json"), "utf8"));
+    if (!packageJSON || TelemetryClient.validatePackageJSON(packageJSON)) {
       return;
     }
-    if (!TelemetryClient.validatePackageJSON(packageJSON)) {
-      return;
-    }
-    this.client = new TelemetryReporter(
-      `${packageJSON.publisher}.${packageJSON.name}`,
-      packageJSON.version,
-      packageJSON.aiKey,
-    );
+    this.extensionId = `${packageJSON.publisher}.${packageJSON.name}`;
+    this.extensionVersion = packageJSON.version;
+    this.client = new TelemetryReporter(this.extensionId, this.extensionVersion, packageJSON.aiKey);
     this.isInternal = TelemetryClient.isInternalUser();
   }
 
@@ -114,7 +109,7 @@ export class TelemetryClient {
    * @param context telemetry context
    */
   public closeContext(context: TelemetryContext) {
-    context.measurements.duration = (Date.now() - context.start) / MILLISECOND;
+    context.measurements.duration = (Date.now() - context.start) / 1000;
   }
 
   /**
