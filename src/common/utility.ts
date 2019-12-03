@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
@@ -141,6 +142,16 @@ export class Utility {
    */
   public static async getJsonContent(filePath: string): Promise<any> {
     return fs.readJson(filePath, { encoding: Constants.UTF8 });
+  }
+
+  /**
+   * get hash value of payload
+   * @param payload payload
+   */
+  public static hash(payload: string): string {
+    return createHash(Constants.SHA256)
+      .update(payload)
+      .digest(Constants.HEX);
   }
 
   private constructor() {}

@@ -192,11 +192,11 @@ export class UI {
    * @param label label
    * @param type model type
    */
-  public static async selectModelFiles(label: string, type?: ModelType): Promise<string[] | undefined> {
+  public static async selectModelFiles(label: string, type?: ModelType): Promise<string[]> {
     const fileInfos: ModelFileInfo[] = await UI.findModelFiles(type);
     if (fileInfos.length === 0) {
       UI.showNotification(MessageType.Warn, UIConstants.MODELS_NOT_FOUND_MSG);
-      return undefined;
+      return [];
     }
     const items: Array<QuickPickItemWithData<string>> = fileInfos.map((f) => {
       return {

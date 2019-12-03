@@ -7,12 +7,6 @@ import { ModelType } from "../deviceModel/deviceModelManager";
 import { GetResult, MetaModelType, SearchOptions, SearchResult } from "./modelRepositoryInterface";
 import { RepositoryInfo } from "./modelRepositoryManager";
 
-const ETAG_HEADER = "etag";
-const MODEL_ID_HEADER = "x-ms-model-id";
-const MODEL_PATH = "models";
-const SEARCH_PATH = "models/search";
-const CONTENT_TYPE = "application/json";
-
 /**
  * Http method type
  */
@@ -42,8 +36,8 @@ export class ModelRepositoryClient {
       request(options)
         .then((response) => {
           const result: GetResult = {
-            etag: response.headers[ETAG_HEADER],
-            modelId: response.headers[MODEL_ID_HEADER],
+            etag: response.headers[ModelRepositoryClient.ETAG_HEADER],
+            modelId: response.headers["x-ms-model-id"],
             content: response.body,
           };
           return resolve(result);
@@ -102,7 +96,7 @@ export class ModelRepositoryClient {
     return new Promise<string>((resolve, reject) => {
       request(options)
         .then((response) => {
-          const result: string = response.headers[ETAG_HEADER];
+          const result: string = response.headers[ModelRepositoryClient.ETAG_HEADER];
           return resolve(result);
         })
         .catch((err) => {
@@ -129,6 +123,8 @@ export class ModelRepositoryClient {
     });
   }
 
+  private static readonly ETAG_HEADER = "etag";
+
   /**
    * convert to meta model type
    * @param type model type
@@ -152,8 +148,8 @@ export class ModelRepositoryClient {
    */
   private static createOptions(method: HttpMethod, repoInfo: RepositoryInfo, modelId?: string): request.OptionsWithUri {
     const uri = modelId
-      ? `${repoInfo.hostname}/${MODEL_PATH}/${encodeURIComponent(modelId)}`
-      : `${repoInfo.hostname}/${SEARCH_PATH}`;
+      ? `${repoInfo.hostname}/models/${encodeURIComponent(modelId)}`
+      : `${repoInfo.hostname}/models/search`;
     const qs: any = { "api-version": repoInfo.apiVersion };
     if (repoInfo.repositoryId) {
       qs.repositoryId = repoInfo.repositoryId;
@@ -165,7 +161,7 @@ export class ModelRepositoryClient {
       qs,
       encoding: Constants.UTF8,
       json: true,
-      headers: { "Authorization": accessToken, "Content-Type": CONTENT_TYPE },
+      headers: { "Authorization": accessToken, "Content-Type": "application/json" },
       resolveWithFullResponse: true,
     };
     return options;

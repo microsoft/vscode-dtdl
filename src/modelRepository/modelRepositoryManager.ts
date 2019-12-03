@@ -5,13 +5,16 @@ import * as vscode from "vscode";
 import { VSCExpress } from "vscode-express";
 import { BadRequestError } from "../common/badRequestError";
 import { ColorizedChannel } from "../common/colorizedChannel";
+import { Command } from "../common/command";
 import { Configuration } from "../common/configuration";
 import { Constants } from "../common/constants";
 import { CredentialStore } from "../common/credentialStore";
 import { ProcessError } from "../common/processError";
+import { TelemetryClient } from "../common/telemetryClient";
+import { TelemetryContext } from "../common/telemetryContext";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
-import { ModelType } from "../deviceModel/deviceModelManager";
+import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
 import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
 import { ChoiceType, MessageType, UI } from "../view/ui";
 import { UIConstants } from "../view/uiConstants";
@@ -139,7 +142,12 @@ export class ModelRepositoryManager {
 
   private readonly express: VSCExpress;
   private readonly component: string;
-  constructor(context: vscode.ExtensionContext, private readonly outputChannel: ColorizedChannel, filePath: string) {
+  constructor(
+    context: vscode.ExtensionContext,
+    filePath: string,
+    private readonly outputChannel: ColorizedChannel,
+    private readonly telemetryClient: TelemetryClient,
+  ) {
     this.express = new VSCExpress(context, filePath);
     this.component = Constants.MODEL_REPOSITORY_COMPONENT;
   }
@@ -197,8 +205,8 @@ export class ModelRepositoryManager {
    * submit files to model repository
    */
   public async submitFiles(): Promise<void> {
-    const files: string[] | undefined = await UI.selectModelFiles(UIConstants.SELECT_MODELS_LABEL);
-    if (!files || files.length === 0) {
+    const files: string[] = await UI.selectModelFiles(UIConstants.SELECT_MODELS_LABEL);
+    if (files.length === 0) {
       return;
     }
     // check unsaved files and save
@@ -213,13 +221,16 @@ export class ModelRepositoryManager {
       }
     }
 
+    const usageData = new Map<ModelType, string[]>();
     try {
       const repoInfo: RepositoryInfo = await ModelRepositoryManager.createRepositoryInfo(false);
-      await this.doSubmitLoopSilently(repoInfo, files);
+      await this.doSubmitLoopSilently(repoInfo, files, usageData);
     } catch (error) {
       const operation = `Submit models to ${RepositoryType.Company}`;
       throw new ProcessError(operation, error, this.component);
     }
+    // send usage data
+    this.sendUsageDataOfSubmit(usageData);
   }
 
   /**
@@ -414,15 +425,20 @@ export class ModelRepositoryManager {
    * submit model files silently, fault tolerant and don't throw exception
    * @param repoInfo repository info
    * @param files model file list
+   * @param usageData usage data
    */
-  private async doSubmitLoopSilently(repoInfo: RepositoryInfo, files: string[]): Promise<void> {
-    const option: SubmitOptions = { overwrite: false };
+  private async doSubmitLoopSilently(
+    repoInfo: RepositoryInfo,
+    files: string[],
+    usageData: Map<ModelType, string[]>,
+  ): Promise<void> {
+    const options: SubmitOptions = { overwrite: false };
     for (const file of files) {
       const operation = `Submit file ${file}`;
       this.outputChannel.start(operation, this.component);
 
       try {
-        await this.doSubmitModel(repoInfo, file, option);
+        await this.doSubmitModel(repoInfo, file, options, usageData);
         this.outputChannel.end(operation, this.component);
       } catch (error) {
         this.outputChannel.error(operation, this.component, error);
@@ -433,12 +449,19 @@ export class ModelRepositoryManager {
   /**
    * submit model file to repository
    * @param repoInfo repository info
-   * @param file model file
-   * @param option submit options
+   * @param filePath model file path
+   * @param options submit options
+   * @param usageData usage data
    */
-  private async doSubmitModel(repoInfo: RepositoryInfo, file: string, option: SubmitOptions): Promise<void> {
-    const content = await Utility.getJsonContent(file);
+  private async doSubmitModel(
+    repoInfo: RepositoryInfo,
+    filePath: string,
+    option: SubmitOptions,
+    usageData: Map<ModelType, string[]>,
+  ): Promise<void> {
+    const content = await Utility.getJsonContent(filePath);
     const modelId: string = content[DigitalTwinConstants.ID];
+    const modelType: ModelType = DeviceModelManager.convertToModelType(content[DigitalTwinConstants.TYPE]);
     let result: GetResult | undefined;
     try {
       result = await ModelRepositoryClient.getModel(repoInfo, modelId, true);
@@ -467,5 +490,39 @@ export class ModelRepositoryManager {
       }
     }
     await ModelRepositoryClient.updateModel(repoInfo, modelId, content);
+
+    // record submitted model id
+    let modelIds: string[] | undefined = usageData.get(modelType);
+    if (!modelIds) {
+      modelIds = [];
+      usageData.set(modelType, modelIds);
+    }
+    modelIds.push(modelId);
+  }
+
+  /**
+   * send usage data of SubmitFiles
+   * @param usageData usage data
+   */
+  private sendUsageDataOfSubmit(usageData: Map<ModelType, string[]>): void {
+    const telemetryContext: TelemetryContext = TelemetryContext.startNew();
+    let propertyName: string = Constants.EMPTY_STRING;
+    let propertyValue: string;
+    for (const [key, value] of usageData) {
+      switch (key) {
+        case ModelType.Interface:
+          propertyName = "interfaceId";
+          break;
+        case ModelType.CapabilityModel:
+          propertyName = "capabilityModelId";
+          break;
+        default:
+      }
+      if (propertyName) {
+        propertyValue = value.map((id) => Utility.hash(id)).join(Constants.DEFAULT_SEPARATOR);
+        telemetryContext.setProperty(propertyName, propertyValue);
+      }
+    }
+    this.telemetryClient.sendEvent(`${Command.SubmitFiles}.data`, telemetryContext);
   }
 }
