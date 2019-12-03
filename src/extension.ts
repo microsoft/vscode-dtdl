@@ -8,7 +8,8 @@ import { Command } from "./common/command";
 import { Constants } from "./common/constants";
 import { NSAT } from "./common/nsat";
 import { ProcessError } from "./common/processError";
-import { TelemetryClient, TelemetryContext } from "./common/telemetryClient";
+import { TelemetryClient } from "./common/telemetryClient";
+import { TelemetryContext } from "./common/telemetryContext";
 import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
 import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCompletionItemProvider";
@@ -24,7 +25,12 @@ export function activate(context: vscode.ExtensionContext) {
   const telemetryClient = new TelemetryClient(context);
   const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
   const deviceModelManager = new DeviceModelManager(context, outputChannel);
-  const modelRepositoryManager = new ModelRepositoryManager(context, outputChannel, Constants.WEB_VIEW_PATH);
+  const modelRepositoryManager = new ModelRepositoryManager(
+    context,
+    Constants.WEB_VIEW_PATH,
+    outputChannel,
+    telemetryClient,
+  );
   const apiProvider = new ApiProvider(modelRepositoryManager);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
@@ -171,15 +177,15 @@ function initCommand(
 ): void {
   context.subscriptions.push(
     vscode.commands.registerCommand(command, async (...args: any[]) => {
-      const telemetryContext: TelemetryContext = telemetryClient.createContext();
+      const telemetryContext: TelemetryContext = TelemetryContext.startNew();
       telemetryClient.sendEvent(`${command}.start`);
       try {
         return await callback(...args);
       } catch (error) {
+        telemetryContext.setError(error);
         if (error instanceof UserCancelledError) {
           outputChannel.warn(error.message);
         } else {
-          telemetryClient.setErrorContext(telemetryContext, error);
           UI.showNotification(MessageType.Error, error.message);
           if (error instanceof ProcessError) {
             const message = `${error.message}\n${error.stack}`;
@@ -189,7 +195,7 @@ function initCommand(
           }
         }
       } finally {
-        telemetryClient.closeContext(telemetryContext);
+        telemetryContext.end();
         telemetryClient.sendEvent(`${command}.end`, telemetryContext);
         outputChannel.show();
         if (enableSurvey) {

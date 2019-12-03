@@ -4,7 +4,8 @@
   "description": "Author IoT Plug and Play models, publish and manage with Model Repository",
   "version": "0.0.1",
   "publisher": "vsciot-vscode",
-  "aiKey": "5b869bc6-ca93-4f24-aa87-92871a3a616e",
+  "preview": true,
+  "aiKey": "25cf12e8-2dc7-4556-b54e-40fb9d1dfba1",
   "icon": "logo.png",
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
@@ -61,7 +62,7 @@
     ],
     "configuration": [
       {
-        "title": "IoT Plug and Play Configuration",
+        "title": "IoT Plug and Play",
         "properties": {
           "azure-digital-twins.publicRepositoryUrl": {
             "type": "string",

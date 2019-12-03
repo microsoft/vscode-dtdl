@@ -4,29 +4,14 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
-
-/**
- * Operation result of telemetry
- */
-export enum TelemetryResult {
-  Succeeded = "Succeeded",
-  Failed = "Failed",
-  Cancelled = "Cancelled",
-}
-
-/**
- * Context of telemetry
- */
-export interface TelemetryContext {
-  start: number;
-  properties: { [key: string]: string };
-  measurements: { [key: string]: number };
-}
+import { TelemetryContext } from "./telemetryContext";
 
 /**
  * Telemetry client
  */
 export class TelemetryClient {
+  private static readonly IS_INTERNAL = "isInternal";
+
   /**
    * validate content of package json
    * @param packageJSON package json
@@ -50,7 +35,7 @@ export class TelemetryClient {
   private isInternal: boolean = false;
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = JSON.parse(fs.readFileSync(context.asAbsolutePath("./package.json"), "utf8"));
-    if (!packageJSON || TelemetryClient.validatePackageJSON(packageJSON)) {
+    if (!packageJSON || !TelemetryClient.validatePackageJSON(packageJSON)) {
       return;
     }
     this.extensionId = `${packageJSON.publisher}.${packageJSON.name}`;
@@ -69,47 +54,12 @@ export class TelemetryClient {
       return;
     }
     if (telemetryContext) {
+      telemetryContext.setProperty(TelemetryClient.IS_INTERNAL, this.isInternal.toString());
       this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
     } else {
-      this.client.sendTelemetryEvent(eventName);
+      const properties = { [TelemetryClient.IS_INTERNAL]: this.isInternal.toString() };
+      this.client.sendTelemetryEvent(eventName, properties);
     }
-  }
-
-  /**
-   * create telemetry context
-   */
-  public createContext(): TelemetryContext {
-    const context: TelemetryContext = { start: Date.now(), properties: {}, measurements: {} };
-    context.properties.isInternal = this.isInternal.toString();
-    context.properties.result = TelemetryResult.Succeeded;
-    return context;
-  }
-
-  /**
-   * set telemetry context as error
-   * @param context telemetry context
-   * @param error error
-   */
-  public setErrorContext(context: TelemetryContext, error: Error): void {
-    context.properties.result = TelemetryResult.Failed;
-    context.properties.error = error.name;
-    context.properties.errorMessage = error.message;
-  }
-
-  /**
-   * set telemetry context as cancel
-   * @param context telemetry context
-   */
-  public setCancelContext(context: TelemetryContext): void {
-    context.properties.result = TelemetryResult.Cancelled;
-  }
-
-  /**
-   * close telemetry context
-   * @param context telemetry context
-   */
-  public closeContext(context: TelemetryContext) {
-    context.measurements.duration = (Date.now() - context.start) / 1000;
   }
 
   /**

@@ -8,6 +8,9 @@ export class Constants {
   public static readonly EXTENSION_NAME = "azure-digital-twins";
   public static readonly CHANNEL_NAME = "IoT Plug and Play";
   public static readonly UTF8 = "utf8";
+  public static readonly BASE64 = "base64";
+  public static readonly SHA256 = "sha256";
+  public static readonly HEX = "hex";
   public static readonly EMPTY_STRING = "";
   public static readonly DEFAULT_SEPARATOR = ",";
   public static readonly COMPLETION_TRIGGER = '"';
