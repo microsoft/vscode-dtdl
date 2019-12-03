@@ -62,8 +62,7 @@
     ],
     "configuration": [
       {
-        "type": "object",
-        "title": "IoT Plug and Play Configuration",
+        "title": "IoT Plug and Play",
         "properties": {
           "azure-digital-twins.publicRepositoryUrl": {
             "type": "string",

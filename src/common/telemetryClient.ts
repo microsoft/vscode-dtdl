@@ -35,7 +35,7 @@ export class TelemetryClient {
   private isInternal: boolean = false;
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = JSON.parse(fs.readFileSync(context.asAbsolutePath("./package.json"), "utf8"));
-    if (!packageJSON || TelemetryClient.validatePackageJSON(packageJSON)) {
+    if (!packageJSON || !TelemetryClient.validatePackageJSON(packageJSON)) {
       return;
     }
     this.extensionId = `${packageJSON.publisher}.${packageJSON.name}`;

@@ -39,7 +39,7 @@ steps:
     displayName: Compile Sources
 
   - script: |
-      # node scripts/genAiKey.js
+      node scripts/genAiKey.js
       npm install -g vsce
       vsce package
     displayName: Build VSIX Package
