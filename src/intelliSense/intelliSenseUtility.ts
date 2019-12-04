@@ -96,6 +96,14 @@ export class IntelliSenseUtility {
   }
 
   /**
+   * check if it is language node
+   * @param classNode class node
+   */
+  public static isLanguageNode(classNode: ClassNode): boolean {
+    return classNode.id === DigitalTwinConstants.LANGUAGE;
+  }
+
+  /**
    * parse json node, return property pair
    * @param node json node
    */

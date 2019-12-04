@@ -49,7 +49,7 @@ export interface ConstraintNode {
  */
 interface ContextNode {
   name: string;
-  isArray?: boolean;
+  container: ContainerType;
 }
 
 /**
@@ -79,6 +79,15 @@ enum EdgeType {
   Domain = "http://www.w3.org/2000/01/rdf-schema#domain",
   SubClassOf = "http://www.w3.org/2000/01/rdf-schema#subClassOf",
   Comment = "http://www.w3.org/2000/01/rdf-schema#comment",
+}
+
+/**
+ * Container type of JSON-LD
+ */
+enum ContainerType {
+  None,
+  Array,
+  Language,
 }
 
 /**
@@ -151,23 +160,31 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * validate edge
+   * check if it is a valid edge
    * @param edge edge data
    */
-  private static validateEdge(edge: any): boolean {
+  private static isValidEdge(edge: any): boolean {
     return edge.SourceNode && edge.TargetNode && edge.Label;
   }
 
   /**
-   * check if object is an array
+   * resolve container type
    * @param object object data
    */
-  private static isArrayType(object: any): boolean {
+  private static resolveContainerType(object: any): ContainerType {
     const container = object[DigitalTwinConstants.CONTAINER];
-    if (container && typeof container === "string") {
-      return container === DigitalTwinConstants.LIST || container === DigitalTwinConstants.SET;
+    if (!container || typeof container !== "string") {
+      return ContainerType.None;
     }
-    return false;
+    switch (container) {
+      case DigitalTwinConstants.LIST:
+      case DigitalTwinConstants.SET:
+        return ContainerType.Array;
+      case DigitalTwinConstants.LANGUAGE:
+        return ContainerType.Language;
+      default:
+        return ContainerType.None;
+    }
   }
 
   /**
@@ -275,11 +292,11 @@ export class DigitalTwinGraph {
       const value = context[key];
       if (typeof value === "string") {
         id = this.getId(value);
-        this.contextNodes.set(id, { name: key, isArray: false });
+        this.contextNodes.set(id, { name: key, container: ContainerType.None });
       } else {
-        const isArray: boolean = DigitalTwinGraph.isArrayType(value);
+        const containerType: ContainerType = DigitalTwinGraph.resolveContainerType(value);
         id = this.getId(value[DigitalTwinConstants.ID] as string);
-        this.contextNodes.set(id, { name: key, isArray });
+        this.contextNodes.set(id, { name: key, container: containerType });
       }
       this.reversedIndex.set(key, id);
     }
@@ -303,7 +320,7 @@ export class DigitalTwinGraph {
    */
   private buildGraph(graphJson: any): void {
     for (const edge of graphJson.Edges) {
-      if (DigitalTwinGraph.validateEdge(edge)) {
+      if (DigitalTwinGraph.isValidEdge(edge)) {
         this.handleEdge(edge);
       }
     }
@@ -448,7 +465,6 @@ export class DigitalTwinGraph {
   private handleEdgeOfComment(edge: any): void {
     const id: string = edge.SourceNode.Id as string;
     const comment: string = edge.TargetNode.Value as string;
-    // TODO:(erichen): need to check if comment only exists in property
     const propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
     if (propertyNode) {
       propertyNode.comment = comment;
@@ -487,7 +503,13 @@ export class DigitalTwinGraph {
       const contextNode: ContextNode | undefined = this.contextNodes.get(id);
       if (contextNode) {
         propertyNode.label = contextNode.name;
-        propertyNode.isArray = contextNode.isArray;
+        propertyNode.isArray = contextNode.container === ContainerType.Array;
+        // handle language node
+        if (contextNode.container === ContainerType.Language) {
+          const languageNode: ClassNode = this.ensureClassNode(DigitalTwinConstants.LANGUAGE);
+          languageNode.label = DigitalTwinConstants.LANGUAGE;
+          propertyNode.range = [languageNode];
+        }
         const constraintNode: ConstraintNode | undefined = this.constraintNodes.get(contextNode.name);
         if (constraintNode) {
           propertyNode.constraint = constraintNode;
