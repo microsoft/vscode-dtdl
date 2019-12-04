@@ -13,10 +13,10 @@ export class TelemetryClient {
   private static readonly IS_INTERNAL = "isInternal";
 
   /**
-   * validate content of package json
+   * check if it is a valid package json
    * @param packageJSON package json
    */
-  private static validatePackageJSON(packageJSON: any): boolean {
+  private static isValidPackageJSON(packageJSON: any): boolean {
     return packageJSON.name && packageJSON.publisher && packageJSON.version && packageJSON.aiKey;
   }
 
@@ -35,7 +35,7 @@ export class TelemetryClient {
   private isInternal: boolean = false;
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = JSON.parse(fs.readFileSync(context.asAbsolutePath("./package.json"), "utf8"));
-    if (!packageJSON || !TelemetryClient.validatePackageJSON(packageJSON)) {
+    if (!packageJSON || !TelemetryClient.isValidPackageJSON(packageJSON)) {
       return;
     }
     this.extensionId = `${packageJSON.publisher}.${packageJSON.name}`;

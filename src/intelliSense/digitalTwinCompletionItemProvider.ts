@@ -7,6 +7,7 @@ import { Constants } from "../common/constants";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
 import { ClassNode, DigitalTwinGraph, PropertyNode, ValueSchema } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseUtility";
+import { LANGUAGE_CODE } from "./languageCode";
 
 /**
  * Completion item provider for DigitalTwin IntelliSense
@@ -133,16 +134,34 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     const completionItems: vscode.CompletionItem[] = [];
     const exist = new Set<string>();
     const classNode: ClassNode | undefined = DigitalTwinCompletionItemProvider.getObjectType(node, exist);
+    let dummyNode: PropertyNode;
     if (!classNode) {
       // there are two cases when classNode is not defined
       // 1. there are multiple choice. In this case, ask user to specifiy @type
       // 2. invalid @type value. In this case, diagnostic shows error and user need to correct value
       if (!exist.has(DigitalTwinConstants.TYPE)) {
         // suggest @type property
-        const dummyNode: PropertyNode = { id: DigitalTwinConstants.TYPE };
+        dummyNode = { id: DigitalTwinConstants.TYPE };
         completionItems.push(
           DigitalTwinCompletionItemProvider.createCompletionItem(
             `${dummyNode.id} ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}`,
+            true,
+            DigitalTwinCompletionItemProvider.getInsertTextForProperty(dummyNode, includeValue, separator),
+            position,
+            range,
+          ),
+        );
+      }
+    } else if (IntelliSenseUtility.isLanguageNode(classNode)) {
+      const stringValueSchema: ClassNode = { id: ValueSchema.String };
+      for (const code of LANGUAGE_CODE) {
+        if (exist.has(code)) {
+          continue;
+        }
+        dummyNode = { id: code, range: [stringValueSchema] };
+        completionItems.push(
+          DigitalTwinCompletionItemProvider.createCompletionItem(
+            code,
             true,
             DigitalTwinCompletionItemProvider.getInsertTextForProperty(dummyNode, includeValue, separator),
             position,
