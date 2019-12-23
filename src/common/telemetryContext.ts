@@ -47,13 +47,9 @@ export class TelemetryContext {
    * @param error error
    */
   public setError(error: Error): void {
-    if (error instanceof UserCancelledError) {
-      this.properties.result = OperationResult.Cancel;
-    } else {
-      this.properties.result = OperationResult.Fail;
-      this.properties.error = error.name;
-      this.properties.errorMessage = error.message;
-    }
+    this.properties.result = error instanceof UserCancelledError ? OperationResult.Cancel : OperationResult.Fail;
+    this.properties.error = error.name;
+    this.properties.errorMessage = error.message;
   }
 
   /**

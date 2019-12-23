@@ -116,6 +116,7 @@ export class DigitalTwinDiagnosticProvider {
         break;
       case JsonNodeType.Boolean:
         DigitalTwinDiagnosticProvider.validateBooleanNode(jsonNode, digitalTwinNode, problems);
+        break;
       default:
     }
   }
