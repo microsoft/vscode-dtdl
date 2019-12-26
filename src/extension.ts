@@ -25,12 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
   const telemetryClient = new TelemetryClient(context);
   const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
   const deviceModelManager = new DeviceModelManager(context, outputChannel);
-  const modelRepositoryManager = new ModelRepositoryManager(
-    context,
-    Constants.WEB_VIEW_PATH,
-    outputChannel,
-    telemetryClient,
-  );
+  const modelRepositoryManager = new ModelRepositoryManager(context, Constants.WEB_VIEW_PATH, outputChannel);
   const apiProvider = new ApiProvider(modelRepositoryManager);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
@@ -90,8 +85,8 @@ export function activate(context: vscode.ExtensionContext) {
     nsat,
     true,
     Command.SubmitFiles,
-    async (): Promise<void> => {
-      return modelRepositoryManager.submitFiles();
+    async (telemetryContext: TelemetryContext): Promise<void> => {
+      return modelRepositoryManager.submitFiles(telemetryContext);
     },
   );
   initCommand(
@@ -101,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
     nsat,
     false,
     Command.DeleteModels,
-    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
+    async (telemetryContext: TelemetryContext, publicRepository: boolean, modelIds: string[]): Promise<void> => {
       return modelRepositoryManager.deleteModels(publicRepository, modelIds);
     },
   );
@@ -112,7 +107,7 @@ export function activate(context: vscode.ExtensionContext) {
     nsat,
     false,
     Command.DownloadModels,
-    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
+    async (telemetryContext: TelemetryContext, publicRepository: boolean, modelIds: string[]): Promise<void> => {
       return modelRepositoryManager.downloadModels(publicRepository, modelIds);
     },
   );
@@ -124,6 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
     false,
     Command.SearchInterface,
     async (
+      telemetryContext: TelemetryContext,
       publicRepository: boolean,
       keyword?: string,
       pageSize?: number,
@@ -146,6 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
     false,
     Command.SearchCapabilityModel,
     async (
+      telemetryContext: TelemetryContext,
       publicRepository: boolean,
       keyword?: string,
       pageSize?: number,
@@ -173,14 +170,13 @@ function initCommand(
   nsat: NSAT,
   enableSurvey: boolean,
   command: Command,
-  callback: (...args: any[]) => Promise<any>,
+  callback: (telemetryContext: TelemetryContext, ...args: any[]) => Promise<any>,
 ): void {
   context.subscriptions.push(
     vscode.commands.registerCommand(command, async (...args: any[]) => {
       const telemetryContext: TelemetryContext = TelemetryContext.startNew();
-      telemetryClient.sendEvent(`${command}.start`);
       try {
-        return await callback(...args);
+        return await callback(telemetryContext, ...args);
       } catch (error) {
         telemetryContext.setError(error);
         if (error instanceof UserCancelledError) {
@@ -196,7 +192,7 @@ function initCommand(
         }
       } finally {
         telemetryContext.end();
-        telemetryClient.sendEvent(`${command}.end`, telemetryContext);
+        telemetryClient.sendEvent(command, telemetryContext);
         outputChannel.show();
         if (enableSurvey) {
           nsat.takeSurvey(context);

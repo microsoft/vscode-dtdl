@@ -34,15 +34,6 @@ export class TelemetryContext {
   }
 
   /**
-   * set property
-   * @param name property name
-   * @param value property value
-   */
-  public setProperty(name: string, value: string): void {
-    this.properties[name] = value;
-  }
-
-  /**
    * set error
    * @param error error
    */

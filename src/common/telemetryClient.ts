@@ -54,7 +54,7 @@ export class TelemetryClient {
       return;
     }
     if (telemetryContext) {
-      telemetryContext.setProperty(TelemetryClient.IS_INTERNAL, this.isInternal.toString());
+      telemetryContext.properties[TelemetryClient.IS_INTERNAL] = this.isInternal.toString();
       this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
     } else {
       const properties = { [TelemetryClient.IS_INTERNAL]: this.isInternal.toString() };
