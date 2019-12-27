@@ -5,12 +5,10 @@ import * as vscode from "vscode";
 import { VSCExpress } from "vscode-express";
 import { BadRequestError } from "../common/badRequestError";
 import { ColorizedChannel } from "../common/colorizedChannel";
-import { Command } from "../common/command";
 import { Configuration } from "../common/configuration";
 import { Constants } from "../common/constants";
 import { CredentialStore } from "../common/credentialStore";
 import { ProcessError } from "../common/processError";
-import { TelemetryClient } from "../common/telemetryClient";
 import { TelemetryContext } from "../common/telemetryContext";
 import { UserCancelledError } from "../common/userCancelledError";
 import { Utility } from "../common/utility";
@@ -142,12 +140,7 @@ export class ModelRepositoryManager {
 
   private readonly express: VSCExpress;
   private readonly component: string;
-  constructor(
-    context: vscode.ExtensionContext,
-    filePath: string,
-    private readonly outputChannel: ColorizedChannel,
-    private readonly telemetryClient: TelemetryClient,
-  ) {
+  constructor(context: vscode.ExtensionContext, filePath: string, private readonly outputChannel: ColorizedChannel) {
     this.express = new VSCExpress(context, filePath);
     this.component = Constants.MODEL_REPOSITORY_COMPONENT;
   }
@@ -203,8 +196,9 @@ export class ModelRepositoryManager {
 
   /**
    * submit files to model repository
+   * @param telemetryContext telemetry context
    */
-  public async submitFiles(): Promise<void> {
+  public async submitFiles(telemetryContext: TelemetryContext): Promise<void> {
     const files: string[] = await UI.selectModelFiles(UIConstants.SELECT_MODELS_LABEL);
     if (files.length === 0) {
       return;
@@ -221,16 +215,13 @@ export class ModelRepositoryManager {
       }
     }
 
-    const usageData = new Map<ModelType, string[]>();
     try {
       const repoInfo: RepositoryInfo = await ModelRepositoryManager.createRepositoryInfo(false);
-      await this.doSubmitLoopSilently(repoInfo, files, usageData);
+      await this.doSubmitLoopSilently(repoInfo, files, telemetryContext);
     } catch (error) {
       const operation = `Submit models to ${RepositoryType.Company}`;
       throw new ProcessError(operation, error, this.component);
     }
-    // send usage data
-    this.sendUsageDataOfSubmit(usageData);
   }
 
   /**
@@ -425,13 +416,14 @@ export class ModelRepositoryManager {
    * submit model files silently, fault tolerant and don't throw exception
    * @param repoInfo repository info
    * @param files model file list
-   * @param usageData usage data
+   * @param telemetryContext telemetry context
    */
   private async doSubmitLoopSilently(
     repoInfo: RepositoryInfo,
     files: string[],
-    usageData: Map<ModelType, string[]>,
+    telemetryContext: TelemetryContext,
   ): Promise<void> {
+    const usageData = new Map<ModelType, string[]>();
     const options: SubmitOptions = { overwrite: false };
     for (const file of files) {
       const operation = `Submit file ${file}`;
@@ -444,6 +436,8 @@ export class ModelRepositoryManager {
         this.outputChannel.error(operation, this.component, error);
       }
     }
+    // set BI telemetry
+    this.setTelemetryOfSubmitFiles(telemetryContext, usageData, files.length);
   }
 
   /**
@@ -501,28 +495,32 @@ export class ModelRepositoryManager {
   }
 
   /**
-   * send usage data of SubmitFiles
+   * set telemetry context of submit files
+   * @param telemetryContext telemetry context
    * @param usageData usage data
+   * @param totalCount total count of submit files
    */
-  private sendUsageDataOfSubmit(usageData: Map<ModelType, string[]>): void {
-    const telemetryContext: TelemetryContext = TelemetryContext.startNew();
-    let propertyName: string = Constants.EMPTY_STRING;
-    let propertyValue: string;
+  private setTelemetryOfSubmitFiles(
+    telemetryContext: TelemetryContext,
+    usageData: Map<ModelType, string[]>,
+    totalCount: number,
+  ): void {
+    let succeedCount: number = 0;
+    let hashId: string;
     for (const [key, value] of usageData) {
+      succeedCount += value.length;
+      hashId = value.map((id) => Utility.hash(id)).join(Constants.DEFAULT_SEPARATOR);
       switch (key) {
         case ModelType.Interface:
-          propertyName = "interfaceId";
+          telemetryContext.properties.interfaceId = hashId;
           break;
         case ModelType.CapabilityModel:
-          propertyName = "capabilityModelId";
+          telemetryContext.properties.capabilityModelId = hashId;
           break;
         default:
       }
-      if (propertyName) {
-        propertyValue = value.map((id) => Utility.hash(id)).join(Constants.DEFAULT_SEPARATOR);
-        telemetryContext.setProperty(propertyName, propertyValue);
-      }
     }
-    this.telemetryClient.sendEvent(`${Command.SubmitFiles}.data`, telemetryContext);
+    telemetryContext.measurements.totalCount = totalCount;
+    telemetryContext.measurements.succeedCount = succeedCount;
   }
 }
