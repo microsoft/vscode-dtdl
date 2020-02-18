@@ -99,8 +99,7 @@
     "compile": "tsc -p ./",
     "tslint": "tslint -t verbose src/**/*.ts",
     "test": "node ./out/test/runTest.js",
-    "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch"
+    "webpack": "webpack --mode development"
   },
   "devDependencies": {
     "@types/fs-extra": "^7.0.0",
