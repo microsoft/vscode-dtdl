@@ -5,7 +5,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
 import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
-import { ModelFileInfo } from "../modelRepository/modelRepositoryManager";
 import { Constants } from "./constants";
 
 /**
@@ -61,76 +60,6 @@ export class Utility {
     const filename: string = DeviceModelManager.generateModelFileName(name, type);
     if (await fs.pathExists(path.join(folder, filename))) {
       return `${type} ${name} already exists in folder ${folder}`;
-    }
-    return undefined;
-  }
-
-  /**
-   * validate name is not empty, return error message if validation fail
-   * @param name name
-   * @param placeholder placeholder for message
-   */
-  public static validateNotEmpty(name: string, placeholder: string): string | undefined {
-    if (!name || name.trim() === Constants.EMPTY_STRING) {
-      return `${placeholder} ${Constants.NOT_EMPTY_MSG}`;
-    }
-    return undefined;
-  }
-
-  /**
-   * enforce url with https protocol
-   * @param url url
-   */
-  public static enforceHttps(url: string): string {
-    return Constants.URL_PROTOCAL_REGEX.test(url)
-      ? url.replace(Constants.URL_PROTOCAL_REGEX, Constants.HTTPS_PROTOCAL)
-      : Constants.HTTPS_PROTOCAL + url;
-  }
-
-  /**
-   * create DigitalTwin model file
-   * @param folder target folder
-   * @param modelId model id
-   * @param content model content
-   */
-  public static async createModelFile(folder: string, modelId: string, content: any): Promise<void> {
-    const type: ModelType = DeviceModelManager.convertToModelType(content[DigitalTwinConstants.TYPE]);
-    if (!type) {
-      throw new Error(Constants.MODEL_TYPE_INVALID_MSG);
-    }
-    const replacement = new Map<string, string>();
-    replacement.set(":", "_");
-    const modelName: string = Utility.replaceAll(modelId, replacement);
-    let candidate: string = DeviceModelManager.generateModelFileName(modelName, type);
-    let counter: number = 0;
-    while (true) {
-      if (!(await fs.pathExists(path.join(folder, candidate)))) {
-        break;
-      }
-      counter++;
-      candidate = DeviceModelManager.generateModelFileName(`${modelName}_${counter}`, type);
-    }
-    await fs.writeJson(path.join(folder, candidate), content, {
-      spaces: Constants.JSON_SPACE,
-      encoding: Constants.UTF8,
-    });
-  }
-
-  /**
-   * get model file info
-   * @param filePath file path
-   */
-  public static async getModelFileInfo(filePath: string): Promise<ModelFileInfo | undefined> {
-    const content = await Utility.getJsonContent(filePath);
-    const modelId: string = content[DigitalTwinConstants.ID];
-    const context: string = content[DigitalTwinConstants.CONTEXT];
-    const modelType: ModelType = DeviceModelManager.convertToModelType(content[DigitalTwinConstants.TYPE]);
-    if (modelId && context && modelType) {
-      return {
-        id: modelId,
-        type: modelType,
-        filePath,
-      };
     }
     return undefined;
   }

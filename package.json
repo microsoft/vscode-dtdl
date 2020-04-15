@@ -4,7 +4,8 @@
   "description": "Author IoT Plug and Play models, publish and manage with Model Repository",
   "version": "0.0.1",
   "publisher": "vsciot-vscode",
-  "aiKey": "5b869bc6-ca93-4f24-aa87-92871a3a616e",
+  "preview": true,
+  "aiKey": "25cf12e8-2dc7-4556-b54e-40fb9d1dfba1",
   "icon": "logo.png",
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
@@ -24,10 +25,6 @@
   ],
   "activationEvents": [
     "onCommand:azure-digital-twins.createInterface",
-    "onCommand:azure-digital-twins.createCapabilityModel",
-    "onCommand:azure-digital-twins.openRepository",
-    "onCommand:azure-digital-twins.signOutRepository",
-    "onCommand:azure-digital-twins.submitFiles",
     "workspaceContains:**/*.json"
   ],
   "main": "./dist/extension",
@@ -37,38 +34,6 @@
         "command": "azure-digital-twins.createInterface",
         "title": "Create Interface",
         "category": "IoT Plug and Play"
-      },
-      {
-        "command": "azure-digital-twins.createCapabilityModel",
-        "title": "Create Capability Model",
-        "category": "IoT Plug and Play"
-      },
-      {
-        "command": "azure-digital-twins.openRepository",
-        "title": "Open Model Repository",
-        "category": "IoT Plug and Play"
-      },
-      {
-        "command": "azure-digital-twins.signOutRepository",
-        "title": "Sign out Model Repository",
-        "category": "IoT Plug and Play"
-      },
-      {
-        "command": "azure-digital-twins.submitFiles",
-        "title": "Submit Files to Model Repository",
-        "category": "IoT Plug and Play"
-      }
-    ],
-    "configuration": [
-      {
-        "title": "IoT Plug and Play Configuration",
-        "properties": {
-          "azure-digital-twins.publicRepositoryUrl": {
-            "type": "string",
-            "default": "https://repo.azureiotrepository.com",
-            "description": "Set the public model repository url."
-          }
-        }
       }
     ],
     "jsonValidation": [
@@ -98,18 +63,15 @@
     "compile": "tsc -p ./",
     "tslint": "tslint -t verbose src/**/*.ts",
     "test": "node ./out/test/runTest.js",
-    "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch"
+    "webpack": "webpack --mode development"
   },
   "devDependencies": {
     "@types/fs-extra": "^7.0.0",
     "@types/glob": "^7.1.1",
-    "@types/keytar": "^4.4.0",
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
-    "@types/request-promise": "^4.1.44",
     "@types/vscode": "^1.36.0",
-    "cz-conventional-changelog": "^3.0.2",
+    "cz-conventional-changelog": "^3.1.0",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
     "prettier": "^1.19.1",
@@ -124,10 +86,6 @@
   "dependencies": {
     "vscode-extension-telemetry": "^0.1.0",
     "fs-extra": "^7.0.1",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4",
-    "vscode-express": "^1.0.1",
-    "keytar": "^4.13.0",
     "jsonc-parser": "^2.1.1"
   },
   "config": {

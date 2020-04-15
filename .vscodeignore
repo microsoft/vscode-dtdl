@@ -1,13 +1,13 @@
-!node_modules/keytar
 .vscode
 .vscode-test
 node_modules
 out/
 src/
+scripts/
 .gitignore
 package-lock.json
 tsconfig.json
 tslint.json
 webpack.config.js
-**/*.map
 azure-pipelines.yml
+**/*.map

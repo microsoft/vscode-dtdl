@@ -7,6 +7,7 @@ import { Constants } from "../common/constants";
 import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants";
 import { ClassNode, DigitalTwinGraph, PropertyNode, ValueSchema } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseUtility";
+import { LANGUAGE_CODE } from "./languageCode";
 
 /**
  * Diagnostic problem
@@ -115,6 +116,7 @@ export class DigitalTwinDiagnosticProvider {
         break;
       case JsonNodeType.Boolean:
         DigitalTwinDiagnosticProvider.validateBooleanNode(jsonNode, digitalTwinNode, problems);
+        break;
       default:
     }
   }
@@ -129,6 +131,10 @@ export class DigitalTwinDiagnosticProvider {
     const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(digitalTwinNode);
     if (classes.length === 0) {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.NotObjectType);
+      return;
+    }
+    if (!jsonNode.children || jsonNode.children.length === 0) {
+      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.EmptyObject, true);
       return;
     }
     const typePath: parser.JSONPath = [DigitalTwinConstants.TYPE];
@@ -146,6 +152,11 @@ export class DigitalTwinDiagnosticProvider {
       classNode = classes[0];
     }
     if (!classNode) {
+      return;
+    }
+    // validate language node
+    if (IntelliSenseUtility.isLanguageNode(classNode)) {
+      DigitalTwinDiagnosticProvider.validateLanguageNode(jsonNode, digitalTwinNode, problems);
       return;
     }
     // validate other properties
@@ -341,7 +352,7 @@ export class DigitalTwinDiagnosticProvider {
       digitalTwinNode,
       ValueSchema.String,
     );
-    // validate enum
+    // validate enum node
     if (!classNode) {
       DigitalTwinDiagnosticProvider.validateEnumNode(jsonNode, digitalTwinNode, problems);
       return;
@@ -421,6 +432,34 @@ export class DigitalTwinDiagnosticProvider {
     if (!classNode) {
       DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, digitalTwinNode, problems);
       return;
+    }
+  }
+
+  /**
+   * validate language node
+   * @param jsonNode json node
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
+  private static validateLanguageNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
+    if (!jsonNode.children) {
+      return;
+    }
+    let propertyName: string;
+    let propertyPair: PropertyPair | undefined;
+    for (const child of jsonNode.children) {
+      propertyPair = IntelliSenseUtility.parseProperty(child);
+      if (!propertyPair) {
+        continue;
+      }
+      propertyName = propertyPair.name.value as string;
+      if (!LANGUAGE_CODE.has(propertyName)) {
+        DigitalTwinDiagnosticProvider.addProblemOfUnexpectedProperty(propertyPair.name, problems);
+      } else if (typeof propertyPair.value.value !== "string") {
+        DigitalTwinDiagnosticProvider.addProblem(propertyPair.value, problems, DiagnosticMessage.ValueNotString);
+      } else {
+        DigitalTwinDiagnosticProvider.validateStringNode(propertyPair.value, digitalTwinNode, problems);
+      }
     }
   }
 

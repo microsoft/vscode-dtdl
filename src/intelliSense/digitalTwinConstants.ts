@@ -13,6 +13,7 @@ export enum DiagnosticMessage {
   LongerThanMaxLength = "String is longer than the maximum length of",
   NotMatchPattern = "String does not match the pattern of",
   NotObjectType = "Object is not expected.",
+  EmptyObject = "Object is empty.",
   EmptyString = "String is empty.",
   EmptyArray = "Array is empty.",
   TooFewItems = "Array has too few items. Minimum count is",
@@ -21,6 +22,7 @@ export enum DiagnosticMessage {
   InvalidEnum = "Invalid value. Valid values:",
   InvalidContext = "Invalid context of DigitalTwin.",
   ConflictType = "Conflict type:",
+  ValueNotString = "Value is not string.",
 }
 
 /**
@@ -42,6 +44,7 @@ export class DigitalTwinConstants {
   public static readonly CONTAINER = "@container";
   public static readonly LIST = "@list";
   public static readonly SET = "@set";
+  public static readonly LANGUAGE = "@language";
   public static readonly ENTRY_NODE = "@entry";
   public static readonly DUMMY_NODE = "@dummy";
   public static readonly INTERFACE_NODE = "Interface";
@@ -53,6 +56,5 @@ export class DigitalTwinConstants {
   public static readonly REQUIRED_PROPERTY_LABEL = "(required)";
   public static readonly IOT_MODEL_LABEL = "IoTModel";
   public static readonly CONTEXT_TEMPLATE = "http://azureiot.com/v1/contexts/IoTModel.json";
-  public static readonly CONTEXT_REGEX = new RegExp("^http://azureiot.com/v[0-9]+/contexts/IoTModel.json$");
   public static readonly SUPPORT_SEMANTIC_TYPES = new Set<string>(["Telemetry", "Property"]);
 }

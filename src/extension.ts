@@ -2,21 +2,18 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { ApiProvider } from "./api/apiProvider";
 import { ColorizedChannel } from "./common/colorizedChannel";
 import { Command } from "./common/command";
 import { Constants } from "./common/constants";
 import { NSAT } from "./common/nsat";
 import { ProcessError } from "./common/processError";
-import { TelemetryClient, TelemetryContext } from "./common/telemetryClient";
+import { TelemetryClient } from "./common/telemetryClient";
+import { TelemetryContext } from "./common/telemetryContext";
 import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
 import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCompletionItemProvider";
 import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnosticProvider";
-import { DigitalTwinHoverProvider } from "./intelliSense/digitalTwinHoverProvider";
 import { IntelliSenseUtility } from "./intelliSense/intelliSenseUtility";
-import { SearchResult } from "./modelRepository/modelRepositoryInterface";
-import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
 import { MessageType, UI } from "./view/ui";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -24,8 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
   const telemetryClient = new TelemetryClient(context);
   const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
   const deviceModelManager = new DeviceModelManager(context, outputChannel);
-  const modelRepositoryManager = new ModelRepositoryManager(context, outputChannel, Constants.WEB_VIEW_PATH);
-  const apiProvider = new ApiProvider(modelRepositoryManager);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
   context.subscriptions.push(outputChannel);
@@ -44,118 +39,6 @@ export function activate(context: vscode.ExtensionContext) {
       return deviceModelManager.createModel(ModelType.Interface);
     },
   );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.CreateCapabilityModel,
-    async (): Promise<void> => {
-      return deviceModelManager.createModel(ModelType.CapabilityModel);
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.OpenRepository,
-    async (): Promise<void> => {
-      return modelRepositoryManager.signIn();
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.SignOutRepository,
-    async (): Promise<void> => {
-      return modelRepositoryManager.signOut();
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.SubmitFiles,
-    async (): Promise<void> => {
-      return modelRepositoryManager.submitFiles();
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.DeleteModels,
-    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
-      return modelRepositoryManager.deleteModels(publicRepository, modelIds);
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.DownloadModels,
-    async (publicRepository: boolean, modelIds: string[]): Promise<void> => {
-      return modelRepositoryManager.downloadModels(publicRepository, modelIds);
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.SearchInterface,
-    async (
-      publicRepository: boolean,
-      keyword?: string,
-      pageSize?: number,
-      continuationToken?: string,
-    ): Promise<SearchResult> => {
-      return modelRepositoryManager.searchModel(
-        ModelType.Interface,
-        publicRepository,
-        keyword,
-        pageSize,
-        continuationToken,
-      );
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.SearchCapabilityModel,
-    async (
-      publicRepository: boolean,
-      keyword?: string,
-      pageSize?: number,
-      continuationToken?: string,
-    ): Promise<SearchResult> => {
-      return modelRepositoryManager.searchModel(
-        ModelType.CapabilityModel,
-        publicRepository,
-        keyword,
-        pageSize,
-        continuationToken,
-      );
-    },
-  );
-  // provide api integration
-  return { apiProvider };
 }
 
 export function deactivate() {}
@@ -171,15 +54,14 @@ function initCommand(
 ): void {
   context.subscriptions.push(
     vscode.commands.registerCommand(command, async (...args: any[]) => {
-      const telemetryContext: TelemetryContext = telemetryClient.createContext();
-      telemetryClient.sendEvent(`${command}.start`);
+      const telemetryContext: TelemetryContext = TelemetryContext.startNew();
       try {
         return await callback(...args);
       } catch (error) {
+        telemetryContext.setError(error);
         if (error instanceof UserCancelledError) {
           outputChannel.warn(error.message);
         } else {
-          telemetryClient.setErrorContext(telemetryContext, error);
           UI.showNotification(MessageType.Error, error.message);
           if (error instanceof ProcessError) {
             const message = `${error.message}\n${error.stack}`;
@@ -189,8 +71,8 @@ function initCommand(
           }
         }
       } finally {
-        telemetryClient.closeContext(telemetryContext);
-        telemetryClient.sendEvent(`${command}.end`, telemetryContext);
+        telemetryContext.end();
+        telemetryClient.sendEvent(command, telemetryContext);
         outputChannel.show();
         if (enableSurvey) {
           nsat.takeSurvey(context);
@@ -215,7 +97,6 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
       Constants.COMPLETION_TRIGGER,
     ),
   );
-  context.subscriptions.push(vscode.languages.registerHoverProvider(selector, new DigitalTwinHoverProvider()));
   // register diagnostic
   let pendingDiagnostic: NodeJS.Timer;
   const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
