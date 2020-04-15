@@ -71,6 +71,7 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.21",
     "@types/vscode": "^1.36.0",
+    "cz-conventional-changelog": "^3.1.0",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
     "prettier": "^1.19.1",
@@ -86,5 +87,10 @@
     "vscode-extension-telemetry": "^0.1.0",
     "fs-extra": "^7.0.1",
     "jsonc-parser": "^2.1.1"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
