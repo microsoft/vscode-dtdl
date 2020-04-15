@@ -15,7 +15,6 @@ import { UIConstants } from "../view/uiConstants";
  */
 export enum ModelType {
   Interface = "Interface",
-  CapabilityModel = "Capability Model",
 }
 
 /**
