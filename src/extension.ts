@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { ApiProvider } from "./api/apiProvider";
 import { ColorizedChannel } from "./common/colorizedChannel";
 import { Command } from "./common/command";
 import { Constants } from "./common/constants";
@@ -14,10 +13,7 @@ import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
 import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCompletionItemProvider";
 import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnosticProvider";
-import { DigitalTwinHoverProvider } from "./intelliSense/digitalTwinHoverProvider";
 import { IntelliSenseUtility } from "./intelliSense/intelliSenseUtility";
-import { SearchResult } from "./modelRepository/modelRepositoryInterface";
-import { ModelRepositoryManager } from "./modelRepository/modelRepositoryManager";
 import { MessageType, UI } from "./view/ui";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -25,8 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
   const telemetryClient = new TelemetryClient(context);
   const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
   const deviceModelManager = new DeviceModelManager(context, outputChannel);
-  const modelRepositoryManager = new ModelRepositoryManager(context, Constants.WEB_VIEW_PATH, outputChannel);
-  const apiProvider = new ApiProvider(modelRepositoryManager);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
   context.subscriptions.push(outputChannel);
@@ -45,120 +39,6 @@ export function activate(context: vscode.ExtensionContext) {
       return deviceModelManager.createModel(ModelType.Interface);
     },
   );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.CreateCapabilityModel,
-    async (): Promise<void> => {
-      return deviceModelManager.createModel(ModelType.CapabilityModel);
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.OpenRepository,
-    async (): Promise<void> => {
-      return modelRepositoryManager.signIn();
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.SignOutRepository,
-    async (): Promise<void> => {
-      return modelRepositoryManager.signOut();
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    Command.SubmitFiles,
-    async (telemetryContext: TelemetryContext): Promise<void> => {
-      return modelRepositoryManager.submitFiles(telemetryContext);
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.DeleteModels,
-    async (telemetryContext: TelemetryContext, publicRepository: boolean, modelIds: string[]): Promise<void> => {
-      return modelRepositoryManager.deleteModels(publicRepository, modelIds);
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.DownloadModels,
-    async (telemetryContext: TelemetryContext, publicRepository: boolean, modelIds: string[]): Promise<void> => {
-      return modelRepositoryManager.downloadModels(publicRepository, modelIds);
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.SearchInterface,
-    async (
-      telemetryContext: TelemetryContext,
-      publicRepository: boolean,
-      keyword?: string,
-      pageSize?: number,
-      continuationToken?: string,
-    ): Promise<SearchResult> => {
-      return modelRepositoryManager.searchModel(
-        ModelType.Interface,
-        publicRepository,
-        keyword,
-        pageSize,
-        continuationToken,
-      );
-    },
-  );
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    false,
-    Command.SearchCapabilityModel,
-    async (
-      telemetryContext: TelemetryContext,
-      publicRepository: boolean,
-      keyword?: string,
-      pageSize?: number,
-      continuationToken?: string,
-    ): Promise<SearchResult> => {
-      return modelRepositoryManager.searchModel(
-        ModelType.CapabilityModel,
-        publicRepository,
-        keyword,
-        pageSize,
-        continuationToken,
-      );
-    },
-  );
-  // provide api integration
-  return { apiProvider };
 }
 
 export function deactivate() {}
@@ -170,13 +50,13 @@ function initCommand(
   nsat: NSAT,
   enableSurvey: boolean,
   command: Command,
-  callback: (telemetryContext: TelemetryContext, ...args: any[]) => Promise<any>,
+  callback: (...args: any[]) => Promise<any>,
 ): void {
   context.subscriptions.push(
     vscode.commands.registerCommand(command, async (...args: any[]) => {
       const telemetryContext: TelemetryContext = TelemetryContext.startNew();
       try {
-        return await callback(telemetryContext, ...args);
+        return await callback(...args);
       } catch (error) {
         telemetryContext.setError(error);
         if (error instanceof UserCancelledError) {
@@ -217,7 +97,6 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
       Constants.COMPLETION_TRIGGER,
     ),
   );
-  context.subscriptions.push(vscode.languages.registerHoverProvider(selector, new DigitalTwinHoverProvider()));
   // register diagnostic
   let pendingDiagnostic: NodeJS.Timer;
   const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
