@@ -29,7 +29,8 @@ export class Constants {
   public static readonly HTTPS_PROTOCAL = "https://";
   public static readonly MODEL_NAME_REGEX = new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
   public static readonly MODEL_NAME_REGEX_DESCRIPTION = "alphanumeric and underscore, not start with number";
-  public static readonly DIGITAL_TWIN_ID_PLACEHOLDER = "{DigitalTwinIdentifier}";
+  public static readonly MODEL_ID_PLACEHOLDER = "{modelId}";
+  public static readonly MODEL_NAME_PLACEHOLDER = "{modelName}";
 
   public static readonly EXTENSION_ACTIVATED_MSG = "extensionActivated";
   public static readonly NOT_EMPTY_MSG = "could not be empty";
