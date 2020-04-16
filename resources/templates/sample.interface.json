@@ -1,7 +1,7 @@
 {
-  "@id": "{DigitalTwinIdentifier}",
+  "@id": "{modelId}",
   "@type": "Interface",
-  "displayName": "myinterface",
+  "displayName": "{modelName}",
   "contents": [
     {
       "@type": "Property",
@@ -70,5 +70,5 @@
       }
     }
   ],
-  "@context": "http://azureiot.com/v1/contexts/IoTModel.json"
+  "@context": "dtmi:dtdl:context;2"
 }

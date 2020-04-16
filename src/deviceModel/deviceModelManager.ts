@@ -22,19 +22,11 @@ export enum ModelType {
  */
 export class DeviceModelManager {
   /**
-   * convert to DigitalTwin model type
-   * @param name name
-   */
-  public static convertToModelType(name: string): ModelType {
-    return ModelType[name as keyof typeof ModelType];
-  }
-
-  /**
    * generate DigitalTwin model id
    * @param name model name
    */
   public static generateModelId(name: string): string {
-    return `urn:{companyName}:${name}:1`;
+    return `dtmi:{company}:${name};1`;
   }
 
   /**
@@ -95,7 +87,8 @@ export class DeviceModelManager {
       path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName(type)),
     );
     const replacement = new Map<string, string>();
-    replacement.set(Constants.DIGITAL_TWIN_ID_PLACEHOLDER, modelId);
+    replacement.set(Constants.MODEL_ID_PLACEHOLDER, modelId);
+    replacement.set(Constants.MODEL_NAME_PLACEHOLDER, name);
     await Utility.createFileFromTemplate(templatePath, filePath, replacement);
     return filePath;
   }
