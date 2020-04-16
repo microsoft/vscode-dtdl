@@ -26,7 +26,7 @@ export class DeviceModelManager {
    * @param name model name
    */
   public static generateModelId(name: string): string {
-    return `dtmi:{companyName}:${name};1`;
+    return `dtmi:{company}:${name};1`;
   }
 
   /**
