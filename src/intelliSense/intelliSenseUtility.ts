@@ -214,6 +214,14 @@ export class IntelliSenseUtility {
     return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
   }
 
+  /**
+   * check if text document is a DigitalTwin file
+   * @param document text document
+   */
+  public static isDigitalTwinFile(document: vscode.TextDocument): boolean {
+    return document.languageId === DigitalTwinConstants.LANGUAGE_ID;
+  }
+
   private static graph: DigitalTwinGraph;
   private constructor() {}
 }
