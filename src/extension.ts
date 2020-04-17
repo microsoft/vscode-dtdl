@@ -85,7 +85,7 @@ function initCommand(
 function initIntelliSense(context: vscode.ExtensionContext): void {
   // init DigitalTwin graph
   IntelliSenseUtility.initGraph(context);
-  // register providers of completionItem and hover
+  // register provider
   const selector: vscode.DocumentSelector = {
     language: "json",
     scheme: "file",
@@ -98,26 +98,35 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     ),
   );
   // register diagnostic
-  let pendingDiagnostic: NodeJS.Timer;
   const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
     Constants.CHANNEL_NAME,
   );
+  context.subscriptions.push(diagnosticCollection);
+  let pendingDiagnostic: NodeJS.Timer;
   const diagnosticProvider = new DigitalTwinDiagnosticProvider();
   const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-  if (activeTextEditor) {
-    diagnosticProvider.updateDiagnostics(activeTextEditor.document, diagnosticCollection);
+  if (activeTextEditor && IntelliSenseUtility.isDigitalTwinFile(activeTextEditor.document)) {
+    // delay for DigitalTwin graph initialization
+    pendingDiagnostic = setTimeout(
+      () => diagnosticProvider.updateDiagnostics(activeTextEditor.document, diagnosticCollection),
+      Constants.DEFAULT_TIMER_MS,
+    );
   }
-  context.subscriptions.push(diagnosticCollection);
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor((event) => {
-      if (event) {
-        diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection);
+    vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor | undefined) => {
+      // only update diagnostics if it is a new document
+      if (
+        editor &&
+        IntelliSenseUtility.isDigitalTwinFile(editor.document) &&
+        !diagnosticCollection.has(editor.document.uri)
+      ) {
+        diagnosticProvider.updateDiagnostics(editor.document, diagnosticCollection);
       }
     }),
   );
   context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      if (event) {
+    vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(event.document)) {
         if (pendingDiagnostic) {
           clearTimeout(pendingDiagnostic);
         }
@@ -129,6 +138,11 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     }),
   );
   context.subscriptions.push(
-    vscode.workspace.onDidCloseTextDocument((document) => diagnosticCollection.delete(document.uri)),
+    vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
+        diagnosticCollection.delete(document.uri);
+      }
+    }),
   );
+  // TODO(erichen): add telemetry for opened file
 }
