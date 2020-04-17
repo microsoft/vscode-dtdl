@@ -113,30 +113,34 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
     );
   }
   context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
-      // only update diagnostics if the document is new
-      if (e && IntelliSenseUtility.isDigitalTwinFile(e.document) && !diagnosticCollection.has(e.document.uri)) {
-        diagnosticProvider.updateDiagnostics(e.document, diagnosticCollection);
+    vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor | undefined) => {
+      // only update diagnostics if it is a new document
+      if (
+        editor &&
+        IntelliSenseUtility.isDigitalTwinFile(editor.document) &&
+        !diagnosticCollection.has(editor.document.uri)
+      ) {
+        diagnosticProvider.updateDiagnostics(editor.document, diagnosticCollection);
       }
     }),
   );
   context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
-      if (e && IntelliSenseUtility.isDigitalTwinFile(e.document)) {
+    vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(event.document)) {
         if (pendingDiagnostic) {
           clearTimeout(pendingDiagnostic);
         }
         pendingDiagnostic = setTimeout(
-          () => diagnosticProvider.updateDiagnostics(e.document, diagnosticCollection),
+          () => diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection),
           Constants.DEFAULT_TIMER_MS,
         );
       }
     }),
   );
   context.subscriptions.push(
-    vscode.workspace.onDidCloseTextDocument((e: vscode.TextDocument) => {
-      if (IntelliSenseUtility.isDigitalTwinFile(e)) {
-        diagnosticCollection.delete(e.uri);
+    vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
+        diagnosticCollection.delete(document.uri);
       }
     }),
   );
