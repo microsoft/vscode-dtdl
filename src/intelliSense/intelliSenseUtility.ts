@@ -215,7 +215,7 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * check if text document is a DigitalTwin file
+   * check if document is a DigitalTwin file
    * @param document text document
    */
   public static isDigitalTwinFile(document: vscode.TextDocument): boolean {

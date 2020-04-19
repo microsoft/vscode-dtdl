@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * Error for user cancel operation
+ * Error of user cancelled operation
  */
 export class UserCancelledError extends Error {
   constructor(operation?: string) {
