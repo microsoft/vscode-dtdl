@@ -1,0 +1,51 @@
+pr:
+- master
+- develop
+
+trigger: none
+
+strategy:
+  matrix:
+    linux:
+      imageName: "ubuntu-16.04"
+    windows:
+      imageName: "vs2017-win2016"
+
+pool:
+  vmImage: $(imageName)
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "12.13.0"
+    displayName: "Install Node.js"
+
+  - task: Npm@1
+    inputs:
+      verbose: false
+    displayName: "Install dependencies"
+
+  - bash: |
+      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+    displayName: Start xvfb
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  - script: |
+      npm run tslint
+    displayName: Run TSLint Checks
+
+  - script: |
+      npm run compile
+    displayName: Compile Sources
+
+  - script: |
+      node scripts/genAiKey.js
+      npm install -g vsce
+      vsce package
+    displayName: Build VSIX Package
+
+  - script: |
+      npm run test --silent
+    displayName: Run Tests
+    env:
+      DISPLAY: ":99.0"
