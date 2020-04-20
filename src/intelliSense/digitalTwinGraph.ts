@@ -200,7 +200,7 @@ export class DigitalTwinGraph {
    * @param id id
    */
   private addToContext(name: string, id: string): void {
-    // clear id if name is reused
+    // clear id value to identify the property name is shared by multiple class
     const value: string = this.dtdlContext.has(name) ? Constants.EMPTY_STRING : id;
     this.dtdlContext.set(name, value);
   }
