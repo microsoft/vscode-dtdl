@@ -5,7 +5,6 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { Constants } from "../common/constants";
 import { Utility } from "../common/utility";
-import { DigitalTwinConstants } from "./digitalTwinConstants";
 
 /**
  * Class node of DigitalTwin graph
@@ -155,7 +154,6 @@ export class DigitalTwinGraph {
   private buildGraph(graphJson: any): void {
     this.parse(graphJson);
     this.inheritProperties();
-    this.createEntryNode();
   }
 
   /**
@@ -232,15 +230,5 @@ export class DigitalTwinGraph {
       }
       classNode = queue.shift();
     }
-  }
-
-  /**
-   * create entry node of DigitalTwin graph
-   */
-  private createEntryNode(): void {
-    const entryNode: PropertyNode = {
-      id: DigitalTwinConstants.ENTRY_NODE,
-      name: DigitalTwinConstants.ENTRY_NODE,
-    };
   }
 }

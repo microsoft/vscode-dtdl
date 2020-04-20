@@ -40,13 +40,8 @@ export class DigitalTwinConstants {
   public static readonly INTERFACE_SCHEMA = "interfaceSchema";
   public static readonly RESERVED = "@";
   public static readonly CONTEXT = "@context";
-  public static readonly VOCABULARY = "@vocab";
   public static readonly ID = "@id";
   public static readonly TYPE = "@type";
-  public static readonly CONTAINER = "@container";
-  public static readonly LIST = "@list";
-  public static readonly SET = "@set";
-  public static readonly LANGUAGE = "@language";
   public static readonly INTERFACE_NODE = "Interface";
   public static readonly CAPABILITY_MODEL_NODE = "CapabilityModel";
   public static readonly SCHEMA_NODE = "Schema";

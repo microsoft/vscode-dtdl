@@ -46,29 +46,6 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get entry node of DigitalTwin model
-   */
-  public static getEntryNode(): PropertyNode | undefined {
-    return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
-  }
-
-  /**
-   * get property node of DigitalTwin model by name
-   * @param name property name
-   */
-  public static getPropertyNode(name: string): PropertyNode | undefined {
-    return IntelliSenseUtility.graph.getPropertyNode(name);
-  }
-
-  /**
-   * get class node of DigitalTwin model by name
-   * @param name class name
-   */
-  public static getClasNode(name: string): ClassNode | undefined {
-    return IntelliSenseUtility.graph.getClassNode(name);
-  }
-
-  /**
    * parse the text, return json node if it is DigitalTwin model
    * @param text text
    */
@@ -102,14 +79,6 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * check if it is language node
-   * @param classNode class node
-   */
-  public static isLanguageNode(classNode: ClassNode): boolean {
-    return classNode.id === DigitalTwinConstants.LANGUAGE;
-  }
-
-  /**
    * parse json node, return property pair
    * @param node json node
    */
@@ -127,52 +96,6 @@ export class IntelliSenseUtility {
    */
   public static getNodeRange(document: vscode.TextDocument, node: parser.Node): vscode.Range {
     return new vscode.Range(document.positionAt(node.offset), document.positionAt(node.offset + node.length));
-  }
-
-  /**
-   * get enums from property range
-   * @param propertyNode property node
-   */
-  public static getEnums(propertyNode: PropertyNode): string[] {
-    const enums: string[] = [];
-    if (!propertyNode.range) {
-      return enums;
-    }
-    for (const classNode of propertyNode.range) {
-      if (classNode.enums) {
-        enums.push(...classNode.enums);
-      } else if (classNode.isAbstract && classNode.children) {
-        for (const child of classNode.children) {
-          if (child.enums) {
-            enums.push(...child.enums);
-          }
-        }
-      }
-    }
-    return enums;
-  }
-
-  /**
-   * get object classes from property range
-   * @param propertyNode property node
-   */
-  public static getObjectClasses(propertyNode: PropertyNode): ClassNode[] {
-    const classes: ClassNode[] = [];
-    if (!propertyNode.range) {
-      return classes;
-    }
-    for (const classNode of propertyNode.range) {
-      if (DigitalTwinGraph.isObjectClass(classNode)) {
-        classes.push(classNode);
-      } else if (classNode.isAbstract && classNode.children) {
-        for (const child of classNode.children) {
-          if (!child.enums) {
-            classes.push(child);
-          }
-        }
-      }
-    }
-    return classes;
   }
 
   /**
