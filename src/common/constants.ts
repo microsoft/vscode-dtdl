@@ -18,8 +18,6 @@ export class Constants {
   public static readonly DEFINITION_FOLDER = "definitions";
   public static readonly SAMPLE_FILE_NAME = "sample";
   public static readonly GRAPH_FILE_NAME = "graph.json";
-  public static readonly CONTEXT_FILE_NAME = "context.json";
-  public static readonly CONSTRAINT_FILE_NAME = "constraint.json";
 
   public static readonly DEVICE_MODEL_COMPONENT = "Device Model";
   public static readonly MODEL_NAME_REGEX = new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");

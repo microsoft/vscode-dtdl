@@ -30,8 +30,9 @@ export enum DiagnosticMessage {
  */
 export class DigitalTwinConstants {
   public static readonly LANGUAGE_ID = "json";
-  public static readonly SCHEMA_SEPARATOR = "#";
-  public static readonly BASE_CLASS = "Entity";
+  public static readonly ENTRY_NODE = "@entry";
+  public static readonly DUMMY_NODE = "@dummy";
+
   public static readonly NAME = "name";
   public static readonly SCHEMA = "schema";
   public static readonly CONTENTS = "contents";
@@ -39,15 +40,8 @@ export class DigitalTwinConstants {
   public static readonly INTERFACE_SCHEMA = "interfaceSchema";
   public static readonly RESERVED = "@";
   public static readonly CONTEXT = "@context";
-  public static readonly VOCABULARY = "@vocab";
   public static readonly ID = "@id";
   public static readonly TYPE = "@type";
-  public static readonly CONTAINER = "@container";
-  public static readonly LIST = "@list";
-  public static readonly SET = "@set";
-  public static readonly LANGUAGE = "@language";
-  public static readonly ENTRY_NODE = "@entry";
-  public static readonly DUMMY_NODE = "@dummy";
   public static readonly INTERFACE_NODE = "Interface";
   public static readonly CAPABILITY_MODEL_NODE = "CapabilityModel";
   public static readonly SCHEMA_NODE = "Schema";

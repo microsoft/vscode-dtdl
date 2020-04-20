@@ -63,7 +63,7 @@ export class TelemetryClient {
   }
 
   /**
-   * dispose telemetry client
+   * dispose
    */
   public dispose(): void {
     if (this.client) {

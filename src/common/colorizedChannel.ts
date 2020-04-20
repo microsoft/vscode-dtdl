@@ -9,7 +9,7 @@ import * as vscode from "vscode";
 export class ColorizedChannel {
   /**
    * format message for operation or error
-   * @param operation user operation
+   * @param operation operation
    * @param error error
    */
   public static formatMessage(operation: string, error?: Error): string {
@@ -22,7 +22,7 @@ export class ColorizedChannel {
   }
 
   /**
-   * create message tag of component name
+   * create tag of component name
    * @param name component name
    */
   private static createTag(name: string | undefined): string {
@@ -35,8 +35,8 @@ export class ColorizedChannel {
   }
 
   /**
-   * Output message of user operation start
-   * @param operation user operation
+   * print message of user operation start
+   * @param operation operation
    * @param component component name
    */
   public start(operation: string, component?: string): void {
@@ -45,8 +45,8 @@ export class ColorizedChannel {
   }
 
   /**
-   * Output message of user operation end
-   * @param operation user operation
+   * print message of user operation end
+   * @param operation operation
    * @param component component name
    */
   public end(operation: string, component?: string): void {
@@ -55,16 +55,16 @@ export class ColorizedChannel {
   }
 
   /**
-   * Output info message (color: default)
-   * @param operation message
+   * print information message (color: default)
+   * @param message message
    */
   public info(message: string): void {
     this.channel.appendLine(message);
   }
 
   /**
-   * Output warn message (color: yellow)
-   * @param operation message
+   * print warning message (color: yellow)
+   * @param message message
    * @param component component name
    */
   public warn(message: string, component?: string): void {
@@ -73,8 +73,8 @@ export class ColorizedChannel {
   }
 
   /**
-   * Output error message of operation or error (color: red)
-   * @param operation user operation
+   * print error message or operation failure (color: red)
+   * @param operation operation
    * @param component component name
    * @param error error
    */
@@ -92,7 +92,7 @@ export class ColorizedChannel {
   }
 
   /**
-   * dispose channel
+   * dispose
    */
   public dispose(): void {
     if (this.channel) {
