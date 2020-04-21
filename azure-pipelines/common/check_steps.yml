@@ -1,0 +1,5 @@
+steps:
+  # static checking
+  - script: |
+      npm run tslint
+    displayName: Run TSLint Checks

@@ -1,0 +1,7 @@
+variables:
+  test_ex_name: azure-digital-twins-rc
+  test_display_name: 'IoT Plug and Play For RC'
+  test_publisher: IvanJobs
+  nightly_ex_name: azure-digital-twins-nightly
+  nightly_display_name: 'IoT Plug and Play For Nightly'
+  nightly_publisher: IvanJobs

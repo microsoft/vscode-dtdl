@@ -1,0 +1,46 @@
+schedules:
+- cron: '50 2 * * *'
+  displayName: Nightly build on 12:00 AM (GMT+8)
+  branches:
+    include:
+    - develop
+trigger: none
+pr: none
+
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+
+pool:
+  vmImage: $(imageName)
+
+variables:
+- template: common/variables.yml
+
+steps:
+
+  - template: common/setup_steps.yml
+  - template: common/compile_steps.yml
+  - template: common/check_steps.yml
+    #  - template: common/test_steps.yml
+  # credscan and policycheck for windows nt
+  - template: common/secure_develop_steps.yml
+
+  # modify package.json for release candidates
+  - script: |
+      node scripts/modifyPackageJson.js name $(nightly_ex_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(nightly_publisher)
+    displayName: Modify package.json for release candidates
+
+  # packaging
+  - script: |
+      npm install -g vsce
+      vsce package
+    displayName: Build VSIX Package
+
+  # publish vsix to marketplace for release candidates
+  - bash: yes | vsce unpublish -p $MARKETPLACE_TOKEN $(nightly_publisher).$(nightly_ex_name) && vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
+    workingDirectory: '$(Build.ArtifactStagingDirectory)'
+    displayName: 'Deploy release candidates to marketplace'
+    env:
+      MARKETPLACE_TOKEN: $(iotdevexbuild_marketplace_token)
