@@ -5,6 +5,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { Constants } from "../common/constants";
 import { Utility } from "../common/utility";
+import { DigitalTwinConstants } from "./digitalTwinConstants";
 
 /**
  * Class node of DigitalTwin graph
@@ -99,13 +100,13 @@ export class DigitalTwinGraph {
   private propertyNodes: Map<string, PropertyNode>;
   private dtdlContext: Map<string, string>;
   private baseClass: string;
-  private partitionClass: Set<string>;
+  private partitionClass: string[];
   private constructor() {
     this.classNodes = new Map<string, ClassNode>();
     this.propertyNodes = new Map<string, PropertyNode>();
     this.dtdlContext = new Map<string, string>();
     this.baseClass = Constants.EMPTY_STRING;
-    this.partitionClass = new Set<string>();
+    this.partitionClass = [];
   }
 
   /**
@@ -154,6 +155,7 @@ export class DigitalTwinGraph {
   private buildGraph(graphJson: any): void {
     this.parse(graphJson);
     this.inheritProperties();
+    this.createEntryNode();
   }
 
   /**
@@ -165,12 +167,10 @@ export class DigitalTwinGraph {
       if (graphJson.hasOwnProperty(key)) {
         switch (key) {
           case GraphElement.BaseClass:
-            this.baseClass = graphJson[key] as string;
+            this.baseClass = graphJson[key];
             break;
           case GraphElement.PartitionClass:
-            for (const item of graphJson[key]) {
-              this.partitionClass.add(item);
-            }
+            this.partitionClass = graphJson[key];
             break;
           case GraphElement.Class:
             for (const item of graphJson[key]) {
@@ -216,7 +216,7 @@ export class DigitalTwinGraph {
     const queue: ClassNode[] = [];
     while (classNode) {
       for (const child of this.getChildrenOfClassNode(classNode)) {
-        // skip instance node
+        // class which has instances doesn't need properties
         if (child.instances) {
           continue;
         }
@@ -230,5 +230,20 @@ export class DigitalTwinGraph {
       }
       classNode = queue.shift();
     }
+  }
+
+  /**
+   * create entry node of DigitalTwin graph
+   */
+  private createEntryNode(): void {
+    const entryNode: PropertyNode = {
+      id: DigitalTwinConstants.ENTRY_NODE,
+      name: Constants.EMPTY_STRING,
+      nodeKind: Constants.EMPTY_STRING,
+      type: Constants.EMPTY_STRING,
+      constraint: {
+        in: this.partitionClass,
+      },
+    };
   }
 }

@@ -4,7 +4,7 @@
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { ClassNode, DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
+import { DigitalTwinGraph } from "./digitalTwinGraph";
 
 /**
  * Type of json node
@@ -16,6 +16,14 @@ export enum JsonNodeType {
   Number = "number",
   Boolean = "boolean",
   Property = "property",
+}
+
+/**
+ * DigitalTwin model content
+ */
+export interface ModelContent {
+  jsonNode: parser.Node;
+  version: number;
 }
 
 /**
@@ -39,43 +47,52 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * check if IntelliSense has been enabled
+   * check if DigitalTwin graph is initialized
    */
-  public static enabled(): boolean {
+  public static isGraphInitialized(): boolean {
     return IntelliSenseUtility.graph && IntelliSenseUtility.graph.initialized();
   }
 
   /**
-   * parse the text, return json node if it is DigitalTwin model
+   * parse the text, return DigitalTwin model content
    * @param text text
    */
-  public static parseDigitalTwinModel(text: string): parser.Node | undefined {
+  public static parseDigitalTwinModel(text: string): ModelContent | undefined {
     // skip checking errors in order to do IntelliSense at best effort
     const jsonNode: parser.Node = parser.parseTree(text);
-    const contextPath: string[] = [DigitalTwinConstants.CONTEXT];
+    const contextPath: string[] = [DigitalTwinConstants.CONTEXT_NODE];
     const contextNode: parser.Node | undefined = parser.findNodeAtLocation(jsonNode, contextPath);
-    if (contextNode && IntelliSenseUtility.isDigitalTwinContext(contextNode)) {
-      return jsonNode;
+    if (!contextNode) {
+      return undefined;
     }
-    return undefined;
+    const version: number = IntelliSenseUtility.getContextVersion(contextNode);
+    if (version < DigitalTwinConstants.DTDL_MIN_VERSION || version > DigitalTwinConstants.DTDL_CURRENT_VERSION) {
+      return undefined;
+    }
+    return { jsonNode, version };
   }
 
   /**
-   * check if json node has DigitalTwin context
+   * get verson of DigitalTwin context,
+   * return 0 if it has no DigitalTwin context
    * @param node json node
    */
-  public static isDigitalTwinContext(node: parser.Node): boolean {
-    // @context accept both array and string
+  public static getContextVersion(node: parser.Node): number {
+    // @context can be array or string
     if (node.type === JsonNodeType.String) {
-      return (node.value as string) === DigitalTwinConstants.CONTEXT_TEMPLATE;
+      return IntelliSenseUtility.resolveVersion(node.value);
     } else if (node.type === JsonNodeType.Array && node.children) {
       for (const child of node.children) {
-        if (child.type === JsonNodeType.String && (child.value as string) === DigitalTwinConstants.CONTEXT_TEMPLATE) {
-          return true;
+        if (child.type !== JsonNodeType.String) {
+          return 0;
+        }
+        const version: number = IntelliSenseUtility.resolveVersion(child.value);
+        if (version) {
+          return version;
         }
       }
     }
-    return false;
+    return 0;
   }
 
   /**
@@ -146,5 +163,18 @@ export class IntelliSenseUtility {
   }
 
   private static graph: DigitalTwinGraph;
+
+  /**
+   * resolve version from context
+   * @param context context value
+   */
+  private static resolveVersion(context: string): number {
+    const groups: RegExpMatchArray | null = context.match(DigitalTwinConstants.CONTEXT_REGEX);
+    if (groups && groups.length === 2) {
+      return parseInt(groups[1], 10);
+    }
+    return 0;
+  }
+
   private constructor() {}
 }

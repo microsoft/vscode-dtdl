@@ -3,10 +3,9 @@
 
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
-import { Constants } from "../common/constants";
 import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants";
-import { ClassNode, DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
-import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseUtility";
+import { ClassNode, PropertyNode } from "./digitalTwinGraph";
+import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
 
 /**
@@ -55,7 +54,7 @@ export class DigitalTwinDiagnosticProvider {
     problems: Problem[],
   ): void {
     const validTypes: string[] = [];
-    const message: string = [DiagnosticMessage.InvalidType, ...validTypes].join(Constants.LINE_FEED);
+    const message: string = [DiagnosticMessage.InvalidType, ...validTypes].join(DigitalTwinConstants.LINE_FEED);
     DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
   }
 
@@ -82,7 +81,7 @@ export class DigitalTwinDiagnosticProvider {
   }
 
   /**
-   * validate json node by DigitalTwin graph, add problem in problem collection
+   * validate json node by DigitalTwin graph, add problem to collection
    * @param jsonNode json node
    * @param digitalTwinNode DigitalTwin property node
    * @param problems problem collection
@@ -259,7 +258,7 @@ export class DigitalTwinDiagnosticProvider {
     if (enums.length === 0) {
       DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, digitalTwinNode, problems);
     } else if (!enums.includes(jsonNode.value as string)) {
-      const message: string = [DiagnosticMessage.InvalidEnum, ...enums].join(Constants.LINE_FEED);
+      const message: string = [DiagnosticMessage.InvalidEnum, ...enums].join(DigitalTwinConstants.LINE_FEED);
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
     }
   }
@@ -327,16 +326,16 @@ export class DigitalTwinDiagnosticProvider {
    * @param collection diagnostic collection
    */
   public updateDiagnostics(document: vscode.TextDocument, collection: vscode.DiagnosticCollection): void {
-    // clean diagnostic cache
-    collection.delete(document.uri);
-    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
-    if (!jsonNode) {
+    if (!IntelliSenseUtility.isGraphInitialized()) {
       return;
     }
-    if (!IntelliSenseUtility.enabled()) {
+    const modelContent: ModelContent | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
+    if (!modelContent) {
+      // clear diagnostic cache if file is no longer for DigitalTwin
+      collection.delete(document.uri);
       return;
     }
-    const diagnostics: vscode.Diagnostic[] = this.provideDiagnostics(document, jsonNode);
+    const diagnostics: vscode.Diagnostic[] = this.provideDiagnostics(document, modelContent.jsonNode);
     collection.set(document.uri, diagnostics);
   }
 
@@ -347,12 +346,9 @@ export class DigitalTwinDiagnosticProvider {
    */
   private provideDiagnostics(document: vscode.TextDocument, jsonNode: parser.Node): vscode.Diagnostic[] {
     let diagnostics: vscode.Diagnostic[] = [];
-    const digitalTwinNode: PropertyNode | undefined = undefined;
-    if (!digitalTwinNode) {
-      return diagnostics;
-    }
     const problems: Problem[] = [];
-    DigitalTwinDiagnosticProvider.validateNode(jsonNode, digitalTwinNode, problems);
+    const dummyNode: PropertyNode = IntelliSenseUtility.createDummyPropertyNode({in: })
+    DigitalTwinDiagnosticProvider.validateNode(jsonNode, problems);
     diagnostics = problems.map(
       (p) =>
         new vscode.Diagnostic(
@@ -361,6 +357,7 @@ export class DigitalTwinDiagnosticProvider {
           vscode.DiagnosticSeverity.Error,
         ),
     );
+    problems.length = 0;
     return diagnostics;
   }
 }

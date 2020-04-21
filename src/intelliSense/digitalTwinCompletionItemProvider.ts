@@ -244,7 +244,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     if (!jsonNode) {
       return undefined;
     }
-    if (!IntelliSenseUtility.enabled()) {
+    if (!IntelliSenseUtility.isGraphInitialized()) {
       return undefined;
     }
     const node: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));

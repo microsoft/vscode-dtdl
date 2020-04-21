@@ -29,9 +29,15 @@ export enum DiagnosticMessage {
  * Constants for DigitalTwin IntelliSense
  */
 export class DigitalTwinConstants {
+  public static readonly DTDL_MIN_VERSION = 2;
+  public static readonly DTDL_CURRENT_VERSION = 2;
   public static readonly LANGUAGE_ID = "json";
   public static readonly ENTRY_NODE = "@entry";
-  public static readonly DUMMY_NODE = "@dummy";
+  public static readonly CONTEXT_NODE = "@context";
+  public static readonly CONTEXT_REGEX = /^dtmi:dtdl:context;(\d+)$/;
+  public static readonly LINE_FEED = "\n";
+  public static readonly WORD_STOP = ' \t\n\r\v":{[,';
+  public static readonly REQUIRED_PROPERTY_LABEL = "(required)";
 
   public static readonly NAME = "name";
   public static readonly SCHEMA = "schema";
@@ -39,7 +45,6 @@ export class DigitalTwinConstants {
   public static readonly IMPLEMENTS = "implements";
   public static readonly INTERFACE_SCHEMA = "interfaceSchema";
   public static readonly RESERVED = "@";
-  public static readonly CONTEXT = "@context";
   public static readonly ID = "@id";
   public static readonly TYPE = "@type";
   public static readonly INTERFACE_NODE = "Interface";
@@ -47,8 +52,6 @@ export class DigitalTwinConstants {
   public static readonly SCHEMA_NODE = "Schema";
   public static readonly UNIT_NODE = "Unit";
   public static readonly INTERFACE_SCHEMA_NODE = "InterfaceInstance/schema";
-  public static readonly WORD_STOP = ' \t\n\r\v":{[,';
-  public static readonly REQUIRED_PROPERTY_LABEL = "(required)";
   public static readonly IOT_MODEL_LABEL = "IoTModel";
   public static readonly CONTEXT_TEMPLATE = "http://azureiot.com/v1/contexts/IoTModel.json";
   public static readonly SUPPORT_SEMANTIC_TYPES = new Set<string>(["Telemetry", "Property"]);
