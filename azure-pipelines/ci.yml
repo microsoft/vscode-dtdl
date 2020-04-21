@@ -22,11 +22,4 @@ steps:
   - template: common/compile_steps.yml
   - template: common/check_steps.yml
   - template: common/test_steps.yml
-  # credscan and policycheck for windows nt
-  - template: common/secure_develop_steps.yml
-
-  # packaging
-  - script: |
-      npm install -g vsce
-      vsce package
-    displayName: Build VSIX Package
+  - template: common/genvsix_steps.yml

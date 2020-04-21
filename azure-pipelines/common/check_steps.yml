@@ -3,3 +3,16 @@ steps:
   - script: |
       npm run tslint
     displayName: Run TSLint Checks
+  # cred scan
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+    displayName: 'Run CredScan'
+    inputs:
+      toolMajorVersion: V2
+      debugMode: false
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+  # poli check
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+    displayName: 'Run PoliCheck'
+    inputs:
+      targetType: F
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
