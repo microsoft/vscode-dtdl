@@ -9,6 +9,10 @@ strategy:
   matrix:
     linux:
       imageName: 'ubuntu-16.04'
+    mac:
+      imageName: 'macos-10.14'
+    windows:
+      imageName: 'vs2017-win2016'
 
 pool:
   vmImage: $(imageName)
@@ -22,8 +26,6 @@ steps:
   - template: common/compile_steps.yml
   - template: common/check_steps.yml
   - template: common/test_steps.yml
-  # credscan and policycheck for windows nt
-  - template: common/secure_develop_steps.yml
 
   # setting flag variables is_r, is_rc
   - bash: |
@@ -35,7 +37,7 @@ steps:
 
       echo "##vso[task.setvariable variable=is_rc]$is_rc"
       echo "##vso[task.setvariable variable=is_r]$is_r"
-    displayName: "Setting flag variable: is_rc, is_r"
+    displayName: Setting flag variable is_rc is_r
 
   # try to remove trailing rc for package.json
   - script: |
@@ -44,7 +46,7 @@ steps:
 
   # modify package.json for release candidates
   - script: |
-      node scripts/modifyPackageJson.js name $(test_ex_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(test_publisher)
+      node scripts/modifyPackageJson.js name $(test_extension_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(test_publisher)
     displayName: Modify package.json for release candidates
     condition: and(succeeded(), eq(variables['is_rc'], 'true'))
 
@@ -54,16 +56,12 @@ steps:
     displayName: Modify package.json for release candidates
     condition: and(succeeded(), eq(variables['is_r'], 'true'))
 
-  # build vsix package
-  - script: |
-      npm install -g vsce
-      vsce package
-    displayName: Build VSIX Package
+  # generate vsix file
+  - template: common/genvsix_steps.yml
 
   # release to github
   # 1. copy vsix file to staging dir
-  # 2. setting is_rc flag
-  # 3. do GitHubRelease
+  # 2. do GitHubRelease
   - task: CopyFiles@2
     inputs:
       SourceFolder: '$(System.DefaultWorkingDirectory)'
@@ -72,26 +70,27 @@ steps:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: GitHubRelease@0
-    displayName: 'Deploy Releases or Release Candidates to GitHub Release'
+    displayName: Deploy Releases or Release Candidates to GitHub Release
     inputs:
       gitHubConnection: 'github_release_pat_for_pnp_authoring'
       repositoryName: '$(Build.Repository.Name)'
       action: 'create'
       target: '$(Build.SourceVersion)'
       isPreRelease: $(is_rc)
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   # publish vsix to marketplace for releases
   - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
     workingDirectory: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Deploy releases to marketplace'
-    condition: and(succeeded(), eq(variables['is_r'], 'true'))
+    displayName: Deploy releases to marketplace
+    condition: and(succeeded(), eq(variables['is_r'], 'true'), eq(variables['Agent.OS'], 'Linux'))
     env:
       MARKETPLACE_TOKEN: $(vsciot_marketplace_token)
 
   # publish vsix to marketplace for release candidates
-  - bash: yes | vsce unpublish -p $MARKETPLACE_TOKEN $(test_publisher).$(test_ex_name) && vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
+  - bash: yes | vsce unpublish -p $MARKETPLACE_TOKEN $(test_publisher).$(test_extension_name) && vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
     workingDirectory: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Deploy release candidates to marketplace'
-    condition: and(succeeded(), eq(variables['is_rc'], 'true'))
+    displayName: Deploy release candidates to marketplace
+    condition: and(succeeded(), eq(variables['is_rc'], 'true'), eq(variables['Agent.OS'], 'Linux'))
     env:
       MARKETPLACE_TOKEN: $(iotdevexbuild_marketplace_token)
