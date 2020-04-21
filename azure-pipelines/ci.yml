@@ -1,0 +1,32 @@
+trigger:
+- master
+- develop
+
+pr: none
+
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+    mac:
+      imageName: 'macos-10.14'
+    windows:
+      imageName: 'vs2017-win2016'
+
+pool:
+  vmImage: $(imageName)
+
+steps:
+
+  - template: common/setup_steps.yml
+  - template: common/compile_steps.yml
+  - template: common/check_steps.yml
+  - template: common/test_steps.yml
+  # credscan and policycheck for windows nt
+  - template: common/secure_develop_steps.yml
+
+  # packaging
+  - script: |
+      npm install -g vsce
+      vsce package
+    displayName: Build VSIX Package
