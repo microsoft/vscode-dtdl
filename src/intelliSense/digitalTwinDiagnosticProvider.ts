@@ -346,9 +346,12 @@ export class DigitalTwinDiagnosticProvider {
    */
   private provideDiagnostics(document: vscode.TextDocument, jsonNode: parser.Node): vscode.Diagnostic[] {
     let diagnostics: vscode.Diagnostic[] = [];
+    const digitalTwinNode: PropertyNode | undefined = IntelliSenseUtility.getEntryNode();
+    if (!digitalTwinNode) {
+      return diagnostics;
+    }
     const problems: Problem[] = [];
-    const dummyNode: PropertyNode = IntelliSenseUtility.createDummyPropertyNode({in: })
-    DigitalTwinDiagnosticProvider.validateNode(jsonNode, problems);
+    DigitalTwinDiagnosticProvider.validateNode(jsonNode, digitalTwinNode, problems);
     diagnostics = problems.map(
       (p) =>
         new vscode.Diagnostic(

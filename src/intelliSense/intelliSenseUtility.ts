@@ -4,7 +4,7 @@
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { DigitalTwinGraph } from "./digitalTwinGraph";
+import { DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
 
 /**
  * Type of json node
@@ -51,6 +51,13 @@ export class IntelliSenseUtility {
    */
   public static isGraphInitialized(): boolean {
     return IntelliSenseUtility.graph && IntelliSenseUtility.graph.initialized();
+  }
+
+  /**
+   * get entry node of DigitalTwin graph
+   */
+  public static getEntryNode(): PropertyNode | undefined {
+    return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
   }
 
   /**

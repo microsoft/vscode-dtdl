@@ -117,6 +117,15 @@ export class DigitalTwinGraph {
   }
 
   /**
+   * get property node by name
+   * @param name property name
+   */
+  public getPropertyNode(name: string): PropertyNode | undefined {
+    const id: string = this.dtdlContext.get(name) || name;
+    return this.propertyNodes.get(id);
+  }
+
+  /**
    * get children of class node
    * @param classNode class node
    */
@@ -245,5 +254,6 @@ export class DigitalTwinGraph {
         in: this.partitionClass,
       },
     };
+    this.propertyNodes.set(entryNode.id, entryNode);
   }
 }
