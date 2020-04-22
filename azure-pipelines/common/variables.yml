@@ -1,7 +1,7 @@
 variables:
   test_extension_name: test-extension-name-placeholder
   test_display_name: 'Test Display Name Placeholder For RC'
-  test_publisher: TestPublisherPlaceholder
+  test_publisher: IoTDevExBuild
   nightly_extension_name: nightly-extension-name-placeholder
-  nightly_display_name: 'Nightly Display Name For Nightly'
-  nightly_publisher: TestPublisherPlaceholder
+  nightly_display_name: 'Nightly Display Name Placeholder For Nightly'
+  nightly_publisher: IoTDevExBuild
