@@ -27,17 +27,7 @@ steps:
   - template: common/check_steps.yml
   - template: common/test_steps.yml
 
-  # setting flag variables is_r, is_rc
-  - bash: |
-      rc_tag_regex=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[Rr][Cc]
-      r_tag_regex=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
-
-      [[ $BUILD_SOURCEBRANCH =~ $rc_tag_regex ]] && is_rc=true
-      [[ $BUILD_SOURCEBRANCH =~ $r_tag_regex ]] && is_r=true
-
-      echo "##vso[task.setvariable variable=is_rc]$is_rc"
-      echo "##vso[task.setvariable variable=is_r]$is_r"
-    displayName: Setting flag variable is_rc is_r
+  - template: common/flagrc_steps.yml
 
   # try to remove trailing rc for package.json
   - script: |
@@ -56,23 +46,13 @@ steps:
     displayName: Modify package.json for release candidates
     condition: and(succeeded(), eq(variables['is_r'], 'true'))
 
-  # generate vsix file
   - template: common/genvsix_steps.yml
-
-  # release to github
-  # 1. copy vsix file to staging dir
-  # 2. do GitHubRelease
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(System.DefaultWorkingDirectory)'
-      Contents: |
-        **/*.vsix
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - template: common/copyvsix_steps.yml
 
   - task: GitHubRelease@0
     displayName: Deploy Releases or Release Candidates to GitHub Release
     inputs:
-      gitHubConnection: 'github_release_pat_for_pnp_authoring'
+      gitHubConnection: '[GitHub Connection Placeholder]'
       repositoryName: '$(Build.Repository.Name)'
       action: 'create'
       target: '$(Build.SourceVersion)'

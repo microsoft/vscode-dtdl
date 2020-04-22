@@ -2,7 +2,9 @@ trigger:
 - master
 - develop
 
-pr: none
+pr:
+- master
+- develop
 
 strategy:
   matrix:
@@ -22,4 +24,3 @@ steps:
   - template: common/compile_steps.yml
   - template: common/check_steps.yml
   - template: common/test_steps.yml
-  - template: common/genvsix_steps.yml
