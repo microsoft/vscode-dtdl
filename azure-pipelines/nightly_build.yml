@@ -31,6 +31,7 @@ steps:
   - template: common/test_steps.yml
 
   # modify package.json for release candidates
+  # including k/v pairs in cli arguments, remove trailing -rc if presents
   - script: |
       node scripts/modifyPackageJson.js name $(nightly_extension_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(nightly_publisher)
     displayName: Modify package.json for release candidates

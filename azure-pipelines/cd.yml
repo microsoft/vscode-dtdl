@@ -29,18 +29,15 @@ steps:
 
   - template: common/flagrc_steps.yml
 
-  # try to remove trailing rc for package.json
-  - script: |
-      node scripts/removeTrailingRc.js
-    displayName: Try to remove trailing rc for package.version
-
   # modify package.json for release candidates
+  # including k/v pairs in cli arguments, remove trailing -rc if presents
   - script: |
       node scripts/modifyPackageJson.js name $(test_extension_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(test_publisher)
     displayName: Modify package.json for release candidates
     condition: and(succeeded(), eq(variables['is_rc'], 'true'))
 
   # modify package.json for releases
+  # including k/v pairs in cli arguments, remove trailing -rc if presents
   - script: |
       node scripts/modifyPackageJson.js aiKey ${PROD_AIKEY}
     displayName: Modify package.json for release candidates
