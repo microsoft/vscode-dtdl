@@ -1,11 +1,11 @@
 {
-  "name": "vscode-iot-pnp-authoring",
-  "displayName": "Azure IoT PnP Authoring",
-  "description": "This extension is now a part of Azure IoT Tools extension pack. We highly recommend installing Azure IoT Tools to get full capabilities for Azure IoT development.",
+  "name": "azure-digital-twins",
+  "displayName": "IoT Plug and Play",
+  "description": "Author IoT Plug and Play models, publish and manage with Model Repository",
   "version": "0.0.1",
   "publisher": "vsciot-vscode",
   "preview": true,
-  "aiKey": "[AIKEY PLACEHOLDER]",
+  "aiKey": "25cf12e8-2dc7-4556-b54e-40fb9d1dfba1",
   "icon": "logo.png",
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
