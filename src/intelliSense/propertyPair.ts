@@ -34,13 +34,36 @@ export class PropertyPair {
         this.name = propertyNode.children[0];
         this.value = propertyNode.children[1];       
     }
+
+    public static getPropertyNode(node: parser.Node): parser.Node|undefined {
+        let propertyNode: parser.Node|undefined = node.parent;
+        if (propertyNode && propertyNode.type === JsonNodeType.Array) {
+            propertyNode = propertyNode.parent;
+        }
+        return propertyNode;
+    }
     
     public static getOuterPropertyNode(node: parser.Node): parser.Node | undefined {
-        let outerProperty: parser.Node | undefined = node.parent;
-        if (outerProperty && outerProperty.type === JsonNodeType.Array) {
-          outerProperty = outerProperty.parent;
+        let propertyNode: parser.Node|undefined;
+        switch (node.type) {
+            case JsonNodeType.Array:
+            case JsonNodeType.Boolean:
+            case JsonNodeType.Number:
+            case JsonNodeType.String:
+            case JsonNodeType.Property:
+                propertyNode = node.parent?.parent;
+                if (propertyNode && propertyNode.type !== JsonNodeType.Property) {
+                    propertyNode = propertyNode.parent;
+                }
+                break;
+            case JsonNodeType.Object:
+                propertyNode = node.parent;
+                break;
         }
-        return outerProperty;
+        if (propertyNode && propertyNode.type === JsonNodeType.Array) {
+            propertyNode = propertyNode.parent;
+        }
+        return propertyNode;
     }
 
     public static getOuterPropertyPair(node: parser.Node): PropertyPair|undefined {
@@ -49,18 +72,10 @@ export class PropertyPair {
         }
 
         let result: PropertyPair|undefined;
-        let outerPropertyNode: parser.Node|undefined;
-        switch (node.type) {
-            case JsonNodeType.Object:
-                outerPropertyNode = PropertyPair.getOuterPropertyNode(node);
-                break;
-            case JsonNodeType.Property:
-                outerPropertyNode = node.parent?.parent;
-                break;
-        }
+        const propertyNode = PropertyPair.getOuterPropertyNode(node);
 
-        if (outerPropertyNode) {
-            result = new PropertyPair(outerPropertyNode);
+        if (propertyNode) {
+            result = new PropertyPair(propertyNode);
         }
         return result;
     }
