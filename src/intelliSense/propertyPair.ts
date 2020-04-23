@@ -10,31 +10,6 @@ export enum JsonNodeType {
 }
 
 export class PropertyPair {
-    private name: parser.Node | undefined;
-    private value: parser.Node | undefined;
-
-    public getNameString(): string|undefined {
-        if (!this.name) {
-            return undefined;
-        }
-        return this.name.value as string;
-    }
-    
-    public getValue(): parser.Node|undefined {
-        if (!this.value) {
-            return undefined;
-        }
-        return this.value;
-    }
-
-    constructor(propertyNode: parser.Node) {
-        if (propertyNode.type !== JsonNodeType.Property || !propertyNode.children || propertyNode.children.length !== 2) {
-          return;
-        }
-        this.name = propertyNode.children[0];
-        this.value = propertyNode.children[1];       
-    }
-
     public static getPropertyNode(node: parser.Node): parser.Node|undefined {
         let propertyNode: parser.Node|undefined = node.parent;
         if (propertyNode && propertyNode.type === JsonNodeType.Array) {
@@ -42,7 +17,7 @@ export class PropertyPair {
         }
         return propertyNode;
     }
-    
+
     public static getOuterPropertyNode(node: parser.Node): parser.Node | undefined {
         let propertyNode: parser.Node|undefined;
         switch (node.type) {
@@ -80,4 +55,29 @@ export class PropertyPair {
         return result;
     }
 
+    private name: parser.Node | undefined;
+    private value: parser.Node | undefined;
+
+    constructor(propertyNode: parser.Node) {
+        if (propertyNode.type !== JsonNodeType.Property
+            || !propertyNode.children || propertyNode.children.length !== 2) {
+          return;
+        }
+        this.name = propertyNode.children[0];
+        this.value = propertyNode.children[1];
+    }
+
+    public getNameString(): string|undefined {
+        if (!this.name) {
+            return undefined;
+        }
+        return this.name.value as string;
+    }
+
+    public getValue(): parser.Node|undefined {
+        if (!this.value) {
+            return undefined;
+        }
+        return this.value;
+    }
 }
