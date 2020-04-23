@@ -1,13 +1,5 @@
 import * as parser from "jsonc-parser";
-
-export enum JsonNodeType {
-    Object = "object",
-    Array = "array",
-    String = "string",
-    Number = "number",
-    Boolean = "boolean",
-    Property = "property",
-}
+import { JsonNodeType } from "./intelliSenseUtility";
 
 export class PropertyPair {
     public static getPropertyNode(node: parser.Node): parser.Node|undefined {
