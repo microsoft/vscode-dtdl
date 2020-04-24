@@ -4,6 +4,7 @@
   "description": "Author IoT Plug and Play models, publish and manage with Model Repository",
   "version": "0.0.1",
   "publisher": "vsciot-vscode",
+  "preview": true,
   "aiKey": "[AIKEY PLACEHOLDER]",
   "icon": "logo.png",
   "license": "SEE LICENSE IN LICENSE.txt",

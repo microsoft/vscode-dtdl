@@ -1,6 +1,8 @@
-trigger:
-- master
-- develop
+# now ci is just about pr validation, 
+# since we tend to make strict configurations for our repo, that is,
+# each pr is up to date before merging into develop and no other way
+# to modify develop except the pr flow.
+trigger: none
 
 pr:
 - master

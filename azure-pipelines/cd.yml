@@ -27,7 +27,7 @@ steps:
   - template: common/check_steps.yml
   - template: common/test_steps.yml
 
-  - template: common/flagrc_steps.yml
+  - template: common/set_release_flags_steps.yml
 
   # modify package.json for release candidates
   # including k/v pairs in cli arguments, remove trailing -rc if presents
@@ -43,9 +43,9 @@ steps:
     displayName: Modify package.json for release candidates
     condition: and(succeeded(), eq(variables['is_r'], 'true'))
 
-  - template: common/genvsix_steps.yml
-  - template: common/copyvsix_steps.yml
-  - template: common/pubartifacts_steps.yml
+  - template: common/generate_vsix_steps.yml
+  - template: common/copy_vsix_steps.yml
+  - template: common/publish_artifacts_steps.yml
 
   - task: GitHubRelease@0
     displayName: Deploy Releases or Release Candidates to GitHub Release

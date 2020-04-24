@@ -36,9 +36,9 @@ steps:
       node scripts/modifyPackageJson.js name $(nightly_extension_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(nightly_publisher)
     displayName: Modify package.json for release candidates
 
-  - template: common/genvsix_steps.yml
-  - template: common/copyvsix_steps.yml
-  - template: common/pubartifacts_steps.yml
+  - template: common/generate_vsix_steps.yml
+  - template: common/copy_vsix_steps.yml
+  - template: common/publish_artifacts_steps.yml
 
   # publish vsix to marketplace for release candidates
   - bash: yes | vsce unpublish -p $MARKETPLACE_TOKEN $(nightly_publisher).$(nightly_extension_name) && vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
