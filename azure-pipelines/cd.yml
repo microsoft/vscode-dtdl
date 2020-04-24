@@ -43,9 +43,7 @@ steps:
     displayName: Modify package.json for release candidates
     condition: and(succeeded(), eq(variables['is_r'], 'true'))
 
-  - template: common/generate_vsix_steps.yml
-  - template: common/copy_vsix_steps.yml
-  - template: common/publish_artifacts_steps.yml
+  - template: common/package_steps.yml
 
   - task: GitHubRelease@0
     displayName: Deploy Releases or Release Candidates to GitHub Release

@@ -1,5 +1,0 @@
-steps:
-  - script: |
-      npm install -g vsce
-      vsce package
-    displayName: Build VSIX Package
