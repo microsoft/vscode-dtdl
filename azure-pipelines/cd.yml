@@ -48,7 +48,7 @@ steps:
   - task: GitHubRelease@0
     displayName: Deploy Releases or Release Candidates to GitHub Release
     inputs:
-      gitHubConnection: 'vsciotci_github_pat'
+      gitHubConnection: 'vsciotci_github_pat_pnp_authoring'
       repositoryName: '$(Build.Repository.Name)'
       action: 'create'
       target: '$(Build.SourceVersion)'
