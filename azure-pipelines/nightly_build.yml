@@ -4,6 +4,7 @@ schedules:
   branches:
     include:
     - develop
+  always: true # no matter whether there exists a new push to develop, run nightly anyway.
 
 trigger: none
 pr: none

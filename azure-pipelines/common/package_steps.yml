@@ -1,6 +1,11 @@
 steps:
+  # split the following two scripts
+  # because of not working issue on windows platform.
   - script: |
       npm install -g vsce
+    displayName: Install vsce
+
+  - script: |
       vsce package
     displayName: Build VSIX Package
 
