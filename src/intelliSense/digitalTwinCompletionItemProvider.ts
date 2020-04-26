@@ -5,8 +5,8 @@ import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { Constants } from "../common/constants";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { ClassNode, DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
-import { IntelliSenseUtility, JsonNodeType, PropertyPair } from "./intelliSenseUtility";
+import { ClassNode, PropertyNode } from "./digitalTwinGraph";
+import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
 
 /**
@@ -25,7 +25,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
       const edit: parser.Edit = {
         offset,
         length: 1,
-        content: Constants.COMPLETION_TRIGGER + Constants.DEFAULT_SEPARATOR,
+        content: Constants.COMPLETION_TRIGGER + DigitalTwinConstants.DEFAULT_DELIMITER,
       };
       return parser.applyEdits(text, [edit]);
     }
@@ -93,7 +93,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     while (i >= 0 && DigitalTwinConstants.WORD_STOP.indexOf(text.charAt(i)) === -1) {
       i--;
     }
-    return text.substring(i + 1, position.character);
+    return text.slice(i + 1, position.character);
   }
 
   /**
@@ -112,7 +112,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
       case parser.SyntaxKind.EOF:
         return Constants.EMPTY_STRING;
       default:
-        return Constants.DEFAULT_SEPARATOR;
+        return DigitalTwinConstants.DEFAULT_DELIMITER;
     }
   }
 
@@ -240,14 +240,14 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     context: vscode.CompletionContext,
   ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
     const text: string = DigitalTwinCompletionItemProvider.getTextForParse(document, position);
-    const jsonNode: parser.Node | undefined = IntelliSenseUtility.parseDigitalTwinModel(text);
-    if (!jsonNode) {
+    const modelContent: ModelContent | undefined = IntelliSenseUtility.parseDigitalTwinModel(text);
+    if (!modelContent) {
       return undefined;
     }
     if (!IntelliSenseUtility.isGraphInitialized()) {
       return undefined;
     }
-    const node: parser.Node | undefined = parser.findNodeAtOffset(jsonNode, document.offsetAt(position));
+    const node: parser.Node | undefined = parser.findNodeAtOffset(modelContent.jsonNode, document.offsetAt(position));
     if (!node || node.type !== JsonNodeType.String) {
       return undefined;
     }

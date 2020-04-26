@@ -27,7 +27,7 @@ export interface PropertyNode {
   id: string;
   name: string;
   nodeKind: string;
-  type: string;
+  type?: string;
   isPlural?: boolean;
   isRequired?: boolean;
   dictionaryKey?: string;
@@ -49,7 +49,17 @@ export interface ConstraintNode {
 }
 
 /**
- * Element of graph json
+ * Literal kind of DigitalTWin graph
+ */
+export enum Literal {
+  LangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+  String = "http://www.w3.org/2001/XMLSchema#string",
+  Integer = "http://www.w3.org/2001/XMLSchema#integer",
+  Boolean = "http://www.w3.org/2001/XMLSchema#boolean",
+}
+
+/**
+ * Element kind of graph json
  */
 enum GraphElement {
   BaseClass = "baseClass",
@@ -121,8 +131,15 @@ export class DigitalTwinGraph {
    * @param name property name
    */
   public getPropertyNode(name: string): PropertyNode | undefined {
-    const id: string = this.dtdlContext.get(name) || name;
-    return this.propertyNodes.get(id);
+    return this.propertyNodes.get(this.getNodeId(name));
+  }
+
+  /**
+   * get class node by name
+   * @param name name
+   */
+  public getClassNode(name: string): ClassNode | undefined {
+    return this.classNodes.get(this.getNodeId(name));
   }
 
   /**
@@ -141,6 +158,54 @@ export class DigitalTwinGraph {
       }
     }
     return children;
+  }
+
+  /**
+   * get obverse children of abstract class
+   * @param abstractClass abstract class node
+   */
+  public getObverseChildrenOfAbstractClass(abstractClass: ClassNode): ClassNode[] {
+    const children: ClassNode[] = [];
+    if (!abstractClass.isAbstract) {
+      return children;
+    }
+    const queue: ClassNode[] = [];
+    let classNode: ClassNode | undefined = abstractClass;
+    while (classNode) {
+      for (const child of this.getChildrenOfClassNode(classNode)) {
+        if (child.isAbstract) {
+          queue.push(child);
+        } else if (!child.instances) {
+          children.push(child);
+        }
+      }
+      classNode = queue.shift();
+    }
+    return children;
+  }
+
+  /**
+   * get all instances of abstract class
+   * @param abstractClass abstract class node
+   */
+  public getInstancesOfAbstractClass(abstractClass: ClassNode): string[] {
+    const instances: string[] = [];
+    if (!abstractClass.isAbstract) {
+      return instances;
+    }
+    const queue: ClassNode[] = [];
+    let classNode: ClassNode | undefined = abstractClass;
+    while (classNode) {
+      for (const child of this.getChildrenOfClassNode(classNode)) {
+        if (child.isAbstract) {
+          queue.push(child);
+        } else if (child.instances) {
+          instances.push(...child.instances);
+        }
+      }
+      classNode = queue.shift();
+    }
+    return instances;
   }
 
   /**
@@ -164,7 +229,7 @@ export class DigitalTwinGraph {
   private buildGraph(graphJson: any): void {
     this.parse(graphJson);
     this.inheritProperties();
-    this.createEntryNode();
+    this.addSentinelNodes();
   }
 
   /**
@@ -176,15 +241,15 @@ export class DigitalTwinGraph {
       if (graphJson.hasOwnProperty(key)) {
         switch (key) {
           case GraphElement.BaseClass:
-            this.baseClass = graphJson[key];
+            this.baseClass = graphJson[key] as string;
             break;
           case GraphElement.PartitionClass:
-            this.partitionClass = graphJson[key];
+            this.partitionClass = graphJson[key] as string[];
             break;
           case GraphElement.Class:
             for (const item of graphJson[key]) {
               if (DigitalTwinGraph.isValidNode(item)) {
-                this.classNodes.set(item.id, item);
+                this.classNodes.set(item.id, item as ClassNode);
                 this.addToContext(item.name, item.id);
               }
             }
@@ -192,7 +257,7 @@ export class DigitalTwinGraph {
           case GraphElement.Property:
             for (const item of graphJson[key]) {
               if (DigitalTwinGraph.isValidNode(item)) {
-                this.propertyNodes.set(item.id, item);
+                this.propertyNodes.set(item.id, item as PropertyNode);
                 this.addToContext(item.name, item.id);
               }
             }
@@ -242,18 +307,32 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * create entry node of DigitalTwin graph
+   * add sentinel nodes to DigitalTwin graph
    */
-  private createEntryNode(): void {
+  private addSentinelNodes(): void {
+    // entry node
     const entryNode: PropertyNode = {
-      id: DigitalTwinConstants.ENTRY_NODE,
+      id: DigitalTwinConstants.ENTRY,
       name: Constants.EMPTY_STRING,
       nodeKind: Constants.EMPTY_STRING,
-      type: Constants.EMPTY_STRING,
       constraint: {
         in: this.partitionClass,
       },
     };
     this.propertyNodes.set(entryNode.id, entryNode);
+    // language node
+    const languageNode: ClassNode = {
+      id: Literal.LangString,
+      name: DigitalTwinConstants.LANG_STRING,
+    };
+    this.classNodes.set(languageNode.id, languageNode);
+  }
+
+  /**
+   * get node id from name
+   * @param name name
+   */
+  private getNodeId(name: string): string {
+    return this.dtdlContext.get(name) || name;
   }
 }

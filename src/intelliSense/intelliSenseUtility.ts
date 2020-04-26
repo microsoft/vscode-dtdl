@@ -3,11 +3,12 @@
 
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
+import { Constants } from "../common/constants";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { DigitalTwinGraph, PropertyNode } from "./digitalTwinGraph";
+import { ClassNode, DigitalTwinGraph, Literal, PropertyNode } from "./digitalTwinGraph";
 
 /**
- * Type of json node
+ * Type kind of json node
  */
 export enum JsonNodeType {
   Object = "object",
@@ -57,7 +58,109 @@ export class IntelliSenseUtility {
    * get entry node of DigitalTwin graph
    */
   public static getEntryNode(): PropertyNode | undefined {
-    return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY_NODE);
+    return IntelliSenseUtility.graph.getPropertyNode(DigitalTwinConstants.ENTRY);
+  }
+
+  /**
+   * get class node by name
+   * @param name class name
+   */
+  public static getClassNode(name: string): ClassNode | undefined {
+    return IntelliSenseUtility.graph.getClassNode(name);
+  }
+
+  /**
+   * get obverse class collection, including language string
+   * @param propertyNode property node
+   */
+  public static getObverseClasses(propertyNode: PropertyNode): ClassNode[] {
+    const classes: ClassNode[] = [];
+    let classNode: ClassNode | undefined;
+    // constraint is prior to type, e.g. entry node
+    if (propertyNode.constraint.in) {
+      for (const id of propertyNode.constraint.in) {
+        classNode = IntelliSenseUtility.getClassNode(id);
+        if (classNode) {
+          classes.push(classNode);
+        }
+      }
+      return classes;
+    }
+    if (!propertyNode.type) {
+      return classes;
+    }
+    classNode = IntelliSenseUtility.getClassNode(propertyNode.type);
+    // skip literal
+    if (!classNode) {
+      return classes;
+    }
+    // skip instance node
+    if (classNode.instances) {
+      return classes;
+    }
+    if (classNode.isAbstract) {
+      return IntelliSenseUtility.graph.getObverseChildrenOfAbstractClass(classNode);
+    }
+    // obverse class or language string
+    classes.push(classNode);
+    return classes;
+  }
+
+  /**
+   * get instances of class node
+   * @param classNode class node
+   */
+  public static getInstancesOfClassNode(classNode: ClassNode): string[] {
+    if (classNode.instances) {
+      return classNode.instances;
+    }
+    if (classNode.isAbstract) {
+      return IntelliSenseUtility.graph.getInstancesOfAbstractClass(classNode);
+    }
+    return [];
+  }
+
+  /**
+   * resolve node name from dtmi id
+   * @param id dtmi id
+   */
+  public static resolveNodeName(id: string): string {
+    const start: number = id.lastIndexOf(DigitalTwinConstants.DTMI_PATH_DELIMITER);
+    const end: number = id.indexOf(DigitalTwinConstants.DTMI_VERSION_DELIMITER);
+    if (start !== -1 && end !== -1) {
+      return id.slice(start + 1, end);
+    }
+    return Constants.EMPTY_STRING;
+  }
+
+  /**
+   * resolve type name
+   * @param type type of property ndoe
+   */
+  public static resolveTypeName(type: string): string {
+    const classNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(type);
+    if (classNode) {
+      return classNode.name;
+    }
+    // get XMLSchema name
+    const index: number = type.indexOf(DigitalTwinConstants.SCHEMA_DELIMITER);
+    return index === -1 ? type : type.slice(index + 1);
+  }
+
+  /**
+   * check if document is a DigitalTwin file
+   * @param document text document
+   */
+  public static isDigitalTwinFile(document: vscode.TextDocument): boolean {
+    return document.languageId === DigitalTwinConstants.LANGUAGE_ID;
+  }
+
+  /**
+   * check if class node is a language string
+   * @param classNode class node
+   */
+  public static isLanguageString(classNode: ClassNode): boolean {
+    return classNode.id === Literal.LangString;
   }
 
   /**
@@ -67,7 +170,7 @@ export class IntelliSenseUtility {
   public static parseDigitalTwinModel(text: string): ModelContent | undefined {
     // skip checking errors in order to do IntelliSense at best effort
     const jsonNode: parser.Node = parser.parseTree(text);
-    const contextPath: string[] = [DigitalTwinConstants.CONTEXT_NODE];
+    const contextPath: string[] = [DigitalTwinConstants.CONTEXT];
     const contextNode: parser.Node | undefined = parser.findNodeAtLocation(jsonNode, contextPath);
     if (!contextNode) {
       return undefined;
@@ -159,14 +262,6 @@ export class IntelliSenseUtility {
       outerProperty = outerProperty.parent;
     }
     return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
-  }
-
-  /**
-   * check if document is a DigitalTwin file
-   * @param document text document
-   */
-  public static isDigitalTwinFile(document: vscode.TextDocument): boolean {
-    return document.languageId === DigitalTwinConstants.LANGUAGE_ID;
   }
 
   private static graph: DigitalTwinGraph;
