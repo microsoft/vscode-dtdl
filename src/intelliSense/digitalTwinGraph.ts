@@ -127,6 +127,14 @@ export class DigitalTwinGraph {
   }
 
   /**
+   * check if class is partition
+   * @param name class name
+   */
+  public isPartitionClass(name: string): boolean {
+    return this.partitionClass.includes(this.getNodeId(name));
+  }
+
+  /**
    * get property node by name
    * @param name property name
    */
@@ -140,6 +148,24 @@ export class DigitalTwinGraph {
    */
   public getClassNode(name: string): ClassNode | undefined {
     return this.classNodes.get(this.getNodeId(name));
+  }
+
+  /**
+   * get properties of class node
+   * @param classNode class node
+   */
+  public getPropertiesOfClassNode(classNode: ClassNode): PropertyNode[] {
+    let propertyNode: PropertyNode | undefined;
+    const properties: PropertyNode[] = [];
+    if (classNode.properties) {
+      for (const property of classNode.properties) {
+        propertyNode = this.propertyNodes.get(property);
+        if (propertyNode) {
+          properties.push(propertyNode);
+        }
+      }
+    }
+    return properties;
   }
 
   /**

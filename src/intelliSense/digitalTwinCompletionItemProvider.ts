@@ -167,8 +167,6 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
           for (const element of propertyValue.children) {
             if (element.type === JsonNodeType.String) {
               const type: string = element.value as string;
-              if (type && DigitalTwinConstants.SUPPORT_SEMANTIC_TYPES.has(type)) {
-              }
             }
           }
         }
@@ -196,7 +194,6 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
     if (!propertyPair) {
       return undefined;
     }
-    const propertyName: string = IntelliSenseUtility.resolvePropertyName(propertyPair);
     return undefined;
   }
 

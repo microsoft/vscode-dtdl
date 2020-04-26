@@ -8,7 +8,7 @@ export enum DiagnosticMessage {
   MissingType = "@type is missing.",
   InvalidType = "Invalid type. Valid types:",
   UnexpectedProperty = "is unexpected.",
-  MissingRequiredProperties = "Missing required properties:",
+  MissRequiredProperties = "Miss required properties:",
   EmptyObject = "Object is empty.",
   EmptyString = "String is empty.",
   EmptyArray = "Array is empty.",
@@ -25,9 +25,8 @@ export enum DiagnosticMessage {
   NotMatchPattern = "String does not match the pattern of",
   ConflictType = "Conflict type:",
   CoTypeNotAllowed = "Co-type is not allowed. Only Telemetry, Property, Relationship support co-type.",
-  DuplicateItem = "has been assigned to another item.",
+  DuplicateElement = "has been assigned to another element.",
   InvalidValue = "Invalid value. Valid values:",
-  InvalidContext = "Invalid context of DigitalTwin.",
   InvalidDtmiLength = "The maximum length of a user DTMI is 2048 characters.",
   InvalidDtmiPattern = "The pattern of DTMI is dtmi:<path>;<version>. Each path segment is a non-empty string containing only letters, digits, and underscores.",
 }
@@ -41,8 +40,9 @@ export class DigitalTwinConstants {
   public static readonly DTMI_MAX_LENGTH = 2048;
   public static readonly LANGUAGE_ID = "json";
   public static readonly LANG_STRING = "langString";
-  public static readonly IRI = "IRI";
+  public static readonly LITERAL = "Literal";
   public static readonly ENTRY = "@entry";
+  public static readonly ID = "@id";
   public static readonly TYPE = "@type";
   public static readonly CONTEXT = "@context";
   public static readonly LINE_FEED = "\n";
@@ -54,16 +54,4 @@ export class DigitalTwinConstants {
   public static readonly WORD_STOP = ' \t\n\r\v":{[,';
   public static readonly CONTEXT_REGEX = /^dtmi:dtdl:context;(\d+)$/;
   public static readonly DTMI_REGEX = /^dtmi:[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$/;
-
-  public static readonly NAME = "name";
-  public static readonly SCHEMA = "schema";
-  public static readonly CONTENTS = "contents";
-  public static readonly IMPLEMENTS = "implements";
-  public static readonly INTERFACE_SCHEMA = "interfaceSchema";
-  public static readonly RESERVED = "@";
-  public static readonly ID = "@id";
-  public static readonly INTERFACE_SCHEMA_NODE = "InterfaceInstance/schema";
-  public static readonly IOT_MODEL_LABEL = "IoTModel";
-  public static readonly CONTEXT_TEMPLATE = "http://azureiot.com/v1/contexts/IoTModel.json";
-  public static readonly SUPPORT_SEMANTIC_TYPES = new Set<string>(["Telemetry", "Property"]);
 }

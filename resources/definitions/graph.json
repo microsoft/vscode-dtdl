@@ -368,10 +368,10 @@
       "nodeKind": "BlankNodeOrIRI",
       "type": "dtmi:dtdl:class:Content;2",
       "isPlural": true,
+      "dictionaryKey": "dtmi:dtdl:property:name;2",
       "constraint": {
         "minCount": 0,
-        "maxCount": 300,
-        "dictionaryKey": "dtmi:dtdl:property:name;2"
+        "maxCount": 300
       }
     },
     {

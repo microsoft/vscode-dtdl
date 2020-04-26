@@ -55,6 +55,14 @@ export class IntelliSenseUtility {
   }
 
   /**
+   * check if class is partition
+   * @param name class name
+   */
+  public static isPartitionClass(name: string): boolean {
+    return IntelliSenseUtility.graph.isPartitionClass(name);
+  }
+
+  /**
    * get entry node of DigitalTwin graph
    */
   public static getEntryNode(): PropertyNode | undefined {
@@ -67,6 +75,29 @@ export class IntelliSenseUtility {
    */
   public static getClassNode(name: string): ClassNode | undefined {
     return IntelliSenseUtility.graph.getClassNode(name);
+  }
+
+  /**
+   * get properties of class node
+   * @param classNode class node
+   */
+  public static getPropertiesOfClassNode(classNode: ClassNode): PropertyNode[] {
+    return IntelliSenseUtility.graph.getPropertiesOfClassNode(classNode);
+  }
+
+  /**
+   * get instances of class node
+   * @param classNode class node
+   */
+  public static getInstancesOfClassNode(classNode: ClassNode): string[] {
+    if (classNode.instances) {
+      // copy to a new array
+      return [...classNode.instances];
+    }
+    if (classNode.isAbstract) {
+      return IntelliSenseUtility.graph.getInstancesOfAbstractClass(classNode);
+    }
+    return [];
   }
 
   /**
@@ -104,20 +135,6 @@ export class IntelliSenseUtility {
     // obverse class or language string
     classes.push(classNode);
     return classes;
-  }
-
-  /**
-   * get instances of class node
-   * @param classNode class node
-   */
-  public static getInstancesOfClassNode(classNode: ClassNode): string[] {
-    if (classNode.instances) {
-      return classNode.instances;
-    }
-    if (classNode.isAbstract) {
-      return IntelliSenseUtility.graph.getInstancesOfAbstractClass(classNode);
-    }
-    return [];
   }
 
   /**
@@ -217,36 +234,34 @@ export class IntelliSenseUtility {
   }
 
   /**
+   * get property value of object by key name
+   * @param key key name
+   * @param node json node
+   */
+  public static getPropertyValueOfObjectByKey(key: string, node: parser.Node): parser.Node | undefined {
+    if (node.type !== JsonNodeType.Object || !node.children) {
+      return undefined;
+    }
+    let propertyPair: PropertyPair | undefined;
+    for (const child of node.children) {
+      propertyPair = IntelliSenseUtility.parseProperty(child);
+      if (!propertyPair) {
+        continue;
+      }
+      if (propertyPair.name.value === key) {
+        return propertyPair.value;
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * get the range of json node
    * @param document text document
    * @param node json node
    */
   public static getNodeRange(document: vscode.TextDocument, node: parser.Node): vscode.Range {
     return new vscode.Range(document.positionAt(node.offset), document.positionAt(node.offset + node.length));
-  }
-
-  /**
-   * resolve property name for schema and interfaceSchema
-   * @param propertyPair property pair
-   */
-  public static resolvePropertyName(propertyPair: PropertyPair): string {
-    let propertyName: string = propertyPair.name.value as string;
-    if (propertyName !== DigitalTwinConstants.SCHEMA) {
-      return propertyName;
-    }
-    let node: parser.Node = propertyPair.name;
-    // get outer object node
-    if (node.parent && node.parent.parent) {
-      node = node.parent.parent;
-      const outPropertyPair: PropertyPair | undefined = IntelliSenseUtility.getOuterPropertyPair(node);
-      if (outPropertyPair) {
-        const name: string = outPropertyPair.name.value as string;
-        if (name === DigitalTwinConstants.IMPLEMENTS) {
-          propertyName = DigitalTwinConstants.INTERFACE_SCHEMA;
-        }
-      }
-    }
-    return propertyName;
   }
 
   /**
