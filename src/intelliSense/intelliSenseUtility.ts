@@ -143,7 +143,7 @@ export class IntelliSenseUtility {
    */
   public static resolveNodeName(id: string): string {
     const start: number = id.lastIndexOf(DigitalTwinConstants.DTMI_PATH_DELIMITER);
-    const end: number = id.indexOf(DigitalTwinConstants.DTMI_VERSION_DELIMITER);
+    const end: number = id.lastIndexOf(DigitalTwinConstants.DTMI_VERSION_DELIMITER);
     if (start !== -1 && end !== -1) {
       return id.slice(start + 1, end);
     }
@@ -160,7 +160,7 @@ export class IntelliSenseUtility {
       return classNode.name;
     }
     // get XMLSchema name
-    const index: number = type.indexOf(DigitalTwinConstants.SCHEMA_DELIMITER);
+    const index: number = type.lastIndexOf(DigitalTwinConstants.SCHEMA_DELIMITER);
     return index === -1 ? type : type.slice(index + 1);
   }
 
