@@ -307,24 +307,19 @@ export class DigitalTwinDiagnosticProvider {
       message = `${DiagnosticMessage.GreaterThanMaxCount} ${digitalTwinNode.constraint.maxCount}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message, true);
     }
-    let objectKey: string;
+    // validate element uniqueness by name
+    let objectName: string;
     let propertyValue: parser.Node | undefined;
     const exist = new Set<string>();
-    const key: string = digitalTwinNode.dictionaryKey
-      ? IntelliSenseUtility.resolveNodeName(digitalTwinNode.dictionaryKey)
-      : Constants.EMPTY_STRING;
     for (const child of jsonNode.children) {
-      // validate uniqueness by dictionary key
-      if (key) {
-        propertyValue = IntelliSenseUtility.getPropertyValueOfObjectByKey(key, child);
-        if (propertyValue) {
-          objectKey = propertyValue.value as string;
-          if (exist.has(objectKey)) {
-            message = `${objectKey} ${DiagnosticMessage.DuplicateElement}`;
-            DigitalTwinDiagnosticProvider.addProblem(propertyValue, problems, message);
-          } else {
-            exist.add(objectKey);
-          }
+      propertyValue = IntelliSenseUtility.getPropertyValueOfObjectName(child);
+      if (propertyValue) {
+        objectName = propertyValue.value as string;
+        if (exist.has(objectName)) {
+          message = `${objectName} ${DiagnosticMessage.DuplicateElement}`;
+          DigitalTwinDiagnosticProvider.addProblem(propertyValue, problems, message);
+        } else {
+          exist.add(objectName);
         }
       }
       // validate each element

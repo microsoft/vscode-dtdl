@@ -45,6 +45,7 @@ export class DigitalTwinConstants {
   public static readonly ID = "@id";
   public static readonly TYPE = "@type";
   public static readonly CONTEXT = "@context";
+  public static readonly NAME = "name";
   public static readonly LINE_FEED = "\n";
   public static readonly DEFAULT_DELIMITER = ",";
   public static readonly SCHEMA_DELIMITER = "#";

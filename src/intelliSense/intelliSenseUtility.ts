@@ -234,11 +234,10 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get property value of object by key name
-   * @param key key name
+   * get property value of object name
    * @param node json node
    */
-  public static getPropertyValueOfObjectByKey(key: string, node: parser.Node): parser.Node | undefined {
+  public static getPropertyValueOfObjectName(node: parser.Node): parser.Node | undefined {
     if (node.type !== JsonNodeType.Object || !node.children) {
       return undefined;
     }
@@ -248,7 +247,7 @@ export class IntelliSenseUtility {
       if (!propertyPair) {
         continue;
       }
-      if (propertyPair.name.value === key) {
+      if (propertyPair.name.value === DigitalTwinConstants.NAME) {
         return propertyPair.value;
       }
     }
