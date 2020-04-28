@@ -13,7 +13,7 @@ import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
 import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCompletionItemProvider";
 import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnosticProvider";
-import { IntelliSenseUtility } from "./intelliSense/intelliSenseUtility";
+import { IntelliSenseUtility, ModelContent } from "./intelliSense/intelliSenseUtility";
 import { MessageType, UI } from "./view/ui";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(telemetryClient);
 
   // register events
-  initIntelliSense(context);
+  initIntelliSense(context, telemetryClient);
   initCommand(
     context,
     telemetryClient,
@@ -82,7 +82,7 @@ function initCommand(
   );
 }
 
-function initIntelliSense(context: vscode.ExtensionContext): void {
+function initIntelliSense(context: vscode.ExtensionContext, telemetryClient: TelemetryClient): void {
   // init DigitalTwin graph
   IntelliSenseUtility.initGraph(context);
   // register provider
@@ -144,5 +144,18 @@ function initIntelliSense(context: vscode.ExtensionContext): void {
       }
     }),
   );
-  // TODO(erichen): add telemetry for opened file
+  // send usage telemetry when file is opened
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
+        const modelContent: ModelContent | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
+        if (modelContent) {
+          const telemetryContext: TelemetryContext = TelemetryContext.startNew();
+          telemetryContext.properties.dtdlVersion = modelContent.version.toString();
+          telemetryContext.end();
+          telemetryClient.sendEvent(Command.OpenFile, telemetryContext);
+        }
+      }
+    }),
+  );
 }

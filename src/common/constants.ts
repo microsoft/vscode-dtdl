@@ -8,9 +8,7 @@ export class Constants {
   public static readonly CHANNEL_NAME = "IoT Plug and Play";
   public static readonly UTF8 = "utf8";
   public static readonly EMPTY_STRING = "";
-  public static readonly DEFAULT_SEPARATOR = ",";
   public static readonly COMPLETION_TRIGGER = '"';
-  public static readonly LINE_FEED = "\n";
   public static readonly JSON_SPACE = 2;
   public static readonly DEFAULT_TIMER_MS = 1000;
   public static readonly RESOURCE_FOLDER = "resources";
@@ -20,7 +18,7 @@ export class Constants {
   public static readonly GRAPH_FILE_NAME = "graph.json";
 
   public static readonly DEVICE_MODEL_COMPONENT = "Device Model";
-  public static readonly MODEL_NAME_REGEX = new RegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
+  public static readonly MODEL_NAME_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
   public static readonly MODEL_NAME_REGEX_DESCRIPTION = "alphanumeric and underscore, not start with number";
   public static readonly MODEL_ID_PLACEHOLDER = "{modelId}";
   public static readonly MODEL_NAME_PLACEHOLDER = "{modelName}";

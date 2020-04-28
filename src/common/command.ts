@@ -6,4 +6,5 @@
  */
 export enum Command {
   CreateInterface = "azure-digital-twins.createInterface",
+  OpenFile = "azure-digital-twins.openFile",
 }
