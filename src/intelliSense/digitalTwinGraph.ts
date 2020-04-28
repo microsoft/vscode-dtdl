@@ -34,6 +34,16 @@ export interface PropertyNode {
   constraint: ConstraintNode;
 }
 
+export enum NodeType {
+  RdfLangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+  XsdString = "http://www.w3.org/2001/XMLSchema#string",
+  String = "string",
+  XsdBoolean = "http://www.w3.org/2001/XMLSchema#boolean",
+  Boolean = "boolean",
+  XsdInteger = "http://www.w3.org/2001/XMLSchema#integer",
+  Integer = "integer",
+}
+
 /**
  * Constraint node of DigitalTwin graph
  */
@@ -184,6 +194,34 @@ export class DigitalTwinGraph {
       }
     }
     return children;
+  }
+
+  public getClassNodeByClassId(classId: string): ClassNode|undefined {
+    return this.classNodes.get(classId);
+  }
+
+  public getClassNodeByClassName(className: string): ClassNode|undefined {
+    const classId = this.getIdByName(className);
+    if (classId) {
+      return this.classNodes.get(classId);
+    }
+    return undefined;
+  }
+
+  public getIdByName(id: string): string|undefined {
+    return this.dtdlContext.get(id);
+  }
+
+  public getPropertyNodeById(propertyId: string): PropertyNode|undefined {
+    return this.propertyNodes.get(propertyId);
+  }
+
+  public getPropertyNodeByName(propertyName: string): PropertyNode|undefined {
+    const propertyId = this.getIdByName(propertyName);
+    if (propertyId) {
+      return this.propertyNodes.get(propertyId);
+    }
+    return undefined;
   }
 
   /**

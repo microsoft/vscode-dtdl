@@ -224,13 +224,14 @@ export class IntelliSenseUtility {
 
   /**
    * parse json node, return property pair
-   * @param node json node
+   * @param jsonPropertyNode json node
    */
-  public static parseProperty(node: parser.Node): PropertyPair | undefined {
-    if (node.type !== JsonNodeType.Property || !node.children || node.children.length !== 2) {
+  public static parseProperty(jsonPropertyNode: parser.Node): PropertyPair | undefined {
+    if (jsonPropertyNode.type !== JsonNodeType.Property
+      || !jsonPropertyNode.children || jsonPropertyNode.children.length !== 2) {
       return undefined;
     }
-    return { name: node.children[0], value: node.children[1] };
+    return { name: jsonPropertyNode.children[0], value: jsonPropertyNode.children[1] };
   }
 
   /**
@@ -265,17 +266,86 @@ export class IntelliSenseUtility {
 
   /**
    * get outer property pair from current node
-   * @param node json node
+   * @param objectNode json node
    */
-  public static getOuterPropertyPair(node: parser.Node): PropertyPair | undefined {
-    if (node.type !== JsonNodeType.Object) {
+  public static getOuterPropertyPair(objectNode: parser.Node): PropertyPair | undefined {
+    if (objectNode.type !== JsonNodeType.Object) {
       return undefined;
     }
-    let outerProperty: parser.Node | undefined = node.parent;
+    let outerProperty: parser.Node | undefined = objectNode.parent;
     if (outerProperty && outerProperty.type === JsonNodeType.Array) {
       outerProperty = outerProperty.parent;
     }
     return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
+  }
+
+  public static isDigitalTwinDefinition(documentNode: parser.Node): boolean {
+    const contextPath: string[] = [DigitalTwinConstants.CONTEXT];
+    const contextNode: parser.Node | undefined = parser.findNodeAtLocation(documentNode, contextPath);
+    if (contextNode && IntelliSenseUtility.isDigitalTwinContext(contextNode)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static getOuterPropertyClassNode(jsonPropertyNode: parser.Node): ClassNode|undefined {
+    const outerPropertyObserveName = IntelliSenseUtility.getOuterPropertyObserveName(jsonPropertyNode);
+    if (!outerPropertyObserveName) {
+      return undefined;
+    }
+
+    return IntelliSenseUtility.getClassNodeByPropertyName(outerPropertyObserveName);
+  }
+
+  public static getOuterPropertyObserveName(jsonPropertyNode: parser.Node): string|undefined {
+    const parentObjectNode: parser.Node | undefined = jsonPropertyNode.parent;
+    if (!parentObjectNode || parentObjectNode.type !== JsonNodeType.Object || !parentObjectNode.children) {
+      return undefined;
+    }
+
+    const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.getOuterPropertyPair(parentObjectNode);
+    return outerPropertyPair?.name.value;
+  }
+
+  public static getClassNodeByPropertyName(propertyName: string): ClassNode|undefined {
+    const propertyNode: PropertyNode|undefined = IntelliSenseUtility.getPropertyNodeByName(propertyName);
+    if (!propertyNode || !propertyNode.type) {
+      return undefined;
+    }
+    return IntelliSenseUtility.getClassNodeByClassId(propertyNode.type);
+  }
+
+  public static getPropertyNodeByName(propertyName: string): PropertyNode|undefined {
+    return IntelliSenseUtility.graph.getPropertyNodeByName(propertyName);
+  }
+
+  public static getPropertyNodeById(propertyId: string): PropertyNode|undefined {
+    return IntelliSenseUtility.graph.getPropertyNodeById(propertyId);
+  }
+
+  public static getClassNodeByClassId(classDtmi: string): ClassNode|undefined {
+    return IntelliSenseUtility.graph.getClassNodeByClassId(classDtmi);
+  }
+
+  public static getClassNodeByClassName(className: string): ClassNode|undefined {
+    return IntelliSenseUtility.graph.getClassNodeByClassName(className);
+  }
+
+  public static getIdByName(id: string): string|undefined {
+    return IntelliSenseUtility.graph.getIdByName(id);
+  }
+
+  /**
+   * check if name is a reserved name
+   * @param name name
+   */
+  public static isReservedName(name: string): boolean {
+    return name.startsWith(DigitalTwinConstants.RESERVED);
+  }
+
+  public static isPartitionNode(propertyName: string): boolean {
+    return propertyName === DigitalTwinConstants.INTERFACE;
   }
 
   private static graph: DigitalTwinGraph;
