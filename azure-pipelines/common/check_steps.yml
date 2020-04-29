@@ -1,8 +1,8 @@
 steps:
   # static checking
   - script: |
-      npm run tslint
-    displayName: Run TSLint Checks
+      npm run eslint
+    displayName: Run ESLint Checks
   # cred scan
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: Run CredScan
