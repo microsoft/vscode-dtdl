@@ -35,13 +35,10 @@ export interface PropertyNode {
 }
 
 export enum NodeType {
-  RdfLangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
-  XsdString = "http://www.w3.org/2001/XMLSchema#string",
   String = "string",
-  XsdBoolean = "http://www.w3.org/2001/XMLSchema#boolean",
   Boolean = "boolean",
-  XsdInteger = "http://www.w3.org/2001/XMLSchema#integer",
   Integer = "integer",
+  LangString = "langstring",
 }
 
 /**
@@ -145,11 +142,11 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * get property node by name
-   * @param name property name
+   * get property node by name or id
+   * @param nameOrId property name or id
    */
-  public getPropertyNode(name: string): PropertyNode | undefined {
-    return this.propertyNodes.get(this.getNodeId(name));
+  public getPropertyNode(nameOrId: string): PropertyNode | undefined {
+    return this.propertyNodes.get(this.getNodeId(nameOrId));
   }
 
   /**
@@ -194,34 +191,6 @@ export class DigitalTwinGraph {
       }
     }
     return children;
-  }
-
-  public getClassNodeByClassId(classId: string): ClassNode|undefined {
-    return this.classNodes.get(classId);
-  }
-
-  public getClassNodeByClassName(className: string): ClassNode|undefined {
-    const classId = this.getIdByName(className);
-    if (classId) {
-      return this.classNodes.get(classId);
-    }
-    return undefined;
-  }
-
-  public getIdByName(id: string): string|undefined {
-    return this.dtdlContext.get(id);
-  }
-
-  public getPropertyNodeById(propertyId: string): PropertyNode|undefined {
-    return this.propertyNodes.get(propertyId);
-  }
-
-  public getPropertyNodeByName(propertyName: string): PropertyNode|undefined {
-    const propertyId = this.getIdByName(propertyName);
-    if (propertyId) {
-      return this.propertyNodes.get(propertyId);
-    }
-    return undefined;
   }
 
   /**
@@ -393,8 +362,8 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * get node id from name
-   * @param name name
+   * get node id by name or id
+   * @param name name or id
    */
   private getNodeId(name: string): string {
     return this.dtdlContext.get(name) || name;

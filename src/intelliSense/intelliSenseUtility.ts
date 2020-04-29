@@ -62,6 +62,10 @@ export class IntelliSenseUtility {
     return IntelliSenseUtility.graph.isPartitionClass(name);
   }
 
+  public static isObverseClass(classNode: ClassNode): boolean {
+    return (!classNode.isAbstract && !classNode.instances);
+  }
+
   /**
    * get entry node of DigitalTwin graph
    */
@@ -70,11 +74,19 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get class node by name
-   * @param name class name
+   * get property node by name or id
+   * @param nameOrId property name or id
    */
-  public static getClassNode(name: string): ClassNode | undefined {
-    return IntelliSenseUtility.graph.getClassNode(name);
+  public static getPropertyNode(nameOrId: string): PropertyNode | undefined {
+    return IntelliSenseUtility.graph.getPropertyNode(nameOrId);
+  }
+
+  /**
+   * get class node by name or id
+   * @param nameOrId class name or id
+   */
+  public static getClassNode(nameOrId: string): ClassNode | undefined {
+    return IntelliSenseUtility.graph.getClassNode(nameOrId);
   }
 
   /**
@@ -152,7 +164,7 @@ export class IntelliSenseUtility {
 
   /**
    * resolve type name
-   * @param type type of property ndoe
+   * @param type type of property node
    */
   public static resolveTypeName(type: string): string {
     const classNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(type);
@@ -178,6 +190,14 @@ export class IntelliSenseUtility {
    */
   public static isLanguageString(classNode: ClassNode): boolean {
     return classNode.id === Literal.LangString;
+  }
+
+  /**
+   * check if property node type is language string
+   * @param propertyNode property node
+   */
+  public static isLanguageStringPropertyNode(propertyNode: PropertyNode): boolean {
+    return propertyNode.type === Literal.LangString;
   }
 
   /**
@@ -224,21 +244,22 @@ export class IntelliSenseUtility {
 
   /**
    * parse json node, return property pair
-   * @param jsonPropertyNode json node
+   * @param node json node
    */
-  public static parseProperty(jsonPropertyNode: parser.Node): PropertyPair | undefined {
-    if (jsonPropertyNode.type !== JsonNodeType.Property
-      || !jsonPropertyNode.children || jsonPropertyNode.children.length !== 2) {
+  public static parseProperty(node: parser.Node): PropertyPair | undefined {
+    if (node.type !== JsonNodeType.Property
+      || !node.children || node.children.length !== 2) {
       return undefined;
     }
-    return { name: jsonPropertyNode.children[0], value: jsonPropertyNode.children[1] };
+    return { name: node.children[0], value: node.children[1] };
   }
 
   /**
-   * get property value of object name
+   * get property value of object by key name
+   * @param key key name
    * @param node json node
    */
-  public static getPropertyValueOfObjectName(node: parser.Node): parser.Node | undefined {
+  public static getPropertyValueOfObjectByKey(key: string, node: parser.Node): parser.Node | undefined {
     if (node.type !== JsonNodeType.Object || !node.children) {
       return undefined;
     }
@@ -248,7 +269,7 @@ export class IntelliSenseUtility {
       if (!propertyPair) {
         continue;
       }
-      if (propertyPair.name.value === DigitalTwinConstants.NAME_PROPERTY) {
+      if (propertyPair.name.value === key) {
         return propertyPair.value;
       }
     }
@@ -266,86 +287,17 @@ export class IntelliSenseUtility {
 
   /**
    * get outer property pair from current node
-   * @param objectNode json node
+   * @param node json node
    */
-  public static getOuterPropertyPair(objectNode: parser.Node): PropertyPair | undefined {
-    if (objectNode.type !== JsonNodeType.Object) {
+  public static getOuterPropertyPair(node: parser.Node): PropertyPair | undefined {
+    if (node.type !== JsonNodeType.Object) {
       return undefined;
     }
-    let outerProperty: parser.Node | undefined = objectNode.parent;
+    let outerProperty: parser.Node | undefined = node.parent;
     if (outerProperty && outerProperty.type === JsonNodeType.Array) {
       outerProperty = outerProperty.parent;
     }
     return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
-  }
-
-  public static isDigitalTwinDefinition(documentNode: parser.Node): boolean {
-    const contextPath: string[] = [DigitalTwinConstants.CONTEXT];
-    const contextNode: parser.Node | undefined = parser.findNodeAtLocation(documentNode, contextPath);
-    if (contextNode && IntelliSenseUtility.isDigitalTwinContext(contextNode)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public static getOuterPropertyClassNode(jsonPropertyNode: parser.Node): ClassNode|undefined {
-    const outerPropertyObserveName = IntelliSenseUtility.getOuterPropertyObserveName(jsonPropertyNode);
-    if (!outerPropertyObserveName) {
-      return undefined;
-    }
-
-    return IntelliSenseUtility.getClassNodeByPropertyName(outerPropertyObserveName);
-  }
-
-  public static getOuterPropertyObserveName(jsonPropertyNode: parser.Node): string|undefined {
-    const parentObjectNode: parser.Node | undefined = jsonPropertyNode.parent;
-    if (!parentObjectNode || parentObjectNode.type !== JsonNodeType.Object || !parentObjectNode.children) {
-      return undefined;
-    }
-
-    const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.getOuterPropertyPair(parentObjectNode);
-    return outerPropertyPair?.name.value;
-  }
-
-  public static getClassNodeByPropertyName(propertyName: string): ClassNode|undefined {
-    const propertyNode: PropertyNode|undefined = IntelliSenseUtility.getPropertyNodeByName(propertyName);
-    if (!propertyNode || !propertyNode.type) {
-      return undefined;
-    }
-    return IntelliSenseUtility.getClassNodeByClassId(propertyNode.type);
-  }
-
-  public static getPropertyNodeByName(propertyName: string): PropertyNode|undefined {
-    return IntelliSenseUtility.graph.getPropertyNodeByName(propertyName);
-  }
-
-  public static getPropertyNodeById(propertyId: string): PropertyNode|undefined {
-    return IntelliSenseUtility.graph.getPropertyNodeById(propertyId);
-  }
-
-  public static getClassNodeByClassId(classDtmi: string): ClassNode|undefined {
-    return IntelliSenseUtility.graph.getClassNodeByClassId(classDtmi);
-  }
-
-  public static getClassNodeByClassName(className: string): ClassNode|undefined {
-    return IntelliSenseUtility.graph.getClassNodeByClassName(className);
-  }
-
-  public static getIdByName(id: string): string|undefined {
-    return IntelliSenseUtility.graph.getIdByName(id);
-  }
-
-  /**
-   * check if name is a reserved name
-   * @param name name
-   */
-  public static isReservedName(name: string): boolean {
-    return name.startsWith(DigitalTwinConstants.RESERVED);
-  }
-
-  public static isPartitionNode(propertyName: string): boolean {
-    return propertyName === DigitalTwinConstants.INTERFACE;
   }
 
   private static graph: DigitalTwinGraph;
