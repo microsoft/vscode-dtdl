@@ -45,7 +45,9 @@ export class DigitalTwinConstants {
   public static readonly ID = "@id";
   public static readonly TYPE = "@type";
   public static readonly CONTEXT = "@context";
-  public static readonly NAME = "name";
+  public static readonly NAME_PROPERTY = "name";
+  public static readonly UNIT_PROPERTY = "unit";
+  public static readonly SCHEMA_CLASS = "Schema";
   public static readonly LINE_FEED = "\n";
   public static readonly DEFAULT_DELIMITER = ",";
   public static readonly SCHEMA_DELIMITER = "#";
@@ -54,5 +56,7 @@ export class DigitalTwinConstants {
   public static readonly REQUIRED_PROPERTY_LABEL = "(required)";
   public static readonly WORD_STOP = ' \t\n\r\v":{[,';
   public static readonly CONTEXT_REGEX = /^dtmi:dtdl:context;(\d+)$/;
-  public static readonly DTMI_REGEX = /^dtmi:[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$/;
+  public static readonly DTMI_REGEX = new RegExp(
+    "^dtmi:[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$",
+  );
 }
