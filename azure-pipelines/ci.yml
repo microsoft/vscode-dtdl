@@ -19,6 +19,7 @@ strategy:
 
 pool:
   vmImage: $(imageName)
+  demands: npm
 
 steps:
 

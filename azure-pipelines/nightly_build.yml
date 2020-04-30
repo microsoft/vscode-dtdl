@@ -20,6 +20,7 @@ strategy:
 
 pool:
   vmImage: $(imageName)
+  demands: npm
 
 variables:
 - template: common/variables.yml
