@@ -43,7 +43,7 @@ export class DigitalTwinCompletionItemProvider
         {
           offset,
           length: 1,
-          content: Constants.COMPLETION_TRIGGER + Constants.DEFAULT_SEPARATOR,
+          content: Constants.COMPLETION_TRIGGER + DigitalTwinConstants.DEFAULT_DELIMITER,
         },
       ]);
     }
@@ -191,28 +191,32 @@ export class DigitalTwinCompletionItemProvider
 
     // provide value snippet according to property type
     let value = "$1";
-    if (propertyNode.isPlural && !IntelliSenseUtility.isLanguageStringPropertyNode(propertyNode)) {
+    if (!propertyNode.type) {
+      return `"${name}": ${value}`;
+    }
+
+    const typeClassNode: ClassNode|undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
+    const isLanguageString: boolean =
+      (typeClassNode && IntelliSenseUtility.isLanguageString(typeClassNode)) ? true : false;
+
+    if (propertyNode.isPlural && !isLanguageString) {
       value = "[$1]";
-    } else if (propertyNode.type) {
-      const typeClassNode: ClassNode|undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
-      if (typeClassNode && IntelliSenseUtility.isObverseClass(typeClassNode)
-        && !IntelliSenseUtility.isLanguageString(typeClassNode)) {
-        value = "{$1}";
-      } else {
-        const type: string = IntelliSenseUtility.resolveTypeName(propertyNode.type).toLowerCase();
-        switch (type) {
-            case NodeType.Boolean:
-              value = "${1:false}";
-              break;
-            case NodeType.Integer:
-              value = "${1:0}";
-              break;
-            case NodeType.String:
-            case NodeType.LangString:
-              value = '"$1"';
-              break;
-          }
-      }
+    } else if (typeClassNode && IntelliSenseUtility.isObverseClass(typeClassNode) && !isLanguageString) {
+      value = "{$1}";
+    } else {
+      const type: string = IntelliSenseUtility.resolveTypeName(propertyNode.type).toLowerCase();
+      switch (type) {
+          case NodeType.Boolean:
+            value = "${1:false}";
+            break;
+          case NodeType.Integer:
+            value = "${1:0}";
+            break;
+          case NodeType.String:
+          case NodeType.LangString:
+            value = '"$1"';
+            break;
+        }
     }
     return `"${name}": ${value}`;
   }

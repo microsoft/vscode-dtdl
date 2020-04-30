@@ -193,14 +193,6 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * check if property node type is language string
-   * @param propertyNode property node
-   */
-  public static isLanguageStringPropertyNode(propertyNode: PropertyNode): boolean {
-    return propertyNode.type === Literal.LangString;
-  }
-
-  /**
    * parse the text, return DigitalTwin model content
    * @param text text
    */
@@ -247,8 +239,7 @@ export class IntelliSenseUtility {
    * @param node json node
    */
   public static parseProperty(node: parser.Node): PropertyPair | undefined {
-    if (node.type !== JsonNodeType.Property
-      || !node.children || node.children.length !== 2) {
+    if (node.type !== JsonNodeType.Property || !node.children || node.children.length !== 2) {
       return undefined;
     }
     return { name: node.children[0], value: node.children[1] };
