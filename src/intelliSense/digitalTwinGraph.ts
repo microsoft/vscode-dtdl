@@ -34,13 +34,6 @@ export interface PropertyNode {
   constraint: ConstraintNode;
 }
 
-export enum NodeType {
-  String = "string",
-  Boolean = "boolean",
-  Integer = "integer",
-  LangString = "langstring",
-}
-
 /**
  * Constraint node of DigitalTwin graph
  */

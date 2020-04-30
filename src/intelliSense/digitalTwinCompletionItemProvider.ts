@@ -5,7 +5,7 @@ import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { Constants } from "../common/constants";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { ClassNode, Literal, NodeType, PropertyNode } from "./digitalTwinGraph";
+import { ClassNode, Literal, PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
 
@@ -93,7 +93,7 @@ export class DigitalTwinCompletionItemProvider
       id: "dummy-language-code",
       name: Constants.EMPTY_STRING,
       nodeKind: Constants.EMPTY_STRING,
-      type: NodeType.LangString,
+      type: Literal.LangString,
       constraint: {},
     };
     for (const code of LANGUAGE_CODE) {
@@ -204,16 +204,15 @@ export class DigitalTwinCompletionItemProvider
     } else if (typeClassNode && IntelliSenseUtility.isObverseClass(typeClassNode) && !isLanguageString) {
       value = "{$1}";
     } else {
-      const type: string = IntelliSenseUtility.resolveTypeName(propertyNode.type).toLowerCase();
-      switch (type) {
-          case NodeType.Boolean:
+      switch (propertyNode.type) {
+          case Literal.Boolean:
             value = "${1:false}";
             break;
-          case NodeType.Integer:
+          case Literal.Integer:
             value = "${1:0}";
             break;
-          case NodeType.String:
-          case NodeType.LangString:
+          case Literal.String:
+          case Literal.LangString:
             value = '"$1"';
             break;
         }
@@ -250,6 +249,7 @@ export class DigitalTwinCompletionItemProvider
           id: "dummy-id",
           name: DigitalTwinConstants.ID,
           nodeKind: Constants.EMPTY_STRING,
+          type: Literal.String,
           constraint: {},
         };
       suggestions.push({
