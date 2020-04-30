@@ -247,7 +247,7 @@ export class IntelliSenseUtility {
       if (!propertyPair) {
         continue;
       }
-      if (propertyPair.name.value === DigitalTwinConstants.NAME) {
+      if (propertyPair.name.value === DigitalTwinConstants.NAME_PROPERTY) {
         return propertyPair.value;
       }
     }

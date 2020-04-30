@@ -3,7 +3,6 @@
 
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
-import { Constants } from "../common/constants";
 import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants";
 import { ClassNode, Literal, PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
@@ -258,8 +257,13 @@ export class DigitalTwinDiagnosticProvider {
           if (!isPartitionClass) {
             DigitalTwinDiagnosticProvider.addProblemOfUnexpectedProperty(propertyPair.name, problems);
           }
+          break;
         case DigitalTwinConstants.TYPE:
           // skip since @type has been validated
+          break;
+        case DigitalTwinConstants.UNIT_PROPERTY:
+          // TODO: remove this logic when supporting semantic type
+          // add this special logic here is is to not show diagnostic error for unit property
           break;
         default:
           // validate property is expected
@@ -382,19 +386,24 @@ export class DigitalTwinDiagnosticProvider {
    * @param problems problem collection
    */
   private static validateIRINode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
-    // constraint is prior to type, e.g. valueSchema
+    // constraint is prior to type, e.g. Enum/valueSchema
     let instances: string[];
     if (digitalTwinNode.constraint.in) {
       instances = digitalTwinNode.constraint.in.map((id) => IntelliSenseUtility.resolveNodeName(id));
       DigitalTwinDiagnosticProvider.validateInstances(jsonNode, instances, problems);
       return;
     }
+    // e.g. Relationship/target
     if (!digitalTwinNode.type) {
       DigitalTwinDiagnosticProvider.validateDtmi(jsonNode, problems);
       return;
     }
     const classNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(digitalTwinNode.type);
     if (!classNode) {
+      return;
+    }
+    // validate value is a reference to the element of Interface/schemas, e.g. Telmetry/schema
+    if (DigitalTwinDiagnosticProvider.isSchemaReference(jsonNode, classNode)) {
       return;
     }
     // validate instance
@@ -432,10 +441,19 @@ export class DigitalTwinDiagnosticProvider {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.InvalidDtmiLength);
       return;
     }
-    const regex = new RegExp(DigitalTwinConstants.DTMI_REGEX);
-    if (!regex.test(id)) {
+    if (!DigitalTwinConstants.DTMI_REGEX.test(id)) {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.InvalidDtmiPattern);
     }
+  }
+
+  /**
+   * check if class node is a reference to schema
+   * @param jsonNode json node
+   * @param classNode class node
+   */
+  private static isSchemaReference(jsonNode: parser.Node, classNode: ClassNode): boolean {
+    const id: string = jsonNode.value as string;
+    return classNode.name === DigitalTwinConstants.SCHEMA_CLASS && DigitalTwinConstants.DTMI_REGEX.test(id);
   }
 
   /**
