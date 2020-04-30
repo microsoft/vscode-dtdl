@@ -404,7 +404,6 @@ export class DigitalTwinDiagnosticProvider {
     }
     // validate value is a reference to the element of Interface/schemas, e.g. Telmetry/schema
     if (DigitalTwinDiagnosticProvider.isSchemaReference(jsonNode, classNode)) {
-      DigitalTwinDiagnosticProvider.validateDtmi(jsonNode, problems);
       return;
     }
     // validate instance
