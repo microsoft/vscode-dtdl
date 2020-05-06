@@ -31,13 +31,12 @@ module.exports = {
 
   // The glob patterns Jest uses to detect test files
   testMatch: [
-    "**/test/**/*.test.ts"
+    "**/test/ut/**/*.test.ts"
   ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   testPathIgnorePatterns: [
-    "/node_modules/",
-    "extension.test.ts"
+    "/node_modules/"
   ],
 
   // A map from regular expressions to paths to transformers

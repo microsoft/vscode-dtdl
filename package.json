@@ -63,7 +63,7 @@
     "compile": "tsc -p ./",
     "tslint": "tslint -t verbose src/**/*.ts",
     "test": "node ./out/test/runTest.js",
-    "jest": "jest",
+    "ut": "jest --coverage",
     "webpack": "webpack --mode development"
   },
   "devDependencies": {
