@@ -53,12 +53,18 @@ export class TelemetryClient {
     if (!this.client) {
       return;
     }
-    if (telemetryContext) {
-      telemetryContext.properties[TelemetryClient.IS_INTERNAL] = this.isInternal.toString();
-      this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
-    } else {
+    if (!telemetryContext) {
       const properties = { [TelemetryClient.IS_INTERNAL]: this.isInternal.toString() };
       this.client.sendTelemetryEvent(eventName, properties);
+      return;
+    }
+
+    telemetryContext.properties[TelemetryClient.IS_INTERNAL] = this.isInternal.toString();
+
+    if (telemetryContext.succeed) {
+      this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
+    } else {
+      this.client.sendTelemetryErrorEvent(eventName, telemetryContext.properties, telemetryContext.measurements, ["error", "errorMessage"]);
     }
   }
 
