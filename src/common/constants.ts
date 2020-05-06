@@ -5,7 +5,7 @@
  * Common constants
  */
 export class Constants {
-  public static readonly CHANNEL_NAME = "IoT Plug and Play";
+  public static readonly CHANNEL_NAME = "DTDL";
   public static readonly UTF8 = "utf8";
   public static readonly EMPTY_STRING = "";
   public static readonly COMPLETION_TRIGGER = '"';

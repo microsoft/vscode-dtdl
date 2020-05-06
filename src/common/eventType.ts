@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 /**
- * Command type
+ * Event type for telemetry
  */
-export enum Command {
+export enum EventType {
   CreateInterface = "azure-digital-twins.createInterface",
-  OpenFile = "azure-digital-twins.openFile",
+  OpenFile = "intelliSense.openFile",
 }

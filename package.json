@@ -1,7 +1,7 @@
 {
   "name": "azure-digital-twins",
-  "displayName": "IoT Plug and Play",
-  "description": "Author IoT Plug and Play models, publish and manage with Model Repository",
+  "displayName": "DTDL",
+  "description": "Digital Twins Definition Language extension for VSCode",
   "version": "0.0.1",
   "publisher": "vsciot-vscode",
   "preview": true,
