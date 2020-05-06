@@ -26,13 +26,23 @@ export class TelemetryContext {
   public properties: { [key: string]: string };
   public measurements: { [key: string]: number };
 
-  public succeed: boolean;
   private start: number;
   private constructor() {
     this.start = Date.now();
-    this.succeed = true;
     this.properties = {};
     this.measurements = {};
+  }
+
+  public succeeded(): boolean {
+    if (!this.properties.result) {
+      return false;
+    }
+
+    if (this.properties.result === OperationResult.Success) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -41,9 +51,8 @@ export class TelemetryContext {
    */
   public setError(error: Error): void {
     this.properties.result = error instanceof UserCancelledError ? OperationResult.Cancel : OperationResult.Fail;
-    this.properties.error = error.name;
+    this.properties.errorType = error.name;
     this.properties.errorMessage = error.message;
-    this.succeed = false;
   }
 
   /**

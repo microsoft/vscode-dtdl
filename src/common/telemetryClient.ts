@@ -61,10 +61,10 @@ export class TelemetryClient {
 
     telemetryContext.properties[TelemetryClient.IS_INTERNAL] = this.isInternal.toString();
 
-    if (telemetryContext.succeed) {
+    if (telemetryContext.succeeded()) {
       this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
     } else {
-      this.client.sendTelemetryErrorEvent(eventName, telemetryContext.properties, telemetryContext.measurements, ["error", "errorMessage"]);
+      this.client.sendTelemetryErrorEvent(eventName, telemetryContext.properties, telemetryContext.measurements, ["errorMessage"]);
     }
   }
 
