@@ -26,10 +26,8 @@ export class TelemetryContext {
   public properties: { [key: string]: string };
   public measurements: { [key: string]: number };
 
-  private start: number;
-
   public succeed: boolean;
-  
+  private start: number;
   private constructor() {
     this.start = Date.now();
     this.succeed = true;
