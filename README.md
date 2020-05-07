@@ -1,4 +1,6 @@
+
 # IoT Plug and Play for Visual Studio Code
+[![Build Status](https://dev.azure.com/mseng/VSIoT/_apis/build/status/Azure%20Digital%20Twins/vscode-azure-digital-twins.nightly?branchName=develop)](https://dev.azure.com/mseng/VSIoT/_build/latest?definitionId=10125&branchName=develop)
 
 ## Contributing
 
