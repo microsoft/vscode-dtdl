@@ -3,8 +3,8 @@
 
 import * as vscode from "vscode";
 import { ColorizedChannel } from "./common/colorizedChannel";
-import { Command } from "./common/command";
 import { Constants } from "./common/constants";
+import { EventType } from "./common/eventType";
 import { NSAT } from "./common/nsat";
 import { ProcessError } from "./common/processError";
 import { TelemetryClient } from "./common/telemetryClient";
@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel,
     nsat,
     true,
-    Command.CreateInterface,
+    EventType.CreateInterface,
     async (): Promise<void> => {
       return deviceModelManager.createModel(ModelType.Interface);
     },
@@ -49,11 +49,11 @@ function initCommand(
   outputChannel: ColorizedChannel,
   nsat: NSAT,
   enableSurvey: boolean,
-  command: Command,
+  event: EventType,
   callback: (...args: any[]) => Promise<any>,
 ): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand(command, async (...args: any[]) => {
+    vscode.commands.registerCommand(event, async (...args: any[]) => {
       const telemetryContext: TelemetryContext = TelemetryContext.startNew();
       try {
         return await callback(...args);
@@ -72,7 +72,7 @@ function initCommand(
         }
       } finally {
         telemetryContext.end();
-        telemetryClient.sendEvent(command, telemetryContext);
+        telemetryClient.sendEvent(event, telemetryContext);
         outputChannel.show();
         if (enableSurvey) {
           nsat.takeSurvey(context);
@@ -153,7 +153,7 @@ function initIntelliSense(context: vscode.ExtensionContext, telemetryClient: Tel
           const telemetryContext: TelemetryContext = TelemetryContext.startNew();
           telemetryContext.properties.dtdlVersion = modelContent.version.toString();
           telemetryContext.end();
-          telemetryClient.sendEvent(Command.OpenFile, telemetryContext);
+          telemetryClient.sendEvent(EventType.OpenModelFile, telemetryContext);
         }
       }
     }),

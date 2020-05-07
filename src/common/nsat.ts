@@ -83,7 +83,7 @@ export class NSAT {
     };
     this.telemetryClient.sendEvent("nsat.survey/userAsked");
     const button = await window.showInformationMessage(
-      "Do you mind taking a quick feedback survey about IoT Plug and Play Extension for VS Code?",
+      "Do you mind taking a quick feedback survey about DTDL Extension for VS Code?",
       take,
       remind,
       never,

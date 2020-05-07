@@ -1,7 +1,7 @@
 {
-  "name": "azure-digital-twins",
-  "displayName": "IoT Plug and Play",
-  "description": "Author IoT Plug and Play models, publish and manage with Model Repository",
+  "name": "vscode-dtdl",
+  "displayName": "DTDL",
+  "description": "This extension provides syntax highlighting to read and edit JSON documents using the Digital Twins Definition Language",
   "version": "0.0.1",
   "publisher": "vsciot-vscode",
   "preview": true,
@@ -24,16 +24,16 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:azure-digital-twins.createInterface",
+    "onCommand:vscode-dtdl.createInterface",
     "workspaceContains:**/*.json"
   ],
   "main": "./dist/extension",
   "contributes": {
     "commands": [
       {
-        "command": "azure-digital-twins.createInterface",
+        "command": "vscode-dtdl.createInterface",
         "title": "Create Interface",
-        "category": "IoT Plug and Play"
+        "category": "DTDL"
       }
     ],
     "jsonValidation": [
