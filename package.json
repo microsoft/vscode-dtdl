@@ -1,7 +1,7 @@
 {
-  "name": "azure-digital-twins",
+  "name": "vscode-dtdl",
   "displayName": "DTDL",
-  "description": "Digital Twins Definition Language extension for VSCode",
+  "description": "This extension provides syntax highlighting to read and edit JSON documents using the Digital Twins Definition Language",
   "version": "0.0.1",
   "publisher": "vsciot-vscode",
   "preview": true,
@@ -33,7 +33,7 @@
       {
         "command": "azure-digital-twins.createInterface",
         "title": "Create Interface",
-        "category": "IoT Plug and Play"
+        "category": "DTDL"
       }
     ],
     "jsonValidation": [
