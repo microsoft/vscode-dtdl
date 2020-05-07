@@ -304,10 +304,16 @@ export class DigitalTwinDiagnosticProvider {
     }
     // validate array constraint
     let message: string;
-    if (digitalTwinNode.constraint.minCount && jsonNode.children.length < digitalTwinNode.constraint.minCount) {
+    if (
+      digitalTwinNode.constraint.minCount !== undefined &&
+      jsonNode.children.length < digitalTwinNode.constraint.minCount
+    ) {
       message = `${DiagnosticMessage.LessThanMinCount} ${digitalTwinNode.constraint.minCount}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message, true);
-    } else if (digitalTwinNode.constraint.maxCount && jsonNode.children.length > digitalTwinNode.constraint.maxCount) {
+    } else if (
+      digitalTwinNode.constraint.maxCount !== undefined &&
+      jsonNode.children.length > digitalTwinNode.constraint.maxCount
+    ) {
       message = `${DiagnosticMessage.GreaterThanMaxCount} ${digitalTwinNode.constraint.maxCount}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message, true);
     }
@@ -360,12 +366,12 @@ export class DigitalTwinDiagnosticProvider {
     }
     // validate string constraint
     let message: string;
-    if (digitalTwinNode.constraint.minLength && value.length < digitalTwinNode.constraint.minLength) {
+    if (digitalTwinNode.constraint.minLength !== undefined && value.length < digitalTwinNode.constraint.minLength) {
       message = `${DiagnosticMessage.LessThanMinLength} ${digitalTwinNode.constraint.minLength}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
       return;
     }
-    if (digitalTwinNode.constraint.maxLength && value.length > digitalTwinNode.constraint.maxLength) {
+    if (digitalTwinNode.constraint.maxLength !== undefined && value.length > digitalTwinNode.constraint.maxLength) {
       message = `${DiagnosticMessage.GreaterThanMaxLength} ${digitalTwinNode.constraint.maxLength}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
       return;
@@ -476,12 +482,12 @@ export class DigitalTwinDiagnosticProvider {
     }
     // validate number constraint
     let message: string;
-    if (digitalTwinNode.constraint.minInclusive && value < digitalTwinNode.constraint.minInclusive) {
+    if (digitalTwinNode.constraint.minInclusive !== undefined && value < digitalTwinNode.constraint.minInclusive) {
       message = `${DiagnosticMessage.LessThanMinValue} ${digitalTwinNode.constraint.minInclusive}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
       return;
     }
-    if (digitalTwinNode.constraint.maxInclusive && value > digitalTwinNode.constraint.maxInclusive) {
+    if (digitalTwinNode.constraint.maxInclusive !== undefined && value > digitalTwinNode.constraint.maxInclusive) {
       message = `${DiagnosticMessage.GreaterThanMaxValue} ${digitalTwinNode.constraint.maxInclusive}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
     }
