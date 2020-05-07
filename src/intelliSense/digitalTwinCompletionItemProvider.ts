@@ -284,7 +284,7 @@ export class DigitalTwinCompletionItemProvider
       DigitalTwinCompletionItemProvider.getPropertiesCandidates(typeClassNode, existingPropertyNames);
     for (const propertyCandidate of propertiesCandidates) {
       DigitalTwinCompletionItemProvider.AddPropertySuggestion(
-        propertyCandidate, (Boolean)(propertyCandidate.isRequired), suggestWithValue, suggestions);
+        propertyCandidate, propertyCandidate.isRequired as boolean, suggestWithValue, suggestions);
     }
   }
 
@@ -324,25 +324,30 @@ export class DigitalTwinCompletionItemProvider
     }
   }
 
-  private static suggestTypeValues(objectNode: parser.Node): string[] {
+  private static getOuterPropertyNode(objectNode: parser.Node): PropertyNode|undefined {
     const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.getOuterPropertyPair(objectNode);
-    let outerPropertyNode: PropertyNode|undefined;
+
     if (!outerPropertyPair) {
-      outerPropertyNode = IntelliSenseUtility.getEntryNode();
-    } else {
-      const outerPropertyObjectNode: parser.Node|undefined = outerPropertyPair.value.parent?.parent;
-      if (!outerPropertyObjectNode || outerPropertyObjectNode.type !== JsonNodeType.Object) {
-        return [];
-      }
-      outerPropertyNode = DigitalTwinCompletionItemProvider.
-        getPropertyNodeByPropertyName(outerPropertyPair.name.value, outerPropertyObjectNode);
+      return undefined;
     }
 
-    if (!outerPropertyNode) {
-      return [];
+    const outerPropertyObjectNode: parser.Node|undefined = outerPropertyPair.value.parent?.parent;
+    if (!outerPropertyObjectNode || outerPropertyObjectNode.type !== JsonNodeType.Object) {
+      return undefined;
     }
+    return DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(
+      outerPropertyPair.name.value, outerPropertyObjectNode);
+  }
 
+  private static suggestTypeValues(objectNode: parser.Node): string[] {
     const valueCandidates: string[] = [];
+
+    const outerPropertyNode: PropertyNode|undefined =
+      DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode) || IntelliSenseUtility.getEntryNode();
+    if (!outerPropertyNode) {
+      return valueCandidates;
+    }
+
     const possibleClasses: ClassNode[] = IntelliSenseUtility.getObverseClasses(outerPropertyNode);
     for (const classNode of possibleClasses) {
       valueCandidates.push(classNode.name);
