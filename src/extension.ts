@@ -153,7 +153,7 @@ function initIntelliSense(context: vscode.ExtensionContext, telemetryClient: Tel
           const telemetryContext: TelemetryContext = TelemetryContext.startNew();
           telemetryContext.properties.dtdlVersion = modelContent.version.toString();
           telemetryContext.end();
-          telemetryClient.sendEvent(EventType.OpenFile, telemetryContext);
+          telemetryClient.sendEvent(EventType.OpenModelFile, telemetryContext);
         }
       }
     }),

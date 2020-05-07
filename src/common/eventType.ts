@@ -5,6 +5,6 @@
  * Event type for telemetry
  */
 export enum EventType {
-  CreateInterface = "azure-digital-twins.createInterface",
-  OpenFile = "intelliSense.openFile",
+  CreateInterface = "vscode-dtdl.createInterface",
+  OpenModelFile = "openModelFile",
 }

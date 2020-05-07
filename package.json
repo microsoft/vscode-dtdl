@@ -24,14 +24,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:azure-digital-twins.createInterface",
+    "onCommand:vscode-dtdl.createInterface",
     "workspaceContains:**/*.json"
   ],
   "main": "./dist/extension",
   "contributes": {
     "commands": [
       {
-        "command": "azure-digital-twins.createInterface",
+        "command": "vscode-dtdl.createInterface",
         "title": "Create Interface",
         "category": "DTDL"
       }
