@@ -352,6 +352,7 @@ export class DigitalTwinGraph {
       name: DigitalTwinConstants.LANG_STRING,
     };
     this.classNodes.set(languageNode.id, languageNode);
+    this.dtdlContext.set(languageNode.name, languageNode.id);
   }
 
   /**
