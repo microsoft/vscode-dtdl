@@ -62,6 +62,10 @@ export class IntelliSenseUtility {
     return IntelliSenseUtility.graph.isPartitionClass(name);
   }
 
+  public static isObverseClass(classNode: ClassNode): boolean {
+    return (!classNode.isAbstract && !classNode.instances);
+  }
+
   /**
    * get entry node of DigitalTwin graph
    */
@@ -70,11 +74,19 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get class node by name
-   * @param name class name
+   * get property node by name or id
+   * @param nameOrId property name or id
    */
-  public static getClassNode(name: string): ClassNode | undefined {
-    return IntelliSenseUtility.graph.getClassNode(name);
+  public static getPropertyNode(nameOrId: string): PropertyNode | undefined {
+    return IntelliSenseUtility.graph.getPropertyNode(nameOrId);
+  }
+
+  /**
+   * get class node by name or id
+   * @param nameOrId class name or id
+   */
+  public static getClassNode(nameOrId: string): ClassNode | undefined {
+    return IntelliSenseUtility.graph.getClassNode(nameOrId);
   }
 
   /**
@@ -152,7 +164,7 @@ export class IntelliSenseUtility {
 
   /**
    * resolve type name
-   * @param type type of property ndoe
+   * @param type type of property node
    */
   public static resolveTypeName(type: string): string {
     const classNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(type);
@@ -234,10 +246,11 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get property value of object name
+   * get property value of object by key name
+   * @param key key name
    * @param node json node
    */
-  public static getPropertyValueOfObjectName(node: parser.Node): parser.Node | undefined {
+  public static getPropertyValueOfObjectByKey(key: string, node: parser.Node): parser.Node | undefined {
     if (node.type !== JsonNodeType.Object || !node.children) {
       return undefined;
     }
@@ -247,7 +260,7 @@ export class IntelliSenseUtility {
       if (!propertyPair) {
         continue;
       }
-      if (propertyPair.name.value === DigitalTwinConstants.NAME_PROPERTY) {
+      if (propertyPair.name.value === key) {
         return propertyPair.value;
       }
     }
