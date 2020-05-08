@@ -40,7 +40,7 @@ export class TelemetryClient {
     }
     this.extensionId = `${packageJSON.publisher}.${packageJSON.name}`;
     this.extensionVersion = packageJSON.version;
-    this.client = new TelemetryReporter(this.extensionId, this.extensionVersion, packageJSON.aiKey);
+    this.client = new TelemetryReporter(this.extensionId, this.extensionVersion, packageJSON.aiKey, true);
     this.isInternal = TelemetryClient.isInternalUser();
   }
 
