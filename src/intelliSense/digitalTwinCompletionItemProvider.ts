@@ -78,8 +78,10 @@ export class DigitalTwinCompletionItemProvider
   ): void {
     const existingProperties: Set<string> = DigitalTwinCompletionItemProvider.getExistingProperties(objectNode);
 
-    const typeClassNode: ClassNode|undefined = DigitalTwinCompletionItemProvider.getObjectTypeClassNode(objectNode);
-    if (!typeClassNode) {
+    const typeClassNode: ClassNode|undefined = DigitalTwinCompletionItemProvider.getObjectType(objectNode);
+    const isTypeInferableButRequired: boolean|undefined =
+      DigitalTwinCompletionItemProvider.isTypeInferableButRequired(objectNode, existingProperties);
+    if (!typeClassNode || isTypeInferableButRequired) {
       return DigitalTwinCompletionItemProvider.AddTypePropertySuggestion(
         existingProperties, true, suggestWithValue, suggestions);
     } else {
@@ -92,15 +94,31 @@ export class DigitalTwinCompletionItemProvider
     }
   }
 
+  private static isTypeInferableButRequired(objectNode: parser.Node, existingProperties: Set<string>): boolean {
+    let isRequired: boolean = false;
+
+    if (!existingProperties.has(DigitalTwinConstants.TYPE)) {
+      // type needs to be inferred
+      const outerPropertyNode: PropertyNode|undefined =
+        DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
+      if (outerPropertyNode && outerPropertyNode.type !== Literal.LangString) {
+        // type can be inferred
+        // If type can be inferred but not allowed to be inferred, type is required.
+        if ((outerPropertyNode.isTypeInferable) as boolean === false) {
+          isRequired = true;
+        }
+      }
+    }
+
+    return isRequired;
+  }
+
   private static AddLanguageCodePropertySuggestion(
     existingPropertyNames: Set<string>,
     suggestWithValue: boolean,
     suggestions: Suggestion[],
     ): void {
     for (const code of LANGUAGE_CODE) {
-      if (existingPropertyNames.has(code)) {
-        continue;
-      }
       const dummyLanguageCodeNode: PropertyNode = {
         id: DigitalTwinConstants.DUMMY,
         name: code,
@@ -109,7 +127,7 @@ export class DigitalTwinCompletionItemProvider
         constraint: {},
       };
       DigitalTwinCompletionItemProvider.AddPropertySuggestion(
-        dummyLanguageCodeNode, false, suggestWithValue, suggestions);
+        existingPropertyNames, dummyLanguageCodeNode, false, suggestWithValue, suggestions);
     }
   }
 
@@ -133,7 +151,7 @@ export class DigitalTwinCompletionItemProvider
     return existingProperties;
   }
 
-  private static getObjectTypeClassNode(objectNode: parser.Node): ClassNode|undefined {
+  private static getObjectType(objectNode: parser.Node): ClassNode|undefined {
     const typeProperty: parser.Node|undefined =
       IntelliSenseUtility.getPropertyValueOfObjectByKey(DigitalTwinConstants.TYPE, objectNode);
     if (typeProperty) {
@@ -144,12 +162,8 @@ export class DigitalTwinCompletionItemProvider
   }
 
   private static getObjectTypeByOuterProperty(objectNode: parser.Node): ClassNode|undefined {
-    const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.getOuterPropertyPair(objectNode);
-    if (!outerPropertyPair) {
-      return undefined;
-    }
-
-    const outerPropertyNode: PropertyNode|undefined = IntelliSenseUtility.getPropertyNode(outerPropertyPair.name.value);
+    const outerPropertyNode: PropertyNode|undefined =
+      DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
     if (!outerPropertyNode) {
       return undefined;
     }
@@ -162,11 +176,15 @@ export class DigitalTwinCompletionItemProvider
   }
 
   private static AddPropertySuggestion(
+    existingPropertyNames: Set<string>,
     propertyNode: PropertyNode,
     isRequired: boolean,
     suggestWithValue: boolean,
     suggestions: Suggestion[],
     ): void {
+    if (existingPropertyNames.has(propertyNode.name)) {
+      return;
+    }
     suggestions.push({
       isProperty: true,
       label: DigitalTwinCompletionItemProvider.formatLabel(propertyNode.name, isRequired),
@@ -181,9 +199,6 @@ export class DigitalTwinCompletionItemProvider
     suggestWithValue: boolean,
     suggestions: Suggestion[],
     ): void {
-    if (existingPropertyNames.has(DigitalTwinConstants.TYPE)) {
-      return;
-    }
     const dummyTypeNode: PropertyNode = {
       id: DigitalTwinConstants.DUMMY,
       name: DigitalTwinConstants.TYPE,
@@ -191,7 +206,8 @@ export class DigitalTwinCompletionItemProvider
       nodeKind: DigitalTwinConstants.LITERAL,
       constraint: {},
     };
-    DigitalTwinCompletionItemProvider.AddPropertySuggestion(dummyTypeNode, isRequired, suggestWithValue, suggestions);
+    DigitalTwinCompletionItemProvider.AddPropertySuggestion(
+      existingPropertyNames, dummyTypeNode, isRequired, suggestWithValue, suggestions);
   }
 
   /**
@@ -242,22 +258,20 @@ export class DigitalTwinCompletionItemProvider
     suggestWithValue: boolean,
     suggestions: Suggestion[],
     ): void {
+    DigitalTwinCompletionItemProvider.AddIdPropertySuggestion(
+      typeClassNode, existingPropertyNames, suggestWithValue, suggestions);
+
     DigitalTwinCompletionItemProvider.
-      suggestReservedProperties(typeClassNode, existingPropertyNames, suggestWithValue, suggestions);
-    DigitalTwinCompletionItemProvider.
-      suggestUnreservedProperties(typeClassNode, existingPropertyNames, suggestWithValue, suggestions);
+      suggestRemainingProperties(typeClassNode, existingPropertyNames, suggestWithValue, suggestions);
   }
 
-  private static suggestReservedProperties(
+  private static AddIdPropertySuggestion(
     typeClassNode: ClassNode,
     existingPropertyNames: Set<string>,
     suggestWithValue: boolean,
     suggestions: Suggestion[],
     ): void {
     const isPartitionClass: boolean = IntelliSenseUtility.isPartitionClass(typeClassNode.name);
-
-    if (!existingPropertyNames.has(DigitalTwinConstants.ID)) {
-      // Suggest @id
     const dummyIdNode: PropertyNode = {
       id: DigitalTwinConstants.DUMMY,
       name: DigitalTwinConstants.ID,
@@ -266,36 +280,20 @@ export class DigitalTwinCompletionItemProvider
       constraint: {},
     };
     DigitalTwinCompletionItemProvider.AddPropertySuggestion(
-      dummyIdNode, isPartitionClass, suggestWithValue, suggestions);
-    }
-
-    // Suggest @type
-    DigitalTwinCompletionItemProvider.AddTypePropertySuggestion(
-      existingPropertyNames, isPartitionClass, suggestWithValue, suggestions);
+      existingPropertyNames, dummyIdNode, isPartitionClass, suggestWithValue, suggestions);
   }
 
-  private static suggestUnreservedProperties(
+  private static suggestRemainingProperties(
     typeClassNode: ClassNode,
     existingPropertyNames: Set<string>,
     suggestWithValue: boolean,
     suggestions: Suggestion[],
     ): void {
-    const propertiesCandidates: PropertyNode[] =
-      DigitalTwinCompletionItemProvider.getPropertiesCandidates(typeClassNode, existingPropertyNames);
+    const propertiesCandidates: PropertyNode[] = IntelliSenseUtility.getPropertiesOfClassNode(typeClassNode);
     for (const propertyCandidate of propertiesCandidates) {
-      DigitalTwinCompletionItemProvider.AddPropertySuggestion(
+      DigitalTwinCompletionItemProvider.AddPropertySuggestion(existingPropertyNames,
         propertyCandidate, propertyCandidate.isRequired as boolean, suggestWithValue, suggestions);
     }
-  }
-
-  private static getPropertiesCandidates(typeClassNode: ClassNode, existingPropertyNames: Set<string>): PropertyNode[] {
-    const propertiesCandidates: PropertyNode[] = [];
-    for (const property of IntelliSenseUtility.getPropertiesOfClassNode(typeClassNode)) {
-      if (!existingPropertyNames.has(property.name)) {
-        propertiesCandidates.push(property);
-      }
-    }
-    return propertiesCandidates;
   }
 
   /**
@@ -396,8 +394,7 @@ export class DigitalTwinCompletionItemProvider
     objectNode: parser.Node,
     propertyName: string,
     ): PropertyNode|undefined {
-    const outerPropertyClassNode: ClassNode|undefined =
-      DigitalTwinCompletionItemProvider.getObjectTypeClassNode(objectNode);
+    const outerPropertyClassNode: ClassNode|undefined = DigitalTwinCompletionItemProvider.getObjectType(objectNode);
     if (outerPropertyClassNode) {
       const properties: PropertyNode[] = IntelliSenseUtility.getPropertiesOfClassNode(outerPropertyClassNode);
       for (const property of properties) {
