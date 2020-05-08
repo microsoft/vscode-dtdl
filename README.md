@@ -4,8 +4,8 @@
 
 This extension adds support to the [Digital Twins Definition Language](https://aka.ms/DTDL), with the next features:
 
-- Syntax highlighting and validation.
-- Intellisense to help you with the language syntax.
+- Syntax validation.
+- Intellisense to help you with the language syntax (including auto-completion).
 - Create interfaces from the command palette.
 
 DTDL is a language for describing models and interfaces for IoT digital twins. Digital twins are models of entities in the physical environment such as shipping containers, rooms, factory floors, and other entities that participate in IoT solutions. Broadly, modeling enables IoT solutions to provision, use, and configure IoT devices and logical entities from multiple sources in a single solution. Using DTDL to describe a digital twin's capabilities enables the IoT platform and IoT solutions to leverage the semantics of the entity.
