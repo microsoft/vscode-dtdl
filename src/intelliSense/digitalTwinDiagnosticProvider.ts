@@ -316,7 +316,7 @@ export class DigitalTwinDiagnosticProvider {
     let propertyValue: parser.Node | undefined;
     const exist = new Set<string>();
     for (const child of jsonNode.children) {
-      propertyValue = IntelliSenseUtility.getPropertyValueOfObjectName(child);
+      propertyValue = IntelliSenseUtility.getPropertyValueOfObjectByKey(DigitalTwinConstants.NAME_PROPERTY, child);
       if (propertyValue) {
         objectName = propertyValue.value as string;
         if (exist.has(objectName)) {

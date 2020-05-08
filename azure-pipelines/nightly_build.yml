@@ -1,6 +1,6 @@
 schedules:
-- cron: '0 20 * * *'
-  displayName: Nightly build on 4:00 AM (GMT+8)
+- cron: '0 19 * * *'
+  displayName: Nightly build on 3:00 AM (GMT+8)
   branches:
     include:
     - develop

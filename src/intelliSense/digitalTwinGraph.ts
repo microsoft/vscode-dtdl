@@ -135,11 +135,11 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * get property node by name
-   * @param name property name
+   * get property node by name or id
+   * @param nameOrId property name or id
    */
-  public getPropertyNode(name: string): PropertyNode | undefined {
-    return this.propertyNodes.get(this.getNodeId(name));
+  public getPropertyNode(nameOrId: string): PropertyNode | undefined {
+    return this.propertyNodes.get(this.getNodeId(nameOrId));
   }
 
   /**
@@ -355,8 +355,8 @@ export class DigitalTwinGraph {
   }
 
   /**
-   * get node id from name
-   * @param name name
+   * get node id by name or id
+   * @param name name or id
    */
   private getNodeId(name: string): string {
     return this.dtdlContext.get(name) || name;
