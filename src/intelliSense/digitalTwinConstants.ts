@@ -25,6 +25,7 @@ export enum DiagnosticMessage {
   NotMatchPattern = "String does not match the pattern of",
   ConflictType = "Conflict type:",
   CoTypeNotAllowed = "Co-type is not allowed. Only Telemetry, Property, Relationship support co-type.",
+  NestedNotAllowed = "is not allowed to be nested.",
   DuplicateElement = "has been assigned to another element.",
   InvalidValue = "Invalid value. Valid values:",
   InvalidDtmiLength = "The maximum length of a user DTMI is 2048 characters.",
@@ -49,6 +50,7 @@ export class DigitalTwinConstants {
   public static readonly NAME_PROPERTY = "name";
   public static readonly UNIT_PROPERTY = "unit";
   public static readonly SCHEMA_CLASS = "Schema";
+  public static readonly COMPONENT_CLASS = "Component";
   public static readonly LINE_FEED = "\n";
   public static readonly DEFAULT_DELIMITER = ",";
   public static readonly SCHEMA_DELIMITER = "#";
