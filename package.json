@@ -9,7 +9,7 @@
   "icon": "logo.png",
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.36.0"
+    "vscode": "^1.40.0"
   },
   "repository": {
     "type": "git",
