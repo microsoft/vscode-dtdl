@@ -229,10 +229,13 @@ export class DigitalTwinDiagnosticProvider {
     if (typeNode.type !== JsonNodeType.String || typeNode.value !== className) {
       return false;
     }
-    let objectNode: parser.Node | undefined = IntelliSenseUtility.getParentObjectNode(typeNode);
+    let objectNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
+      typeNode,
+      JsonNodeType.Object,
+    );
     while (objectNode && depth) {
-      objectNode = IntelliSenseUtility.getParentObjectNode(objectNode);
-      depth -= 1;
+      objectNode = IntelliSenseUtility.getParentJsonNodeByType(objectNode, JsonNodeType.Object);
+      depth--;
     }
     if (!objectNode) {
       return false;

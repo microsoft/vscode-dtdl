@@ -284,24 +284,25 @@ export class IntelliSenseUtility {
     if (node.type !== JsonNodeType.Object) {
       return undefined;
     }
-    let outerProperty: parser.Node | undefined = node.parent;
-    if (outerProperty && outerProperty.type === JsonNodeType.Array) {
-      outerProperty = outerProperty.parent;
-    }
+    const outerProperty: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
+      node,
+      JsonNodeType.Property,
+    );
     return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
   }
 
   /**
-   * get parent json object node
+   * get parent json node by type
    * @param node json node
+   * @param type json node type
    */
-  public static getParentObjectNode(node: parser.Node | undefined): parser.Node | undefined {
+  public static getParentJsonNodeByType(node: parser.Node | undefined, type: JsonNodeType): parser.Node | undefined {
     if (!node) {
       return undefined;
     }
     let parentNode: parser.Node | undefined = node.parent;
     while (parentNode) {
-      if (parentNode.type === JsonNodeType.Object) {
+      if (parentNode.type === type) {
         return parentNode;
       }
       parentNode = parentNode.parent;
