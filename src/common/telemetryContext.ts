@@ -34,15 +34,7 @@ export class TelemetryContext {
   }
 
   public succeeded(): boolean {
-    if (!this.properties.result) {
-      return false;
-    }
-
-    if (this.properties.result === OperationResult.Success) {
-      return true;
-    }
-
-    return false;
+    return this.properties.result === OperationResult.Success;
   }
 
   /**
