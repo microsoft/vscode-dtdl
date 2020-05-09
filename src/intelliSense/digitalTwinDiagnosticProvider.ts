@@ -101,10 +101,13 @@ export class DigitalTwinDiagnosticProvider {
     }
     const typePath: parser.JSONPath = [DigitalTwinConstants.TYPE];
     const typeNode: parser.Node | undefined = parser.findNodeAtLocation(jsonNode, typePath);
-    // @type is required when there are multiple choices
-    if (!typeNode && classes.length !== 1) {
-      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.MissingType, true);
-      return;
+    // @type is required when there are multiple choices or type is not inferable
+    if (!typeNode) {
+      const isTypeRequired: boolean = digitalTwinNode.type !== Literal.LangString && !digitalTwinNode.isTypeInferable;
+      if (classes.length !== 1 || isTypeRequired) {
+        DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.MissingType, true);
+        return;
+      }
     }
     // validate @type property
     let classNode: ClassNode | undefined;
@@ -119,6 +122,12 @@ export class DigitalTwinDiagnosticProvider {
     // validate language string
     if (IntelliSenseUtility.isLanguageString(classNode)) {
       DigitalTwinDiagnosticProvider.validateLanguageString(jsonNode, digitalTwinNode, problems);
+      return;
+    }
+    // validate nested class
+    if (typeNode && DigitalTwinDiagnosticProvider.isNestedClass(typeNode, DigitalTwinConstants.COMPONENT_CLASS, 2)) {
+      const message: string = `${typeNode.value} ${DiagnosticMessage.NestedNotAllowed}`;
+      DigitalTwinDiagnosticProvider.addProblem(typeNode, problems, message);
       return;
     }
     // validate properties
@@ -211,6 +220,32 @@ export class DigitalTwinDiagnosticProvider {
   }
 
   /**
+   * check if it is nested class
+   * @param typeNode type node
+   * @param className class name
+   * @param depth search depth
+   */
+  private static isNestedClass(typeNode: parser.Node, className: string, depth: number): boolean {
+    if (typeNode.type !== JsonNodeType.String || typeNode.value !== className) {
+      return false;
+    }
+    let objectNode: parser.Node | undefined = IntelliSenseUtility.getParentObjectNode(typeNode);
+    while (objectNode && depth) {
+      objectNode = IntelliSenseUtility.getParentObjectNode(objectNode);
+      depth -= 1;
+    }
+    if (!objectNode) {
+      return false;
+    }
+    const typePath: parser.JSONPath = [DigitalTwinConstants.TYPE];
+    const parentTypeNode: parser.Node | undefined = parser.findNodeAtLocation(objectNode, typePath);
+    if (!parentTypeNode || parentTypeNode.type !== JsonNodeType.String) {
+      return false;
+    }
+    return parentTypeNode.value === typeNode.value;
+  }
+
+  /**
    * validate properties of json object node
    * @param jsonNode json node
    * @param classNode class node
@@ -234,7 +269,6 @@ export class DigitalTwinDiagnosticProvider {
     const isPartitionClass: boolean = IntelliSenseUtility.isPartitionClass(classNode.name);
     if (isPartitionClass) {
       required.push(DigitalTwinConstants.ID);
-      required.push(DigitalTwinConstants.TYPE);
     }
     let propertyName: string;
     let propertyPair: PropertyPair | undefined;

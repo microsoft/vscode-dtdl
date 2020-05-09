@@ -63,7 +63,7 @@ export class IntelliSenseUtility {
   }
 
   public static isObverseClass(classNode: ClassNode): boolean {
-    return (!classNode.isAbstract && !classNode.instances);
+    return !classNode.isAbstract && !classNode.instances;
   }
 
   /**
@@ -289,6 +289,24 @@ export class IntelliSenseUtility {
       outerProperty = outerProperty.parent;
     }
     return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
+  }
+
+  /**
+   * get parent json object node
+   * @param node json node
+   */
+  public static getParentObjectNode(node: parser.Node | undefined): parser.Node | undefined {
+    if (!node) {
+      return undefined;
+    }
+    let parentNode: parser.Node | undefined = node.parent;
+    while (parentNode) {
+      if (parentNode.type === JsonNodeType.Object) {
+        return parentNode;
+      }
+      parentNode = parentNode.parent;
+    }
+    return undefined;
   }
 
   private static graph: DigitalTwinGraph;
