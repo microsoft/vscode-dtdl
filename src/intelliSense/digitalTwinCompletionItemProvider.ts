@@ -79,7 +79,7 @@ export class DigitalTwinCompletionItemProvider
     const existingProperties: Set<string> = DigitalTwinCompletionItemProvider.getExistingProperties(objectNode);
 
     const typeClassNode: ClassNode|undefined = DigitalTwinCompletionItemProvider.getObjectType(objectNode);
-    const isTypeInferableButRequired: boolean|undefined =
+    const isTypeInferableButRequired: boolean =
       DigitalTwinCompletionItemProvider.isTypeInferableButRequired(objectNode, existingProperties);
     if (!typeClassNode || isTypeInferableButRequired) {
       return DigitalTwinCompletionItemProvider.AddTypePropertySuggestion(
@@ -95,22 +95,20 @@ export class DigitalTwinCompletionItemProvider
   }
 
   private static isTypeInferableButRequired(objectNode: parser.Node, existingProperties: Set<string>): boolean {
-    let isRequired: boolean = false;
-
-    if (!existingProperties.has(DigitalTwinConstants.TYPE)) {
-      // type needs to be inferred
-      const outerPropertyNode: PropertyNode|undefined =
-        DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
-      if (outerPropertyNode && outerPropertyNode.type !== Literal.LangString) {
-        // type can be inferred
-        // If type can be inferred but not allowed to be inferred, type is required.
-        if ((outerPropertyNode.isTypeInferable) as boolean === false) {
-          isRequired = true;
-        }
-      }
+    if (existingProperties.has(DigitalTwinConstants.TYPE)) {
+      return false;
     }
 
-    return isRequired;
+    // type needs to be inferred
+    const outerPropertyNode: PropertyNode|undefined =
+      DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
+    if (!outerPropertyNode || outerPropertyNode.type === Literal.LangString) {
+      return false;
+    }
+    // type can be inferred
+    // If type can be inferred but not allowed to be inferred, type is required.
+    const typeAllowedToBeInferred: boolean = (outerPropertyNode.isTypeInferable) as boolean;
+    return !typeAllowedToBeInferred;
   }
 
   private static AddLanguageCodePropertySuggestion(
