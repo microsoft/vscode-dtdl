@@ -99,13 +99,12 @@ export class DigitalTwinCompletionItemProvider
       return false;
     }
 
-    // type needs to be inferred
     const outerPropertyNode: PropertyNode|undefined =
       DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
     if (!outerPropertyNode || outerPropertyNode.type === Literal.LangString) {
       return false;
     }
-    // type can be inferred
+
     // If type can be inferred but not allowed to be inferred, type is required.
     const typeAllowedToBeInferred: boolean = (outerPropertyNode.isTypeInferable) as boolean;
     return !typeAllowedToBeInferred;
