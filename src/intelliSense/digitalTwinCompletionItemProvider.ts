@@ -526,7 +526,8 @@ export class DigitalTwinCompletionItemProvider
    * @param required required properties
    */
   private static formatLabel(jsonPropertyKey: string, isRequired: boolean): string {
-    const requiredInfo: string = isRequired ? ` ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}` : "";
+    const requiredInfo: string =
+      isRequired ? ` ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}` : Constants.EMPTY_STRING;
     return `${jsonPropertyKey}` + requiredInfo;
   }
 
