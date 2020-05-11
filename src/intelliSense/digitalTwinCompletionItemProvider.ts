@@ -320,18 +320,18 @@ export class DigitalTwinCompletionItemProvider
   }
 
   private static getOuterPropertyNode(objectNode: parser.Node): PropertyNode|undefined {
-    const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.getOuterPropertyPair(objectNode);
-
-    if (!outerPropertyPair) {
+    const outerPropertyName: string = IntelliSenseUtility.getOuterPropertyName(objectNode);
+    if (!outerPropertyName) {
       return undefined;
     }
 
-    const outerPropertyObjectNode: parser.Node|undefined = outerPropertyPair.value.parent?.parent;
-    if (!outerPropertyObjectNode || outerPropertyObjectNode.type !== JsonNodeType.Object) {
+    const outerPropertyObjectNode: parser.Node|undefined =
+      IntelliSenseUtility.getParentJsonNodeByType(objectNode, JsonNodeType.Object);
+    if (!outerPropertyObjectNode) {
       return undefined;
     }
-    return DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(
-      outerPropertyPair.name.value, outerPropertyObjectNode);
+
+    return DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(outerPropertyName, outerPropertyObjectNode);
   }
 
   private static suggestTypeValues(objectNode: parser.Node): string[] {
@@ -526,7 +526,8 @@ export class DigitalTwinCompletionItemProvider
    * @param required required properties
    */
   private static formatLabel(jsonPropertyKey: string, isRequired: boolean): string {
-    const requiredInfo: string = isRequired ? ` ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}` : "";
+    const requiredInfo: string =
+      isRequired ? ` ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}` : Constants.EMPTY_STRING;
     return `${jsonPropertyKey}` + requiredInfo;
   }
 

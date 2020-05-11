@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+import { Constants } from "./constants";
 
 /**
  * Output channel with colorized message
@@ -26,7 +27,7 @@ export class ColorizedChannel {
    * @param name component name
    */
   private static createTag(name: string | undefined): string {
-    return name ? `[${name}]` : "";
+    return name ? `[${name}]` : Constants.EMPTY_STRING;
   }
 
   private channel: vscode.OutputChannel;

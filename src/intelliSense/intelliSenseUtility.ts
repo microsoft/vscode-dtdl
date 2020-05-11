@@ -280,15 +280,20 @@ export class IntelliSenseUtility {
    * get outer property pair from current node
    * @param node json node
    */
-  public static getOuterPropertyPair(node: parser.Node): PropertyPair | undefined {
+  public static getOuterPropertyName(node: parser.Node): string {
     if (node.type !== JsonNodeType.Object) {
-      return undefined;
+      return Constants.EMPTY_STRING;
     }
     const outerProperty: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
       node,
       JsonNodeType.Property,
     );
-    return outerProperty ? IntelliSenseUtility.parseProperty(outerProperty) : undefined;
+    if (!outerProperty) {
+      return Constants.EMPTY_STRING;
+    }
+
+    const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.parseProperty(outerProperty);
+    return outerPropertyPair?.name.value || Constants.EMPTY_STRING;
   }
 
   /**

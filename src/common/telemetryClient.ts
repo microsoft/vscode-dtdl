@@ -4,6 +4,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
+import { Constants } from "./constants";
 import { TelemetryContext } from "./telemetryContext";
 
 /**
@@ -24,11 +25,12 @@ export class TelemetryClient {
    * check if it is Microsoft internal user
    */
   private static isInternalUser(): boolean {
-    const userDomain: string = process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : "";
+    const userDomain: string =
+      process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : Constants.EMPTY_STRING;
     return userDomain.endsWith("microsoft.com");
   }
 
-  public extensionId: string = "";
+  public extensionId: string = Constants.EMPTY_STRING;
   public extensionVersion: string = "unknown";
 
   private client: TelemetryReporter | undefined;
