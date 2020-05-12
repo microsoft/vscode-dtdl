@@ -27,13 +27,33 @@ export class DigitalTwinCompletionItemProvider
    * @param position position
    */
   private static getTextForParse(document: vscode.TextDocument, position: vscode.Position): string {
-    let text: string = document.getText();
-    const textNode: parser.Node = parser.parseTree(text);
-    if (textNode && textNode.type === JsonNodeType.Property) {
-      const offset: number = document.offsetAt(position);
-      text = DigitalTwinCompletionItemProvider.completeText(text, offset);
+    const text: string = document.getText();
+    const offset: number = document.offsetAt(position);
+
+    if (DigitalTwinCompletionItemProvider.isAtPropertyKey(document, position)) {
+      return text;
     }
-    return text;
+    return DigitalTwinCompletionItemProvider.completeText(text, offset);
+  }
+
+  private static isAtPropertyKey(
+    document: vscode.TextDocument, position: vscode.Position): boolean {
+    const text: string = document.getText();
+
+    const textNode: parser.Node = parser.parseTree(text);
+
+    const stringNode: parser.Node | undefined =
+      parser.findNodeAtOffset(textNode, document.offsetAt(position));
+    if (!stringNode) {
+      return false;
+    }
+
+    const scanner: parser.JSONScanner = parser.createScanner(text, true);
+    const range: vscode.Range =
+      DigitalTwinCompletionItemProvider.evaluateOverwriteRange(document, position, stringNode);
+    scanner.setPosition(document.offsetAt(range.end));
+    const token: parser.SyntaxKind = scanner.scan();
+    return token === parser.SyntaxKind.ColonToken;
   }
 
   private static completeText(text: string, offset: number): string {
