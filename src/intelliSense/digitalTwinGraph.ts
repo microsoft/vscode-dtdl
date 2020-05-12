@@ -59,6 +59,11 @@ export enum Literal {
   Boolean = "http://www.w3.org/2001/XMLSchema#boolean",
 }
 
+export enum NodeKind {
+  Literal = "Literal",
+  IRI = "IRI",
+}
+
 /**
  * Element kind of graph json
  */

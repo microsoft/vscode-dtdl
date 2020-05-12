@@ -41,7 +41,6 @@ export class DigitalTwinConstants {
   public static readonly DTMI_MAX_LENGTH = 2048;
   public static readonly LANGUAGE_ID = "json";
   public static readonly LANG_STRING = "langString";
-  public static readonly LITERAL = "Literal";
   public static readonly ENTRY = "@entry";
   public static readonly ID = "@id";
   public static readonly TYPE = "@type";
