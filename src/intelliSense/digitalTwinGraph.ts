@@ -47,6 +47,7 @@ export interface ConstraintNode {
   maxLength?: number;
   pattern?: string;
   in?: string[];
+  exclude?: string[];
 }
 
 /**

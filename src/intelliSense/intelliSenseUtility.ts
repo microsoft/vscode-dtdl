@@ -113,11 +113,11 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get obverse class collection, including language string
+   * get object class collection, including language string
    * @param propertyNode property node
    */
-  public static getObverseClasses(propertyNode: PropertyNode): ClassNode[] {
-    const classes: ClassNode[] = [];
+  public static getObjectClasses(propertyNode: PropertyNode): ClassNode[] {
+    let classes: ClassNode[] = [];
     let classNode: ClassNode | undefined;
     // constraint is prior to type, e.g. entry node
     if (propertyNode.constraint.in) {
@@ -129,23 +129,28 @@ export class IntelliSenseUtility {
       }
       return classes;
     }
+
     if (!propertyNode.type) {
       return classes;
     }
+
     classNode = IntelliSenseUtility.getClassNode(propertyNode.type);
-    // skip literal
-    if (!classNode) {
+    if (!classNode || classNode.instances) {
       return classes;
     }
-    // skip instance node
-    if (classNode.instances) {
-      return classes;
-    }
+
     if (classNode.isAbstract) {
-      return IntelliSenseUtility.graph.getObverseChildrenOfAbstractClass(classNode);
+      classes = IntelliSenseUtility.graph.getObverseChildrenOfAbstractClass(classNode);
+    } else {
+      // obverse class or language string
+      classes.push(classNode);
     }
-    // obverse class or language string
-    classes.push(classNode);
+
+    // remove exclude class
+    if (propertyNode.constraint.exclude && propertyNode.constraint.exclude.length > 0) {
+      classes = classes.filter((classItem: ClassNode) =>
+        propertyNode.constraint.exclude !== undefined && !(propertyNode.constraint.exclude.includes(classItem.id)));
+    }
     return classes;
   }
 

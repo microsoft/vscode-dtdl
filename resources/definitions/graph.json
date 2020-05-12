@@ -495,7 +495,8 @@
       "isRequired": true,
       "constraint": {
         "minCount": 1,
-        "maxCount": 1
+        "maxCount": 1,
+        "exclude": ["dtmi:dtdl:class:Array;2"]
       }
     },
     {

@@ -90,7 +90,7 @@ export class DigitalTwinDiagnosticProvider {
    * @param problems problem collection
    */
   private static validateObjectNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
-    const classes: ClassNode[] = IntelliSenseUtility.getObverseClasses(digitalTwinNode);
+    const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(digitalTwinNode);
     if (!classes.length) {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.NotObjectType);
       return;
