@@ -87,7 +87,7 @@
   "dependencies": {
     "fs-extra": "^7.0.1",
     "jsonc-parser": "^2.1.1",
-    "vscode-extension-telemetry": "^0.1.5"
+    "vscode-extension-telemetry": "^0.1.6"
   },
   "config": {
     "commitizen": {
