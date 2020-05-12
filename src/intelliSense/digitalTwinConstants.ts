@@ -28,8 +28,10 @@ export enum DiagnosticMessage {
   NestedNotAllowed = "is not allowed to be nested.",
   DuplicateElement = "has been assigned to another element.",
   InvalidValue = "Invalid value. Valid values:",
-  InvalidDtmiLength = "The maximum length of a user DTMI is 2048 characters.",
-  InvalidDtmiPattern = "The pattern of DTMI is dtmi:<path>;<version>. Each path segment is a non-empty string containing only letters, digits, and underscores.",
+  InvalidDtmiLength = "The maximum length of DTMI is",
+  InvalidDtmiPattern = "The pattern of DTMI is dtmi:<path>;<version>. Path may contain only letters, digits, underscore, and colon. Version must be numeric.",
+  InvalidDtmiVersion = "Version must be no more than 9 digits and may not start with 0.",
+  InvalidDtmiPath = "Path segments are separated by colons. Each path segment must be non-empty string that begins with letter and ends with letter or digit.",
 }
 
 /**
@@ -39,6 +41,7 @@ export class DigitalTwinConstants {
   public static readonly DTDL_MIN_VERSION = 2;
   public static readonly DTDL_CURRENT_VERSION = 2;
   public static readonly DTMI_MAX_LENGTH = 2048;
+  public static readonly PARTITION_CLASS_ID_MAX_LENGTH = 128;
   public static readonly LANGUAGE_ID = "json";
   public static readonly LANG_STRING = "langString";
   public static readonly ENTRY = "@entry";
@@ -58,7 +61,9 @@ export class DigitalTwinConstants {
   public static readonly REQUIRED_PROPERTY_LABEL = "(required)";
   public static readonly WORD_STOP = ' \t\n\r\v":{[,';
   public static readonly CONTEXT_REGEX = /^dtmi:dtdl:context;(\d+)$/;
-  public static readonly DTMI_REGEX = new RegExp(
+  public static readonly DTMI_PATTERN_REGEX = new RegExp("^dtmi:[A-Za-z0-9_:]*;[0-9]+$");
+  public static readonly DTMI_VERSION_REGEX = new RegExp(";[1-9][0-9]{0,8}$");
+  public static readonly DTMI_PATH_REGEX = new RegExp(
     "^dtmi:[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$",
   );
 }
