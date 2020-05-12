@@ -5,7 +5,7 @@ import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { Constants } from "../common/constants";
 import { DigitalTwinConstants } from "./digitalTwinConstants";
-import { ClassNode, Literal, PropertyNode } from "./digitalTwinGraph";
+import { ClassNode, Literal, NodeKind, PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
 
@@ -140,7 +140,7 @@ export class DigitalTwinCompletionItemProvider
         id: DigitalTwinConstants.DUMMY,
         name: code,
         type: Literal.String,
-        nodeKind: DigitalTwinConstants.LITERAL,
+        nodeKind: NodeKind.Literal,
         constraint: {},
       };
       DigitalTwinCompletionItemProvider.AddPropertySuggestion(
@@ -220,7 +220,7 @@ export class DigitalTwinCompletionItemProvider
       id: DigitalTwinConstants.DUMMY,
       name: DigitalTwinConstants.TYPE,
       type: Constants.EMPTY_STRING,
-      nodeKind: DigitalTwinConstants.LITERAL,
+      nodeKind: NodeKind.Literal,
       constraint: {},
     };
     DigitalTwinCompletionItemProvider.AddPropertySuggestion(
@@ -241,10 +241,14 @@ export class DigitalTwinCompletionItemProvider
     // provide value snippet according to property type
     let value = "$1";
     if (!propertyNode.type) {
+      if (propertyNode.nodeKind === NodeKind.IRI) {
+        // If property node has no type and is IRI node kind, then value is dtmi. Suggest empty string.
+        value = '"$1"';
+      }
       return `"${name}": ${value}`;
     }
 
-    if (propertyNode.nodeKind === DigitalTwinConstants.LITERAL) {
+    if (propertyNode.nodeKind === NodeKind.Literal) {
       switch (propertyNode.type) {
           case Literal.Boolean:
             value = "${1:false}";
@@ -293,7 +297,7 @@ export class DigitalTwinCompletionItemProvider
       id: DigitalTwinConstants.DUMMY,
       name: DigitalTwinConstants.ID,
       type: Literal.String,
-      nodeKind: DigitalTwinConstants.LITERAL,
+      nodeKind: NodeKind.Literal,
       constraint: {},
     };
     DigitalTwinCompletionItemProvider.AddPropertySuggestion(

@@ -4,7 +4,7 @@
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
 import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants";
-import { ClassNode, Literal, PropertyNode } from "./digitalTwinGraph";
+import { ClassNode, Literal, NodeKind, PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
 
@@ -383,7 +383,7 @@ export class DigitalTwinDiagnosticProvider {
    */
   private static validateStringNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     // validate IRI or instance
-    if (digitalTwinNode.nodeKind !== DigitalTwinConstants.LITERAL) {
+    if (digitalTwinNode.nodeKind !== NodeKind.Literal) {
       DigitalTwinDiagnosticProvider.validateIRINode(jsonNode, digitalTwinNode, problems);
       return;
     }
