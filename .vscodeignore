@@ -9,5 +9,6 @@ package-lock.json
 tsconfig.json
 tslint.json
 webpack.config.js
-azure-pipelines.yml
+azure-pipelines/
+jest.config.js
 **/*.map
