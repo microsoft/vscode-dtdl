@@ -34,17 +34,16 @@ export class DeviceModelManager {
    * @param name model name
    * @param type model type
    */
-  public static generateModelFileName(name: string, type: ModelType): string {
-    const fileType: string = type.replace(/\s+/g, Constants.EMPTY_STRING).toLowerCase();
-    return `${name}.${fileType}.json`;
+  public static generateModelFileName(name: string): string {
+    return `${name}.json`;
   }
 
   /**
    * get DigitalTwin template file name
    * @param type model type
    */
-  public static getTemplateFileName(type: ModelType): string {
-    return DeviceModelManager.generateModelFileName(Constants.SAMPLE_FILE_NAME, type);
+  public static getTemplateFileName(): string {
+    return DeviceModelManager.generateModelFileName(Constants.SAMPLE_FILE_NAME);
   }
 
   private readonly component: string;
@@ -82,9 +81,9 @@ export class DeviceModelManager {
    */
   private async doCreateModel(type: ModelType, folder: string, name: string): Promise<string> {
     const modelId: string = DeviceModelManager.generateModelId(name);
-    const filePath: string = path.join(folder, DeviceModelManager.generateModelFileName(name, type));
+    const filePath: string = path.join(folder, DeviceModelManager.generateModelFileName(name));
     const templatePath: string = this.context.asAbsolutePath(
-      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName(type)),
+      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName()),
     );
     const replacement = new Map<string, string>();
     replacement.set(Constants.MODEL_ID_PLACEHOLDER, modelId);
