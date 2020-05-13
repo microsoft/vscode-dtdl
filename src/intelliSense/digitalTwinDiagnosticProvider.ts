@@ -286,7 +286,7 @@ export class DigitalTwinDiagnosticProvider {
       exist.add(propertyName);
       switch (propertyName) {
         case DigitalTwinConstants.ID:
-          DigitalTwinDiagnosticProvider.validateDtmi(propertyPair.value, problems);
+          DigitalTwinDiagnosticProvider.validateDtmi(propertyPair.value, isPartitionClass, problems);
           break;
         case DigitalTwinConstants.CONTEXT:
           // @context is only available for partition class
@@ -438,7 +438,7 @@ export class DigitalTwinDiagnosticProvider {
     }
     // e.g. Relationship/target
     if (!digitalTwinNode.type) {
-      DigitalTwinDiagnosticProvider.validateDtmi(jsonNode, problems);
+      DigitalTwinDiagnosticProvider.validateDtmi(jsonNode, false, problems);
       return;
     }
     const classNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(digitalTwinNode.type);
@@ -447,12 +447,14 @@ export class DigitalTwinDiagnosticProvider {
     }
     // validate value is a reference to the element of Interface/schemas, e.g. Telmetry/schema
     if (DigitalTwinDiagnosticProvider.isSchemaReference(jsonNode, classNode)) {
+      DigitalTwinDiagnosticProvider.validateDtmi(jsonNode, false, problems);
       return;
     }
     // validate instance
     instances = IntelliSenseUtility.getInstancesOfClassNode(classNode);
     if (!instances.length) {
-      DigitalTwinDiagnosticProvider.validateDtmi(jsonNode, problems);
+      const isPartitionClass: boolean = IntelliSenseUtility.isPartitionClass(classNode.name);
+      DigitalTwinDiagnosticProvider.validateDtmi(jsonNode, isPartitionClass, problems);
       return;
     }
     DigitalTwinDiagnosticProvider.validateInstances(jsonNode, instances, problems);
@@ -476,16 +478,29 @@ export class DigitalTwinDiagnosticProvider {
   /**
    * validate dtmi id
    * @param jsonNode json node
+   * @param isPartitionClass identify if it is a partition class
    * @param problems problem collection
    */
-  private static validateDtmi(jsonNode: parser.Node, problems: Problem[]): void {
+  private static validateDtmi(jsonNode: parser.Node, isPartitionClass: boolean, problems: Problem[]): void {
     const id: string = jsonNode.value as string;
-    if (id.length > DigitalTwinConstants.DTMI_MAX_LENGTH) {
-      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.InvalidDtmiLength);
+    const length: number = isPartitionClass
+      ? DigitalTwinConstants.PARTITION_CLASS_ID_MAX_LENGTH
+      : DigitalTwinConstants.DTMI_MAX_LENGTH;
+    if (id.length > length) {
+      const message: string = `${DiagnosticMessage.InvalidDtmiLength} ${length} characters.`;
+      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
       return;
     }
-    if (!DigitalTwinConstants.DTMI_REGEX.test(id)) {
+    if (!DigitalTwinConstants.DTMI_PATTERN_REGEX.test(id)) {
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.InvalidDtmiPattern);
+      return;
+    }
+    if (!DigitalTwinConstants.DTMI_VERSION_REGEX.test(id)) {
+      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.InvalidDtmiVersion);
+      return;
+    }
+    if (!DigitalTwinConstants.DTMI_PATH_REGEX.test(id)) {
+      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.InvalidDtmiPath);
     }
   }
 
@@ -496,7 +511,7 @@ export class DigitalTwinDiagnosticProvider {
    */
   private static isSchemaReference(jsonNode: parser.Node, classNode: ClassNode): boolean {
     const id: string = jsonNode.value as string;
-    return classNode.name === DigitalTwinConstants.SCHEMA_CLASS && DigitalTwinConstants.DTMI_REGEX.test(id);
+    return classNode.name === DigitalTwinConstants.SCHEMA_CLASS && DigitalTwinConstants.DTMI_PATTERN_REGEX.test(id);
   }
 
   /**
