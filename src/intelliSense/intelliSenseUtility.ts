@@ -62,7 +62,7 @@ export class IntelliSenseUtility {
     return IntelliSenseUtility.graph.isPartitionClass(name);
   }
 
-  public static isObverseClass(classNode: ClassNode): boolean {
+  public static isObjectClass(classNode: ClassNode): boolean {
     return !classNode.isAbstract && !classNode.instances;
   }
 
@@ -113,11 +113,11 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get obverse class collection, including language string
+   * get object class collection, including language string
    * @param propertyNode property node
    */
-  public static getObverseClasses(propertyNode: PropertyNode): ClassNode[] {
-    const classes: ClassNode[] = [];
+  public static getObjectClasses(propertyNode: PropertyNode): ClassNode[] {
+    let classes: ClassNode[] = [];
     let classNode: ClassNode | undefined;
     // constraint is prior to type, e.g. entry node
     if (propertyNode.constraint.in) {
@@ -129,23 +129,28 @@ export class IntelliSenseUtility {
       }
       return classes;
     }
+
     if (!propertyNode.type) {
       return classes;
     }
+
     classNode = IntelliSenseUtility.getClassNode(propertyNode.type);
-    // skip literal
-    if (!classNode) {
+    if (!classNode || classNode.instances) {
       return classes;
     }
-    // skip instance node
-    if (classNode.instances) {
-      return classes;
-    }
+
     if (classNode.isAbstract) {
-      return IntelliSenseUtility.graph.getObverseChildrenOfAbstractClass(classNode);
+      classes = IntelliSenseUtility.graph.getObverseChildrenOfAbstractClass(classNode);
+    } else {
+      // obverse class or language string
+      classes.push(classNode);
     }
-    // obverse class or language string
-    classes.push(classNode);
+
+    // remove exclude class
+    if (propertyNode.constraint.exclude && propertyNode.constraint.exclude.length) {
+      const excludeSet = new Set<string>(propertyNode.constraint.exclude);
+      classes = classes.filter((classItem: ClassNode) => !excludeSet.has(classItem.id));
+    }
     return classes;
   }
 

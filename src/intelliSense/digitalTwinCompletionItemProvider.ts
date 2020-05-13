@@ -185,7 +185,7 @@ export class DigitalTwinCompletionItemProvider
       return undefined;
     }
 
-    const possibleClasses: ClassNode[] = IntelliSenseUtility.getObverseClasses(outerPropertyNode);
+    const possibleClasses: ClassNode[] = IntelliSenseUtility.getObjectClasses(outerPropertyNode);
     if (possibleClasses && possibleClasses.length === 1) {
       return possibleClasses[0];
     }
@@ -265,7 +265,7 @@ export class DigitalTwinCompletionItemProvider
       value = "[$1]";
     } else {
       const typeClassNode: ClassNode|undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
-      if (typeClassNode && IntelliSenseUtility.isObverseClass(typeClassNode)) {
+      if (typeClassNode && IntelliSenseUtility.isObjectClass(typeClassNode)) {
         value = "{$1}";
       }
     }
@@ -367,7 +367,7 @@ export class DigitalTwinCompletionItemProvider
       return valueCandidates;
     }
 
-    const possibleClasses: ClassNode[] = IntelliSenseUtility.getObverseClasses(outerPropertyNode);
+    const possibleClasses: ClassNode[] = IntelliSenseUtility.getObjectClasses(outerPropertyNode);
     for (const classNode of possibleClasses) {
       valueCandidates.push(classNode.name);
     }
