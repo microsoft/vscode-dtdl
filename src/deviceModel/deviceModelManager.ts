@@ -63,7 +63,7 @@ export class DeviceModelManager {
 
     let filePath: string;
     try {
-      filePath = await this.doCreateModel(type, folder, name);
+      filePath = await this.doCreateModel(folder, name);
     } catch (error) {
       throw new ProcessError(operation, error, this.component);
     }
@@ -79,7 +79,7 @@ export class DeviceModelManager {
    * @param folder root folder
    * @param name model name
    */
-  private async doCreateModel(type: ModelType, folder: string, name: string): Promise<string> {
+  private async doCreateModel(folder: string, name: string): Promise<string> {
     const modelId: string = DeviceModelManager.generateModelId(name);
     const filePath: string = path.join(folder, DeviceModelManager.generateModelFileName(name));
     const templatePath: string = this.context.asAbsolutePath(
