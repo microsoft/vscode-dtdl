@@ -40,7 +40,7 @@ export class Utility {
     if (!Constants.MODEL_NAME_REGEX.test(name)) {
       return `Name can only contain ${Constants.MODEL_NAME_REGEX_DESCRIPTION}`;
     }
-    const filename: string = DeviceModelManager.generateModelFileName(name, type);
+    const filename: string = DeviceModelManager.generateModelFileName(name);
     if (await fs.pathExists(path.join(folder, filename))) {
       return `${type} ${name} already exists in folder ${folder}`;
     }
