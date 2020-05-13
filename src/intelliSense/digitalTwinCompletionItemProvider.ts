@@ -265,7 +265,7 @@ export class DigitalTwinCompletionItemProvider
       value = "[$1]";
     } else {
       const typeClassNode: ClassNode|undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
-      if (typeClassNode && IntelliSenseUtility.isObverseClass(typeClassNode)) {
+      if (typeClassNode && IntelliSenseUtility.isObjectClass(typeClassNode)) {
         value = "{$1}";
       }
     }

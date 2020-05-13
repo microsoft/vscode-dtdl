@@ -62,7 +62,7 @@ export class IntelliSenseUtility {
     return IntelliSenseUtility.graph.isPartitionClass(name);
   }
 
-  public static isObverseClass(classNode: ClassNode): boolean {
+  public static isObjectClass(classNode: ClassNode): boolean {
     return !classNode.isAbstract && !classNode.instances;
   }
 
@@ -147,9 +147,9 @@ export class IntelliSenseUtility {
     }
 
     // remove exclude class
-    if (propertyNode.constraint.exclude && propertyNode.constraint.exclude.length > 0) {
-      classes = classes.filter((classItem: ClassNode) =>
-        propertyNode.constraint.exclude !== undefined && !(propertyNode.constraint.exclude.includes(classItem.id)));
+    if (propertyNode.constraint.exclude && propertyNode.constraint.exclude.length) {
+      const excludeSet = new Set<string>(propertyNode.constraint.exclude);
+      classes = classes.filter((classItem: ClassNode) => !excludeSet.has(classItem.id));
     }
     return classes;
   }
