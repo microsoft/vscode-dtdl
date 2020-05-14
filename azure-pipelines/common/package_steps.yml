@@ -1,0 +1,22 @@
+steps:
+  # split the following two scripts
+  # because of not working issue on windows platform.
+  - script: |
+      npm install -g vsce
+    displayName: Install vsce
+
+  - script: |
+      vsce package
+    displayName: Build VSIX Package
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)'
+      Contents: |
+        **/*.vsix
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: $(Agent.OS)-drop

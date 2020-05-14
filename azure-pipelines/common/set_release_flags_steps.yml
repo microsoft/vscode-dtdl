@@ -1,0 +1,12 @@
+steps:
+  # setting flag variables is_r, is_rc
+  - bash: |
+      rc_tag_regex=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[Rr][Cc]
+      r_tag_regex=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
+
+      [[ $BUILD_SOURCEBRANCH =~ $rc_tag_regex ]] && is_rc=true
+      [[ $BUILD_SOURCEBRANCH =~ $r_tag_regex ]] && is_r=true
+
+      echo "##vso[task.setvariable variable=is_rc]$is_rc"
+      echo "##vso[task.setvariable variable=is_r]$is_r"
+    displayName: Setting flag variable is_rc is_r

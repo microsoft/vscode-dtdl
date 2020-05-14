@@ -33,13 +33,17 @@ export class TelemetryContext {
     this.measurements = {};
   }
 
+  public succeeded(): boolean {
+    return this.properties.result === OperationResult.Success;
+  }
+
   /**
    * set error
    * @param error error
    */
   public setError(error: Error): void {
     this.properties.result = error instanceof UserCancelledError ? OperationResult.Cancel : OperationResult.Fail;
-    this.properties.error = error.name;
+    this.properties.errorType = error.name;
     this.properties.errorMessage = error.message;
   }
 

@@ -22,19 +22,11 @@ export enum ModelType {
  */
 export class DeviceModelManager {
   /**
-   * convert to DigitalTwin model type
-   * @param name name
-   */
-  public static convertToModelType(name: string): ModelType {
-    return ModelType[name as keyof typeof ModelType];
-  }
-
-  /**
    * generate DigitalTwin model id
    * @param name model name
    */
   public static generateModelId(name: string): string {
-    return `urn:{companyName}:${name}:1`;
+    return `dtmi:{company}:${name};1`;
   }
 
   /**
@@ -42,17 +34,16 @@ export class DeviceModelManager {
    * @param name model name
    * @param type model type
    */
-  public static generateModelFileName(name: string, type: ModelType): string {
-    const fileType: string = type.replace(/\s+/g, Constants.EMPTY_STRING).toLowerCase();
-    return `${name}.${fileType}.json`;
+  public static generateModelFileName(name: string): string {
+    return `${name}.json`;
   }
 
   /**
    * get DigitalTwin template file name
    * @param type model type
    */
-  public static getTemplateFileName(type: ModelType): string {
-    return DeviceModelManager.generateModelFileName(Constants.SAMPLE_FILE_NAME, type);
+  public static getTemplateFileName(): string {
+    return DeviceModelManager.generateModelFileName(Constants.SAMPLE_FILE_NAME);
   }
 
   private readonly component: string;
@@ -72,7 +63,7 @@ export class DeviceModelManager {
 
     let filePath: string;
     try {
-      filePath = await this.doCreateModel(type, folder, name);
+      filePath = await this.doCreateModel(folder, name);
     } catch (error) {
       throw new ProcessError(operation, error, this.component);
     }
@@ -88,14 +79,15 @@ export class DeviceModelManager {
    * @param folder root folder
    * @param name model name
    */
-  private async doCreateModel(type: ModelType, folder: string, name: string): Promise<string> {
+  private async doCreateModel(folder: string, name: string): Promise<string> {
     const modelId: string = DeviceModelManager.generateModelId(name);
-    const filePath: string = path.join(folder, DeviceModelManager.generateModelFileName(name, type));
+    const filePath: string = path.join(folder, DeviceModelManager.generateModelFileName(name));
     const templatePath: string = this.context.asAbsolutePath(
-      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName(type)),
+      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName()),
     );
     const replacement = new Map<string, string>();
-    replacement.set(Constants.DIGITAL_TWIN_ID_PLACEHOLDER, modelId);
+    replacement.set(Constants.MODEL_ID_PLACEHOLDER, modelId);
+    replacement.set(Constants.MODEL_NAME_PLACEHOLDER, name);
     await Utility.createFileFromTemplate(templatePath, filePath, replacement);
     return filePath;
   }

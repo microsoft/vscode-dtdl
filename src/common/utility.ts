@@ -4,7 +4,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
-import { DigitalTwinConstants } from "../intelliSense/digitalTwinConstants";
 import { Constants } from "./constants";
 
 /**
@@ -29,35 +28,19 @@ export class Utility {
   }
 
   /**
-   * replace all for content
-   * @param str string
-   * @param replacement replacement
-   * @param caseInsensitive identify if it is case insensitive
-   */
-  public static replaceAll(str: string, replacement: Map<string, string>, caseInsensitive: boolean = false): string {
-    const flag = caseInsensitive ? "ig" : "g";
-    const keys = Array.from(replacement.keys());
-    const pattern = new RegExp(keys.join("|"), flag);
-    return str.replace(pattern, (matched) => {
-      const value: string | undefined = replacement.get(matched);
-      return value || matched;
-    });
-  }
-
-  /**
    * validate DigitalTwin model name, return error message if validation fail
    * @param name model name
    * @param type model type
    * @param folder target folder
    */
   public static async validateModelName(name: string, type: ModelType, folder: string): Promise<string | undefined> {
-    if (!name || name.trim() === Constants.EMPTY_STRING) {
+    if (!name || !name.trim()) {
       return `Name ${Constants.NOT_EMPTY_MSG}`;
     }
     if (!Constants.MODEL_NAME_REGEX.test(name)) {
       return `Name can only contain ${Constants.MODEL_NAME_REGEX_DESCRIPTION}`;
     }
-    const filename: string = DeviceModelManager.generateModelFileName(name, type);
+    const filename: string = DeviceModelManager.generateModelFileName(name);
     if (await fs.pathExists(path.join(folder, filename))) {
       return `${type} ${name} already exists in folder ${folder}`;
     }
@@ -70,6 +53,20 @@ export class Utility {
    */
   public static async getJsonContent(filePath: string): Promise<any> {
     return fs.readJson(filePath, { encoding: Constants.UTF8 });
+  }
+
+  /**
+   * replace all for content
+   * @param str string
+   * @param replacement replacement
+   */
+  private static replaceAll(str: string, replacement: Map<string, string>): string {
+    const keys = Array.from(replacement.keys());
+    const pattern = new RegExp(keys.join("|"), "g");
+    return str.replace(pattern, (matched) => {
+      const value: string | undefined = replacement.get(matched);
+      return value || matched;
+    });
   }
 
   private constructor() {}

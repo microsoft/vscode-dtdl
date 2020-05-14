@@ -58,15 +58,15 @@ export class UI {
    */
   public static async selectRootFolder(label: string): Promise<string> {
     const workspaceFolders: vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders;
-    // use the only workspace as default
+    // use the only folder as default
     if (workspaceFolders && workspaceFolders.length === 1) {
       return workspaceFolders[0].uri.fsPath;
     }
-    // select workspace or open specified folder
+    // select folder or browse
     let items: vscode.QuickPickItem[] = [];
     if (workspaceFolders) {
-      items = workspaceFolders.map((f: vscode.WorkspaceFolder) => {
-        const fsPath: string = f.uri.fsPath;
+      items = workspaceFolders.map((folder) => {
+        const fsPath: string = folder.uri.fsPath;
         return {
           label: path.basename(fsPath),
           description: fsPath,
@@ -76,43 +76,6 @@ export class UI {
     items.push({ label: UIConstants.BROWSE_LABEL, description: Constants.EMPTY_STRING });
     const selected: vscode.QuickPickItem = await UI.showQuickPick(label, items);
     return selected.description || (await UI.showOpenDialog(label));
-  }
-
-  /**
-   * show quick pick items
-   * @param label label
-   * @param items quick pick item list
-   */
-  public static async showQuickPick(label: string, items: vscode.QuickPickItem[]): Promise<vscode.QuickPickItem> {
-    const options: vscode.QuickPickOptions = {
-      placeHolder: label,
-      ignoreFocusOut: true,
-    };
-    const selected: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
-    if (!selected) {
-      throw new UserCancelledError(label);
-    }
-    return selected;
-  }
-
-  /**
-   * show open dialog
-   * @param label label
-   * @param defaultUri default uri
-   */
-  public static async showOpenDialog(label: string, defaultUri?: vscode.Uri): Promise<string> {
-    const options: vscode.OpenDialogOptions = {
-      openLabel: label,
-      defaultUri,
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
-    };
-    const selected: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
-    if (!selected || selected.length === 0) {
-      throw new UserCancelledError(label);
-    }
-    return selected[0].fsPath;
   }
 
   /**
@@ -130,6 +93,43 @@ export class UI {
   }
 
   /**
+   * show quick pick items
+   * @param label label
+   * @param items quick pick item list
+   */
+  private static async showQuickPick(label: string, items: vscode.QuickPickItem[]): Promise<vscode.QuickPickItem> {
+    const options: vscode.QuickPickOptions = {
+      placeHolder: label,
+      ignoreFocusOut: true,
+    };
+    const selected: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
+    if (!selected) {
+      throw new UserCancelledError(label);
+    }
+    return selected;
+  }
+
+  /**
+   * show open dialog
+   * @param label label
+   * @param defaultUri default uri
+   */
+  private static async showOpenDialog(label: string, defaultUri?: vscode.Uri): Promise<string> {
+    const options: vscode.OpenDialogOptions = {
+      openLabel: label,
+      defaultUri,
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+    };
+    const selected: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
+    if (!selected || !selected.length) {
+      throw new UserCancelledError(label);
+    }
+    return selected[0].fsPath;
+  }
+
+  /**
    * show input box
    * @param label label
    * @param placeHolder placeHolder
@@ -137,7 +137,7 @@ export class UI {
    * @param value value
    * @param ignoreFocusOut identify if ignore focus out
    */
-  public static async showInputBox(
+  private static async showInputBox(
     label: string,
     placeHolder: string,
     validateInput?: (s: string) => string | undefined | Promise<string | undefined>,

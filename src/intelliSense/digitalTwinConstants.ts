@@ -8,53 +8,62 @@ export enum DiagnosticMessage {
   MissingType = "@type is missing.",
   InvalidType = "Invalid type. Valid types:",
   UnexpectedProperty = "is unexpected.",
-  MissingRequiredProperties = "Missing required properties:",
-  ShorterThanMinLength = "String is shorter than the minimum length of",
-  LongerThanMaxLength = "String is longer than the maximum length of",
-  NotMatchPattern = "String does not match the pattern of",
-  NotObjectType = "Object is not expected.",
+  MissRequiredProperties = "Miss required properties:",
   EmptyObject = "Object is empty.",
   EmptyString = "String is empty.",
   EmptyArray = "Array is empty.",
-  TooFewItems = "Array has too few items. Minimum count is",
-  TooManyItems = "Array has too many items. Maximum count is",
-  DuplicateItem = "has been assigned to another item.",
-  InvalidEnum = "Invalid value. Valid values:",
-  InvalidContext = "Invalid context of DigitalTwin.",
-  ConflictType = "Conflict type:",
+  NotObjectType = "Object is not expected.",
+  NotArrayType = "Array is not expected.",
   ValueNotString = "Value is not string.",
+  ValueNotInteger = "Value is not integer.",
+  LessThanMinLength = "String length is less than the minimum length of",
+  GreaterThanMaxLength = "String is greater than the maximum length of",
+  LessThanMinCount = "Array size is less than the minimum count of",
+  GreaterThanMaxCount = "Array size is greater than maximum count of",
+  LessThanMinValue = "Number is less than the minimum value of",
+  GreaterThanMaxValue = "Number is greater than the maximum value of",
+  NotMatchPattern = "String does not match the pattern of",
+  ConflictType = "Conflict type:",
+  CoTypeNotAllowed = "Co-type is not allowed. Only Telemetry, Property, Relationship support co-type.",
+  NestedNotAllowed = "is not allowed to be nested.",
+  DuplicateElement = "has been assigned to another element.",
+  InvalidValue = "Invalid value. Valid values:",
+  InvalidDtmiLength = "The maximum length of DTMI is",
+  InvalidDtmiPattern = "The pattern of DTMI is dtmi:<path>;<version>. Path may contain only letters, digits, underscore, and colon. Version must be numeric.",
+  InvalidDtmiVersion = "Version must be no more than 9 digits and may not start with 0.",
+  InvalidDtmiPath = "Path segments are separated by colons. Each path segment must be non-empty string that begins with letter and ends with letter or digit.",
 }
 
 /**
  * Constants for DigitalTwin IntelliSense
  */
 export class DigitalTwinConstants {
-  public static readonly SCHEMA_SEPARATOR = "#";
-  public static readonly BASE_CLASS = "Entity";
-  public static readonly NAME = "name";
-  public static readonly SCHEMA = "schema";
-  public static readonly CONTENTS = "contents";
-  public static readonly IMPLEMENTS = "implements";
-  public static readonly INTERFACE_SCHEMA = "interfaceSchema";
-  public static readonly RESERVED = "@";
-  public static readonly CONTEXT = "@context";
-  public static readonly VOCABULARY = "@vocab";
+  public static readonly DTDL_MIN_VERSION = 2;
+  public static readonly DTDL_CURRENT_VERSION = 2;
+  public static readonly DTMI_MAX_LENGTH = 2048;
+  public static readonly PARTITION_CLASS_ID_MAX_LENGTH = 128;
+  public static readonly LANGUAGE_ID = "json";
+  public static readonly LANG_STRING = "langString";
+  public static readonly ENTRY = "@entry";
   public static readonly ID = "@id";
   public static readonly TYPE = "@type";
-  public static readonly CONTAINER = "@container";
-  public static readonly LIST = "@list";
-  public static readonly SET = "@set";
-  public static readonly LANGUAGE = "@language";
-  public static readonly ENTRY_NODE = "@entry";
-  public static readonly DUMMY_NODE = "@dummy";
-  public static readonly INTERFACE_NODE = "Interface";
-  public static readonly CAPABILITY_MODEL_NODE = "CapabilityModel";
-  public static readonly SCHEMA_NODE = "Schema";
-  public static readonly UNIT_NODE = "Unit";
-  public static readonly INTERFACE_SCHEMA_NODE = "InterfaceInstance/schema";
-  public static readonly WORD_STOP = ' \t\n\r\v":{[,';
+  public static readonly CONTEXT = "@context";
+  public static readonly DUMMY = "@dummy";
+  public static readonly NAME_PROPERTY = "name";
+  public static readonly UNIT_PROPERTY = "unit";
+  public static readonly SCHEMA_CLASS = "Schema";
+  public static readonly COMPONENT_CLASS = "Component";
+  public static readonly LINE_FEED = "\n";
+  public static readonly DEFAULT_DELIMITER = ",";
+  public static readonly SCHEMA_DELIMITER = "#";
+  public static readonly DTMI_PATH_DELIMITER = ":";
+  public static readonly DTMI_VERSION_DELIMITER = ";";
   public static readonly REQUIRED_PROPERTY_LABEL = "(required)";
-  public static readonly IOT_MODEL_LABEL = "IoTModel";
-  public static readonly CONTEXT_TEMPLATE = "http://azureiot.com/v1/contexts/IoTModel.json";
-  public static readonly SUPPORT_SEMANTIC_TYPES = new Set<string>(["Telemetry", "Property"]);
+  public static readonly WORD_STOP = ' \t\n\r\v":{[,';
+  public static readonly CONTEXT_REGEX = /^dtmi:dtdl:context;(\d+)$/;
+  public static readonly DTMI_PATTERN_REGEX = new RegExp("^dtmi:[A-Za-z0-9_:]*;[0-9]+$");
+  public static readonly DTMI_VERSION_REGEX = new RegExp(";[1-9][0-9]{0,8}$");
+  public static readonly DTMI_PATH_REGEX = new RegExp(
+    "^dtmi:[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$",
+  );
 }

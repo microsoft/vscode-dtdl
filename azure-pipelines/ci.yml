@@ -1,0 +1,28 @@
+# now ci is just about pr validation, 
+# since we tend to make strict configurations for our repo, that is,
+# each pr is up to date before merging into develop and no other way
+# to modify develop except the pr flow.
+trigger: none
+
+pr:
+- master
+- develop
+
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+    mac:
+      imageName: 'macos-10.14'
+    windows:
+      imageName: 'vs2017-win2016'
+
+pool:
+  vmImage: $(imageName)
+
+steps:
+
+  - template: common/setup_steps.yml
+  - template: common/compile_steps.yml
+  - template: common/check_steps.yml
+  - template: common/test_steps.yml

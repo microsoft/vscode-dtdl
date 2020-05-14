@@ -1,0 +1,72 @@
+trigger:
+  tags:
+    include:
+    - v*
+
+pr: none
+
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+    mac:
+      imageName: 'macos-10.14'
+    windows:
+      imageName: 'vs2017-win2016'
+
+pool:
+  vmImage: $(imageName)
+
+variables:
+- template: common/variables.yml
+
+steps:
+
+  - template: common/setup_steps.yml
+  - template: common/compile_steps.yml
+  - template: common/check_steps.yml
+  - template: common/test_steps.yml
+
+  - template: common/set_release_flags_steps.yml
+
+  # modify package.json for release candidates
+  # including k/v pairs in cli arguments, remove trailing -rc if presents
+  - script: |
+      node scripts/modifyPackageJson.js name $(test_extension_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(test_publisher)
+    displayName: Modify package.json for release candidates
+    condition: and(succeeded(), eq(variables['is_rc'], 'true'))
+
+  # modify package.json for releases
+  # including k/v pairs in cli arguments, remove trailing -rc if presents
+  - script: |
+      node scripts/modifyPackageJson.js aiKey ${PROD_AIKEY}
+    displayName: Modify package.json for release candidates
+    condition: and(succeeded(), eq(variables['is_r'], 'true'))
+
+  - template: common/package_steps.yml
+
+  - task: GitHubRelease@0
+    displayName: Deploy Releases or Release Candidates to GitHub Release
+    inputs:
+      gitHubConnection: 'vsciotci_github_pat_pnp_authoring'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      isPreRelease: $(is_rc)
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  # publish vsix to marketplace for releases
+  - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
+    workingDirectory: '$(Build.ArtifactStagingDirectory)'
+    displayName: Deploy releases to marketplace
+    condition: and(succeeded(), eq(variables['is_r'], 'true'), eq(variables['Agent.OS'], 'Linux'))
+    env:
+      MARKETPLACE_TOKEN: $(vsciot_marketplace_token)
+
+  # publish vsix to marketplace for release candidates
+  - bash: yes | vsce unpublish -p $MARKETPLACE_TOKEN $(test_publisher).$(test_extension_name) && vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
+    workingDirectory: '$(Build.ArtifactStagingDirectory)'
+    displayName: Deploy release candidates to marketplace
+    condition: and(succeeded(), eq(variables['is_rc'], 'true'), eq(variables['Agent.OS'], 'Linux'))
+    env:
+      MARKETPLACE_TOKEN: $(iotdevexbuild_marketplace_token)
