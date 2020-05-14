@@ -13,12 +13,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/vscode-azure-digital-twins.git"
+    "url": "https://github.com/Microsoft/vscode-dtdl.git"
   },
   "bugs": {
-    "url": "https://github.com/Microsoft/vscode-azure-digital-twins/issues"
+    "url": "https://github.com/Microsoft/vscode-dtdl/issues"
   },
-  "homepage": "https://github.com/Microsoft/vscode-azure-digital-twins/blob/master/README.md",
+  "homepage": "https://github.com/Microsoft/vscode-dtdl/blob/master/README.md",
   "categories": [
     "Azure",
     "Other"
