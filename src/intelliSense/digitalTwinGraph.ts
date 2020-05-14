@@ -12,12 +12,12 @@ import { DigitalTwinConstants } from "./digitalTwinConstants";
  */
 export interface ClassNode {
   id: string;
-  label?: string;
+  name: string;
   isAbstract?: boolean;
-  children?: ClassNode[];
-  properties?: PropertyNode[];
-  enums?: string[];
-  constraint?: ConstraintNode;
+  isAugmentable?: boolean;
+  children?: string[];
+  properties?: string[];
+  instances?: string[];
 }
 
 /**
@@ -25,69 +25,54 @@ export interface ClassNode {
  */
 export interface PropertyNode {
   id: string;
-  label?: string;
-  isArray?: boolean;
-  comment?: string;
-  range?: ClassNode[];
-  constraint?: ConstraintNode;
+  name: string;
+  nodeKind: string;
+  type?: string;
+  isPlural?: boolean;
+  isRequired?: boolean;
+  isTypeInferable?: boolean;
+  dictionaryKey?: string;
+  constraint: ConstraintNode;
 }
 
 /**
  * Constraint node of DigitalTwin graph
  */
 export interface ConstraintNode {
-  minItems?: number;
-  maxItems?: number;
+  minInclusive?: number;
+  maxInclusive?: number;
+  minCount?: number;
+  maxCount?: number;
   minLength?: number;
   maxLength?: number;
   pattern?: string;
-  required?: string[];
+  in?: string[];
+  exclude?: string[];
 }
 
 /**
- * Context node of DigitalTwin graph
+ * Literal kind of DigitalTWin graph
  */
-interface ContextNode {
-  name: string;
-  container: ContainerType;
-}
-
-/**
- * Value schema definition for DigitalTwin graph
- */
-export enum ValueSchema {
+export enum Literal {
+  LangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
   String = "http://www.w3.org/2001/XMLSchema#string",
-  Int = "http://www.w3.org/2001/XMLSchema#int",
+  Integer = "http://www.w3.org/2001/XMLSchema#integer",
   Boolean = "http://www.w3.org/2001/XMLSchema#boolean",
 }
 
-/**
- * Node type definition for DigitalTwin graph
- */
-enum NodeType {
-  Class = "http://www.w3.org/2000/01/rdf-schema#Class",
-  Property = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+export enum NodeKind {
+  Literal = "Literal",
+  IRI = "IRI",
 }
 
 /**
- * Edge type definition for DigitalTwin graph
+ * Element kind of graph json
  */
-enum EdgeType {
-  Type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-  Range = "http://www.w3.org/2000/01/rdf-schema#range",
-  Label = "http://www.w3.org/2000/01/rdf-schema#label",
-  Domain = "http://www.w3.org/2000/01/rdf-schema#domain",
-  SubClassOf = "http://www.w3.org/2000/01/rdf-schema#subClassOf",
-  Comment = "http://www.w3.org/2000/01/rdf-schema#comment",
-}
-
-/**
- * Container type of JSON-LD
- */
-enum ContainerType {
-  None,
-  Array,
-  Language,
+enum GraphElement {
+  BaseClass = "baseClass",
+  PartitionClass = "partitionClass",
+  Class = "class",
+  Property = "property",
 }
 
 /**
@@ -106,97 +91,10 @@ export class DigitalTwinGraph {
     return DigitalTwinGraph.instance;
   }
 
-  /**
-   * get class type of class node
-   * @param classNode class node
-   */
-  public static getClassType(classNode: ClassNode): string {
-    return classNode.label || classNode.id;
-  }
-
-  /**
-   * get valid types from property node range
-   * @param propertyNode property node
-   */
-  public static getValidTypes(propertyNode: PropertyNode): string[] {
-    if (!propertyNode.range) {
-      return [];
-    }
-    return propertyNode.range.map((c) => {
-      if (c.label) {
-        return c.label;
-      } else {
-        // get the name of XMLSchema
-        const index: number = c.id.lastIndexOf(DigitalTwinConstants.SCHEMA_SEPARATOR);
-        return index === -1 ? c.id : c.id.slice(index + 1);
-      }
-    });
-  }
-
-  /**
-   * check if class node is a object class, not one of the following
-   * 1. abstract class
-   * 2. enum
-   * 3. value schema
-   * @param classNode class node
-   */
-  public static isObjectClass(classNode: ClassNode): boolean {
-    if (classNode.isAbstract || classNode.enums || !classNode.label) {
-      return false;
-    }
-    return true;
-  }
-
   private static instance: DigitalTwinGraph;
 
   /**
-   * check if json object is a valid constraint node
-   * @param object object data
-   */
-  private static isConstraintNode(object: any): object is ConstraintNode {
-    return (
-      object.minItems || object.maxItems || object.minLength || object.maxLength || object.pattern || object.required
-    );
-  }
-
-  /**
-   * check if it is a valid edge
-   * @param edge edge data
-   */
-  private static isValidEdge(edge: any): boolean {
-    return edge.SourceNode && edge.TargetNode && edge.Label;
-  }
-
-  /**
-   * resolve container type
-   * @param object object data
-   */
-  private static resolveContainerType(object: any): ContainerType {
-    const container = object[DigitalTwinConstants.CONTAINER];
-    if (!container || typeof container !== "string") {
-      return ContainerType.None;
-    }
-    switch (container) {
-      case DigitalTwinConstants.LIST:
-      case DigitalTwinConstants.SET:
-        return ContainerType.Array;
-      case DigitalTwinConstants.LANGUAGE:
-        return ContainerType.Language;
-      default:
-        return ContainerType.None;
-    }
-  }
-
-  /**
-   * check if the name is a reserved name
-   * @param name name
-   */
-  private static isReservedName(name: string): boolean {
-    return name.startsWith(DigitalTwinConstants.RESERVED);
-  }
-
-  /**
-   * resolve definition
+   * resolve definition from file
    * @param context extension context
    * @param fileName file name
    */
@@ -207,35 +105,48 @@ export class DigitalTwinGraph {
     return await Utility.getJsonContent(filePath);
   }
 
+  /**
+   * check if it is a valid node
+   * @param node node
+   */
+  private static isValidNode(node: any): boolean {
+    return node.id && node.name;
+  }
+
   private classNodes: Map<string, ClassNode>;
   private propertyNodes: Map<string, PropertyNode>;
-  private contextNodes: Map<string, ContextNode>;
-  private constraintNodes: Map<string, ConstraintNode>;
-  private reversedIndex: Map<string, string>;
-  private vocabulary: string;
+  private dtdlContext: Map<string, string>;
+  private baseClass: string;
+  private partitionClass: string[];
   private constructor() {
     this.classNodes = new Map<string, ClassNode>();
     this.propertyNodes = new Map<string, PropertyNode>();
-    this.contextNodes = new Map<string, ContextNode>();
-    this.constraintNodes = new Map<string, ConstraintNode>();
-    this.reversedIndex = new Map<string, string>();
-    this.vocabulary = Constants.EMPTY_STRING;
+    this.dtdlContext = new Map<string, string>();
+    this.baseClass = Constants.EMPTY_STRING;
+    this.partitionClass = [];
   }
 
   /**
    * check if DigitalTwin graph is initialized
    */
   public initialized(): boolean {
-    return this.vocabulary !== Constants.EMPTY_STRING;
+    return this.baseClass !== Constants.EMPTY_STRING;
   }
 
   /**
-   * get property node by name
-   * @param name name
+   * check if class is partition
+   * @param name class name
    */
-  public getPropertyNode(name: string): PropertyNode | undefined {
-    const id: string = this.reversedIndex.get(name) || name;
-    return this.propertyNodes.get(id);
+  public isPartitionClass(name: string): boolean {
+    return this.partitionClass.includes(this.getNodeId(name));
+  }
+
+  /**
+   * get property node by name or id
+   * @param nameOrId property name or id
+   */
+  public getPropertyNode(nameOrId: string): PropertyNode | undefined {
+    return this.propertyNodes.get(this.getNodeId(nameOrId));
   }
 
   /**
@@ -243,376 +154,218 @@ export class DigitalTwinGraph {
    * @param name name
    */
   public getClassNode(name: string): ClassNode | undefined {
-    const id: string = this.reversedIndex.get(name) || this.getId(name);
-    return this.classNodes.get(id);
+    return this.classNodes.get(this.getNodeId(name));
   }
 
   /**
-   * inititalize DigitalTwin graph
+   * get properties of class node
+   * @param classNode class node
+   */
+  public getPropertiesOfClassNode(classNode: ClassNode): PropertyNode[] {
+    let propertyNode: PropertyNode | undefined;
+    const properties: PropertyNode[] = [];
+    if (classNode.properties) {
+      for (const property of classNode.properties) {
+        propertyNode = this.propertyNodes.get(property);
+        if (propertyNode) {
+          properties.push(propertyNode);
+        }
+      }
+    }
+    return properties;
+  }
+
+  /**
+   * get children of class node
+   * @param classNode class node
+   */
+  public getChildrenOfClassNode(classNode: ClassNode): ClassNode[] {
+    let childNode: ClassNode | undefined;
+    const children: ClassNode[] = [];
+    if (classNode.children) {
+      for (const child of classNode.children) {
+        childNode = this.classNodes.get(child);
+        if (childNode) {
+          children.push(childNode);
+        }
+      }
+    }
+    return children;
+  }
+
+  /**
+   * get obverse children of abstract class
+   * @param abstractClass abstract class node
+   */
+  public getObverseChildrenOfAbstractClass(abstractClass: ClassNode): ClassNode[] {
+    const children: ClassNode[] = [];
+    if (!abstractClass.isAbstract) {
+      return children;
+    }
+    const queue: ClassNode[] = [];
+    let classNode: ClassNode | undefined = abstractClass;
+    while (classNode) {
+      for (const child of this.getChildrenOfClassNode(classNode)) {
+        if (child.isAbstract) {
+          queue.push(child);
+        } else if (!child.instances) {
+          children.push(child);
+        }
+      }
+      classNode = queue.shift();
+    }
+    return children;
+  }
+
+  /**
+   * get all instances of abstract class
+   * @param abstractClass abstract class node
+   */
+  public getInstancesOfAbstractClass(abstractClass: ClassNode): string[] {
+    const instances: string[] = [];
+    if (!abstractClass.isAbstract) {
+      return instances;
+    }
+    const queue: ClassNode[] = [];
+    let classNode: ClassNode | undefined = abstractClass;
+    while (classNode) {
+      for (const child of this.getChildrenOfClassNode(classNode)) {
+        if (child.isAbstract) {
+          queue.push(child);
+        } else if (child.instances) {
+          instances.push(...child.instances);
+        }
+      }
+      classNode = queue.shift();
+    }
+    return instances;
+  }
+
+  /**
+   * init DigitalTwin graph
    * @param context extension context
    */
   private async init(context: vscode.ExtensionContext): Promise<void> {
-    let contextJson;
-    let constraintJson;
     let graphJson;
-    // load definition file
     try {
-      contextJson = await DigitalTwinGraph.resolveDefinition(context, Constants.CONTEXT_FILE_NAME);
-      constraintJson = await DigitalTwinGraph.resolveDefinition(context, Constants.CONSTRAINT_FILE_NAME);
       graphJson = await DigitalTwinGraph.resolveDefinition(context, Constants.GRAPH_FILE_NAME);
     } catch (error) {
       return;
     }
-    // build graph by definitions
-    this.buildContext(contextJson);
-    this.buildConstraint(constraintJson);
     this.buildGraph(graphJson);
   }
 
   /**
-   * get node id of DigitalTwin graph
-   * @param name name
-   */
-  private getId(name: string): string {
-    return this.vocabulary + name;
-  }
-
-  /**
-   * build context nodes by id and reversed index
-   * @param contextJson json object of context definition
-   */
-  private buildContext(contextJson: any): void {
-    let id: string;
-    const context = contextJson[DigitalTwinConstants.CONTEXT];
-    this.vocabulary = context[DigitalTwinConstants.VOCABULARY] as string;
-    for (const key in context) {
-      if (DigitalTwinGraph.isReservedName(key)) {
-        continue;
-      }
-      const value = context[key];
-      if (typeof value === "string") {
-        id = this.getId(value);
-        this.contextNodes.set(id, { name: key, container: ContainerType.None });
-      } else {
-        const containerType: ContainerType = DigitalTwinGraph.resolveContainerType(value);
-        id = this.getId(value[DigitalTwinConstants.ID] as string);
-        this.contextNodes.set(id, { name: key, container: containerType });
-      }
-      this.reversedIndex.set(key, id);
-    }
-  }
-
-  /**
-   * build constraint nodes by name
-   * @param constraintJson json object of constraint definition
-   */
-  private buildConstraint(constraintJson: any): void {
-    for (const key in constraintJson) {
-      if (DigitalTwinGraph.isConstraintNode(constraintJson[key])) {
-        this.constraintNodes.set(key, constraintJson[key]);
-      }
-    }
-  }
-
-  /**
-   * build DigitalTwin graph on definitions of context, constraint and graph
+   * build DigitalTwin graph
    * @param graphJson json object of graph definition
    */
   private buildGraph(graphJson: any): void {
-    for (const edge of graphJson.Edges) {
-      if (DigitalTwinGraph.isValidEdge(edge)) {
-        this.handleEdge(edge);
-      }
-    }
-    this.adjustNode();
-    this.expandProperties();
-    this.buildEntryNode();
+    this.parse(graphJson);
+    this.inheritProperties();
+    this.addSentinelNodes();
   }
 
   /**
-   * handle data of edge
-   * @param edge edge data
+   * parse content of graph json
+   * @param graphJson json object of graph definition
    */
-  private handleEdge(edge: any): void {
-    switch (edge.Label) {
-      case EdgeType.Type:
-        this.handleEdgeOfType(edge);
-        break;
-      case EdgeType.Label:
-        this.handleEdgeOfLabel(edge);
-        break;
-      case EdgeType.Domain:
-        this.handleEdgeOfDomain(edge);
-        break;
-      case EdgeType.Range:
-        this.handleEdgeOfRange(edge);
-        break;
-      case EdgeType.SubClassOf:
-        this.handleEdgeOfSubClassOf(edge);
-        break;
-      case EdgeType.Comment:
-        this.handleEdgeOfComment(edge);
-        break;
-      default:
-    }
-  }
-
-  /**
-   * handle data of Type edge
-   * 1. create class/property node, set label and constraint
-   * 2. add enum value to enum node
-   * @param edge edge data
-   */
-  private handleEdgeOfType(edge: any): void {
-    const id: string = edge.SourceNode.Id as string;
-    const type: string = edge.TargetNode.Id as string;
-    switch (type) {
-      case NodeType.Class:
-        this.ensureClassNode(id);
-        break;
-      case NodeType.Property:
-        this.ensurePropertyNode(id);
-        break;
-      default:
-        // mark target class as enum node
-        const contextNode: ContextNode | undefined = this.contextNodes.get(id);
-        const enumValue: string = contextNode ? contextNode.name : id;
-        const enumNode: ClassNode = this.ensureClassNode(type);
-        if (!enumNode.enums) {
-          enumNode.enums = [];
-        }
-        enumNode.enums.push(enumValue);
-    }
-  }
-
-  /**
-   * handle date of Label edge
-   * 1. assume Type edge is handled before Label edge
-   * 2. set label and constraint if not defined
-   * @param edge edge data
-   */
-  private handleEdgeOfLabel(edge: any): void {
-    const id: string = edge.SourceNode.Id as string;
-    const label: string = edge.TargetNode.Value as string;
-    const propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
-    // skip property node since the value has been set in Type edge
-    if (propertyNode) {
-      return;
-    }
-    const classNode: ClassNode = this.ensureClassNode(id);
-    if (!classNode.label) {
-      classNode.label = label;
-      const constraintNode: ConstraintNode | undefined = this.constraintNodes.get(label);
-      if (constraintNode) {
-        classNode.constraint = constraintNode;
-      }
-    }
-  }
-
-  /**
-   * handle data of Domain edge
-   * 1. add property to class node
-   * @param edge edge data
-   */
-  private handleEdgeOfDomain(edge: any): void {
-    const id: string = edge.SourceNode.Id as string;
-    const classId: string = edge.TargetNode.Id as string;
-    const propertyNode: PropertyNode = this.ensurePropertyNode(id);
-    const classNode: ClassNode = this.ensureClassNode(classId);
-    if (!classNode.properties) {
-      classNode.properties = [];
-    }
-    classNode.properties.push(propertyNode);
-  }
-
-  /**
-   * handle data of Range edge
-   * 1. add range to property node
-   * @param edge edge data
-   */
-  private handleEdgeOfRange(edge: any): void {
-    const id: string = edge.SourceNode.Id as string;
-    const classId: string = edge.TargetNode.Id as string;
-    const propertyNode: PropertyNode = this.ensurePropertyNode(id);
-    const classNode: ClassNode = this.ensureClassNode(classId);
-    if (!propertyNode.range) {
-      propertyNode.range = [];
-    }
-    propertyNode.range.push(classNode);
-  }
-
-  /**
-   * handle data of SubClassOf edge
-   * 1. add children to base class node
-   * @param edge edge data
-   */
-  private handleEdgeOfSubClassOf(edge: any): void {
-    const id: string = edge.SourceNode.Id as string;
-    const baseId: string = edge.TargetNode.Id as string;
-    const classNode: ClassNode = this.ensureClassNode(id);
-    const baseClassNode: ClassNode = this.ensureClassNode(baseId);
-    if (!baseClassNode.children) {
-      baseClassNode.children = [];
-    }
-    baseClassNode.children.push(classNode);
-  }
-
-  /**
-   * handle data of Comment edge
-   * 1. set comment of property node
-   * @param edge edge data
-   */
-  private handleEdgeOfComment(edge: any): void {
-    const id: string = edge.SourceNode.Id as string;
-    const comment: string = edge.TargetNode.Value as string;
-    const propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
-    if (propertyNode) {
-      propertyNode.comment = comment;
-    }
-  }
-
-  /**
-   * ensure class node exist, create if not exist
-   * @param id node id
-   */
-  private ensureClassNode(id: string): ClassNode {
-    let classNode: ClassNode | undefined = this.classNodes.get(id);
-    if (!classNode) {
-      classNode = { id };
-      const contextNode: ContextNode | undefined = this.contextNodes.get(id);
-      if (contextNode) {
-        classNode.label = contextNode.name;
-        const constraintNode: ConstraintNode | undefined = this.constraintNodes.get(contextNode.name);
-        if (constraintNode) {
-          classNode.constraint = constraintNode;
+  private parse(graphJson: any): void {
+    for (const key in graphJson) {
+      if (graphJson.hasOwnProperty(key)) {
+        switch (key) {
+          case GraphElement.BaseClass:
+            this.baseClass = graphJson[key] as string;
+            break;
+          case GraphElement.PartitionClass:
+            this.partitionClass = graphJson[key] as string[];
+            break;
+          case GraphElement.Class:
+            for (const item of graphJson[key]) {
+              if (DigitalTwinGraph.isValidNode(item)) {
+                this.classNodes.set(item.id, item as ClassNode);
+                this.addToContext(item.name, item.id);
+              }
+            }
+            break;
+          case GraphElement.Property:
+            for (const item of graphJson[key]) {
+              if (DigitalTwinGraph.isValidNode(item)) {
+                this.propertyNodes.set(item.id, item as PropertyNode);
+                this.addToContext(item.name, item.id);
+              }
+            }
+            break;
+          default:
         }
       }
-      this.classNodes.set(id, classNode);
-    }
-    return classNode;
-  }
-
-  /**
-   * ensure property node exist, create if not exist
-   * @param id node id
-   */
-  private ensurePropertyNode(id: string): PropertyNode {
-    let propertyNode: PropertyNode | undefined = this.propertyNodes.get(id);
-    if (!propertyNode) {
-      propertyNode = { id };
-      const contextNode: ContextNode | undefined = this.contextNodes.get(id);
-      if (contextNode) {
-        propertyNode.label = contextNode.name;
-        propertyNode.isArray = contextNode.container === ContainerType.Array;
-        // handle language node
-        if (contextNode.container === ContainerType.Language) {
-          const languageNode: ClassNode = this.ensureClassNode(DigitalTwinConstants.LANGUAGE);
-          languageNode.label = DigitalTwinConstants.LANGUAGE;
-          propertyNode.range = [languageNode];
-        }
-        const constraintNode: ConstraintNode | undefined = this.constraintNodes.get(contextNode.name);
-        if (constraintNode) {
-          propertyNode.constraint = constraintNode;
-        }
-      }
-      this.propertyNodes.set(id, propertyNode);
-    }
-    return propertyNode;
-  }
-
-  /**
-   * adjust node to meet DigitalTwin special definition
-   */
-  private adjustNode(): void {
-    // build reserved property
-    const stringNode: ClassNode = this.ensureClassNode(ValueSchema.String);
-    this.buildReservedProperty(DigitalTwinConstants.ID, stringNode);
-
-    // mark abstract class
-    this.markAbstractClass(DigitalTwinConstants.SCHEMA_NODE);
-    this.markAbstractClass(DigitalTwinConstants.UNIT_NODE);
-
-    // update label and range of interfaceSchema property
-    const propertyNode: PropertyNode | undefined = this.propertyNodes.get(
-      this.getId(DigitalTwinConstants.INTERFACE_SCHEMA_NODE),
-    );
-    if (propertyNode) {
-      propertyNode.label = DigitalTwinConstants.SCHEMA;
-      if (propertyNode.range) {
-        propertyNode.range.push(stringNode);
-        propertyNode.constraint = this.constraintNodes.get(DigitalTwinConstants.ID);
-      }
     }
   }
 
   /**
-   * build reserved property
-   * @param id node id
-   * @param classNode class node of reserved property range
+   * add to DTDL context
+   * @param name name
+   * @param id id
    */
-  private buildReservedProperty(id: string, classNode: ClassNode): void {
-    const propertyNode: PropertyNode = { id, range: [classNode] };
-    const constraintNode: ConstraintNode | undefined = this.constraintNodes.get(id);
-    if (constraintNode) {
-      propertyNode.constraint = constraintNode;
-    }
-    this.propertyNodes.set(id, propertyNode);
+  private addToContext(name: string, id: string): void {
+    // clear id value to identify the property name is shared by multiple class
+    const value: string = this.dtdlContext.has(name) ? Constants.EMPTY_STRING : id;
+    this.dtdlContext.set(name, value);
   }
 
   /**
-   * mark class node as abstract class
-   * @param name class node name
+   * inherit properties from base class
    */
-  private markAbstractClass(name: string): void {
-    const classNode: ClassNode | undefined = this.classNodes.get(this.getId(name));
-    if (classNode) {
-      classNode.isAbstract = true;
-    }
-  }
-
-  /**
-   * expand properties from base class node
-   */
-  private expandProperties(): void {
-    let classNode: ClassNode | undefined = this.classNodes.get(this.getId(DigitalTwinConstants.BASE_CLASS));
+  private inheritProperties(): void {
+    let classNode: ClassNode | undefined = this.classNodes.get(this.baseClass);
     if (!classNode) {
       return;
     }
     const queue: ClassNode[] = [];
     while (classNode) {
-      if (classNode.children) {
-        for (const child of classNode.children) {
-          // skip enum node
-          if (child.enums) {
-            continue;
-          }
-          if (classNode.properties) {
-            if (!child.properties) {
-              child.properties = [];
-            }
-            child.properties.push(...classNode.properties);
-          }
-          queue.push(child);
+      for (const child of this.getChildrenOfClassNode(classNode)) {
+        // class which has instances doesn't need properties
+        if (child.instances) {
+          continue;
         }
+        if (classNode.properties) {
+          if (!child.properties) {
+            child.properties = [];
+          }
+          child.properties.push(...classNode.properties);
+        }
+        queue.push(child);
       }
       classNode = queue.shift();
     }
   }
 
   /**
-   * build entry node of DigitalTwin graph
+   * add sentinel nodes to DigitalTwin graph
    */
-  private buildEntryNode(): void {
-    const interfaceNode: ClassNode | undefined = this.classNodes.get(this.getId(DigitalTwinConstants.INTERFACE_NODE));
-    const capabilityModelNode: ClassNode | undefined = this.classNodes.get(
-      this.getId(DigitalTwinConstants.CAPABILITY_MODEL_NODE),
-    );
-    if (interfaceNode && capabilityModelNode) {
-      const entryNode: PropertyNode = {
-        id: DigitalTwinConstants.ENTRY_NODE,
-        range: [interfaceNode, capabilityModelNode],
-      };
-      this.propertyNodes.set(entryNode.id, entryNode);
-    }
+  private addSentinelNodes(): void {
+    // entry node
+    const entryNode: PropertyNode = {
+      id: DigitalTwinConstants.ENTRY,
+      name: Constants.EMPTY_STRING,
+      nodeKind: Constants.EMPTY_STRING,
+      constraint: {
+        in: this.partitionClass,
+      },
+    };
+    this.propertyNodes.set(entryNode.id, entryNode);
+    // language node
+    const languageNode: ClassNode = {
+      id: Literal.LangString,
+      name: DigitalTwinConstants.LANG_STRING,
+    };
+    this.classNodes.set(languageNode.id, languageNode);
+  }
+
+  /**
+   * get node id by name or id
+   * @param name name or id
+   */
+  private getNodeId(name: string): string {
+    return this.dtdlContext.get(name) || name;
   }
 }

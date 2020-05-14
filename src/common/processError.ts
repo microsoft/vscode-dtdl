@@ -4,7 +4,7 @@
 import { ColorizedChannel } from "./colorizedChannel";
 
 /**
- * Error for processing failure
+ * Error of process failure
  */
 export class ProcessError extends Error {
   constructor(operation: string, error: Error, public readonly component: string) {

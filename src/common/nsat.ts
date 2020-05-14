@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { commands, ExtensionContext, Memento, Uri, window } from "vscode";
+import { Constants } from "./constants";
 import { TelemetryClient } from "./telemetryClient";
 
 const PROBABILITY = 1;
@@ -28,7 +29,7 @@ export class NSAT {
     if (!globalState) {
       return;
     }
-    const skipVersion: string = globalState.get(SKIP_VERSION_KEY, "");
+    const skipVersion: string = globalState.get(SKIP_VERSION_KEY, Constants.EMPTY_STRING);
     if (skipVersion) {
       return;
     }
@@ -83,7 +84,7 @@ export class NSAT {
     };
     this.telemetryClient.sendEvent("nsat.survey/userAsked");
     const button = await window.showInformationMessage(
-      "Do you mind taking a quick feedback survey about IoT Plug and Play Extension for VS Code?",
+      "Do you mind taking a quick feedback survey about DTDL Extension for VS Code?",
       take,
       remind,
       never,

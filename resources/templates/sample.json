@@ -1,0 +1,26 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "{modelId}",
+  "@type": "Interface",
+  "displayName": "{modelName}",
+  "contents": [
+    {
+      "@type": "Telemetry",        
+      "name": "temperature",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",        
+      "name": "deviceStatus",
+      "schema": "string"
+    },
+    {
+      "@type": "Command",
+      "name": "reboot",
+      "request": {
+        "name": "delay",
+        "schema": "integer"
+      }
+    }
+  ]
+}

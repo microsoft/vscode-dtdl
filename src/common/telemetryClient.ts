@@ -4,6 +4,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
+import { Constants } from "./constants";
 import { TelemetryContext } from "./telemetryContext";
 
 /**
@@ -24,11 +25,12 @@ export class TelemetryClient {
    * check if it is Microsoft internal user
    */
   private static isInternalUser(): boolean {
-    const userDomain: string = process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : "";
+    const userDomain: string =
+      process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : Constants.EMPTY_STRING;
     return userDomain.endsWith("microsoft.com");
   }
 
-  public extensionId: string = "";
+  public extensionId: string = Constants.EMPTY_STRING;
   public extensionVersion: string = "unknown";
 
   private client: TelemetryReporter | undefined;
@@ -40,7 +42,7 @@ export class TelemetryClient {
     }
     this.extensionId = `${packageJSON.publisher}.${packageJSON.name}`;
     this.extensionVersion = packageJSON.version;
-    this.client = new TelemetryReporter(this.extensionId, this.extensionVersion, packageJSON.aiKey);
+    this.client = new TelemetryReporter(this.extensionId, this.extensionVersion, packageJSON.aiKey, true);
     this.isInternal = TelemetryClient.isInternalUser();
   }
 
@@ -53,17 +55,23 @@ export class TelemetryClient {
     if (!this.client) {
       return;
     }
-    if (telemetryContext) {
-      telemetryContext.properties[TelemetryClient.IS_INTERNAL] = this.isInternal.toString();
-      this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
-    } else {
+    if (!telemetryContext) {
       const properties = { [TelemetryClient.IS_INTERNAL]: this.isInternal.toString() };
       this.client.sendTelemetryEvent(eventName, properties);
+      return;
+    }
+
+    telemetryContext.properties[TelemetryClient.IS_INTERNAL] = this.isInternal.toString();
+
+    if (telemetryContext.succeeded()) {
+      this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
+    } else {
+      this.client.sendTelemetryErrorEvent(eventName, telemetryContext.properties, telemetryContext.measurements, ["errorMessage"]);
     }
   }
 
   /**
-   * dispose telemetry client
+   * dispose
    */
   public dispose(): void {
     if (this.client) {
