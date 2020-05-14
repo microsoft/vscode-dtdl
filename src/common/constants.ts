@@ -7,8 +7,6 @@
 export class Constants {
   public static readonly CHANNEL_NAME = "DTDL";
   public static readonly UTF8 = "utf8";
-  public static readonly SHA256 = "sha256";
-  public static readonly HEX = "hex";
   public static readonly EMPTY_STRING = "";
   public static readonly COMPLETION_TRIGGER = '"';
   public static readonly JSON_SPACE = 2;

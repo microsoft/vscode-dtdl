@@ -559,34 +559,6 @@ export class DigitalTwinDiagnosticProvider {
   }
 
   /**
-   * validate language node
-   * @param jsonNode json node
-   * @param digitalTwinNode DigitalTwin property node
-   * @param problems problem collection
-   */
-  private static validateLanguageNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
-    if (!jsonNode.children) {
-      return;
-    }
-    let propertyName: string;
-    let propertyPair: PropertyPair | undefined;
-    for (const child of jsonNode.children) {
-      propertyPair = IntelliSenseUtility.parseProperty(child);
-      if (!propertyPair) {
-        continue;
-      }
-      propertyName = propertyPair.name.value as string;
-      if (!LANGUAGE_CODE.has(propertyName)) {
-        DigitalTwinDiagnosticProvider.addProblemOfUnexpectedProperty(propertyPair.name, problems);
-      } else if (typeof propertyPair.value.value !== "string") {
-        DigitalTwinDiagnosticProvider.addProblem(propertyPair.value, problems, DiagnosticMessage.ValueNotString);
-      } else {
-        DigitalTwinDiagnosticProvider.validateStringNode(propertyPair.value, digitalTwinNode, problems);
-      }
-    }
-  }
-
-  /**
    * update diagnostics
    * @param document text document
    * @param collection diagnostic collection

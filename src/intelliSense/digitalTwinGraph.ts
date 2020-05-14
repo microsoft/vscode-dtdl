@@ -76,15 +76,6 @@ enum GraphElement {
 }
 
 /**
- * Container type of JSON-LD
- */
-enum ContainerType {
-  None,
-  Array,
-  Language,
-}
-
-/**
  * DigitalTwin graph
  */
 export class DigitalTwinGraph {
