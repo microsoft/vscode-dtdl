@@ -60,9 +60,20 @@ export enum Literal {
   Boolean = "http://www.w3.org/2001/XMLSchema#boolean",
 }
 
+/**
+ * Node kind
+ */
 export enum NodeKind {
   Literal = "Literal",
   IRI = "IRI",
+}
+
+/**
+ * Value schema kind
+ */
+export enum ValueSchema {
+  Integer = "integer",
+  String = "string",
 }
 
 /**

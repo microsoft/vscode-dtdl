@@ -7,13 +7,10 @@
 export enum DiagnosticMessage {
   MissingType = "@type is missing.",
   InvalidType = "Invalid type. Valid types:",
-  UnexpectedProperty = "is unexpected.",
+  InvalidProperty = "is not a valid property.",
   MissRequiredProperties = "Miss required properties:",
-  EmptyObject = "Object is empty.",
-  EmptyString = "String is empty.",
-  EmptyArray = "Array is empty.",
-  NotObjectType = "Object is not expected.",
-  NotArrayType = "Array is not expected.",
+  EmptyValue = "is empty.",
+  TypeNotAllowed = "is not allowed.",
   ValueNotString = "Value is not string.",
   ValueNotInteger = "Value is not integer.",
   LessThanMinLength = "String length is less than the minimum length of",
@@ -51,6 +48,9 @@ export class DigitalTwinConstants {
   public static readonly DUMMY = "@dummy";
   public static readonly NAME_PROPERTY = "name";
   public static readonly UNIT_PROPERTY = "unit";
+  public static readonly TARGET_PROPERTY = "target";
+  public static readonly ENUM_VALUE_PROPERTY = "enumValue";
+  public static readonly VALUE_SCHEMA_PROPERTY = "valueSchema";
   public static readonly SCHEMA_CLASS = "Schema";
   public static readonly COMPONENT_CLASS = "Component";
   public static readonly LINE_FEED = "\n";
