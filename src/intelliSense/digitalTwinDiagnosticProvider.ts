@@ -348,7 +348,7 @@ export class DigitalTwinDiagnosticProvider {
     if (!enumNode) {
       return;
     }
-    const validTypes: string[] = [DigitalTwinConstants.VALUE_SCHEMA_STRING, DigitalTwinConstants.VALUE_SCHEMA_INTEGER];
+    const validTypes: string[] = IntelliSenseUtility.getValidEnumValueTypes();
     const valueSchemaNode: parser.Node | undefined = IntelliSenseUtility.getPropertyValueOfObjectByKey(
       DigitalTwinConstants.VALUE_SCHEMA_PROPERTY,
       enumNode,

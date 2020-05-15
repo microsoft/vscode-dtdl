@@ -53,8 +53,6 @@ export class DigitalTwinConstants {
   public static readonly VALUE_SCHEMA_PROPERTY = "valueSchema";
   public static readonly SCHEMA_CLASS = "Schema";
   public static readonly COMPONENT_CLASS = "Component";
-  public static readonly VALUE_SCHEMA_INTEGER = "integer";
-  public static readonly VALUE_SCHEMA_STRING = "string";
   public static readonly LINE_FEED = "\n";
   public static readonly DEFAULT_DELIMITER = ",";
   public static readonly SCHEMA_DELIMITER = "#";

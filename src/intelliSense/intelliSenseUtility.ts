@@ -155,16 +155,31 @@ export class IntelliSenseUtility {
   }
 
   /**
+   * get type of enum value
+   * @param valueSchema value schema
+   */
+  public static getTypeOfEnumValue(valueSchema: string): string {
+    const enumValueTypes: Set<string> = IntelliSenseUtility.graph.getEnumValueTypes();
+    if (!enumValueTypes.has(valueSchema)) {
+      return Constants.EMPTY_STRING;
+    }
+    const key: string = valueSchema.charAt(0).toUpperCase() + valueSchema.slice(1);
+    return Literal[key as keyof typeof Literal];
+  }
+
+  /**
+   * get valid enum value types
+   */
+  public static getValidEnumValueTypes(): string[] {
+    return Array.from(IntelliSenseUtility.graph.getEnumValueTypes());
+  }
+
+  /**
    * resolve node name from dtmi id
    * @param id dtmi id
    */
   public static resolveNodeName(id: string): string {
-    const start: number = id.lastIndexOf(DigitalTwinConstants.DTMI_PATH_DELIMITER);
-    const end: number = id.lastIndexOf(DigitalTwinConstants.DTMI_VERSION_DELIMITER);
-    if (start !== -1 && end !== -1) {
-      return id.slice(start + 1, end);
-    }
-    return Constants.EMPTY_STRING;
+    return IntelliSenseUtility.graph.getNodeName(id);
   }
 
   /**
@@ -195,6 +210,14 @@ export class IntelliSenseUtility {
    */
   public static isLanguageString(classNode: ClassNode): boolean {
     return classNode.id === Literal.LangString;
+  }
+
+  /**
+   * check if json node is a container node
+   * @param node json node
+   */
+  public static isContainerNode(node: parser.Node): boolean {
+    return node.type === JsonNodeType.Array || node.type === JsonNodeType.Object;
   }
 
   /**
@@ -318,29 +341,6 @@ export class IntelliSenseUtility {
       parentNode = parentNode.parent;
     }
     return undefined;
-  }
-
-  /**
-   * check if json node is a container node
-   * @param node json node
-   */
-  public static isContainerNode(node: parser.Node): boolean {
-    return node.type === JsonNodeType.Array || node.type === JsonNodeType.Object;
-  }
-
-  /**
-   * get type of enum value
-   * @param name name
-   */
-  public static getTypeOfEnumValue(name: string): string {
-    switch (name) {
-      case DigitalTwinConstants.VALUE_SCHEMA_INTEGER:
-        return Literal.Integer;
-      case DigitalTwinConstants.VALUE_SCHEMA_STRING:
-        return Literal.String;
-      default:
-        return Constants.EMPTY_STRING;
-    }
   }
 
   private static graph: DigitalTwinGraph;
