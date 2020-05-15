@@ -168,13 +168,6 @@ export class IntelliSenseUtility {
   }
 
   /**
-   * get valid enum value types
-   */
-  public static getValidEnumValueTypes(): string[] {
-    return Array.from(IntelliSenseUtility.graph.getEnumValueTypes());
-  }
-
-  /**
    * resolve node name from dtmi id
    * @param id dtmi id
    */

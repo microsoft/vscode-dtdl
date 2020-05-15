@@ -337,30 +337,28 @@ export class DigitalTwinDiagnosticProvider {
   /**
    * validate enum value according to the value of valueSchema
    * @param jsonNode json node
-   * @param parentObjectNode parent object node
+   * @param enumValueObjectNode object node of enum value
    * @param problems problem collection
    */
-  private static validateEnumValue(jsonNode: parser.Node, parentObjectNode: parser.Node, problems: Problem[]): void {
+  private static validateEnumValue(jsonNode: parser.Node, enumValueObjectNode: parser.Node, problems: Problem[]): void {
     const enumNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
-      parentObjectNode,
+      enumValueObjectNode,
       JsonNodeType.Object,
     );
     if (!enumNode) {
       return;
     }
-    const validTypes: string[] = IntelliSenseUtility.getValidEnumValueTypes();
     const valueSchemaNode: parser.Node | undefined = IntelliSenseUtility.getPropertyValueOfObjectByKey(
       DigitalTwinConstants.VALUE_SCHEMA_PROPERTY,
       enumNode,
     );
+    // if value schema is not specified or incorrect, diagnostic message will be shown on value schema first
     if (!valueSchemaNode) {
-      DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, problems, validTypes);
       return;
     }
     const valueSchemaType: string = valueSchemaNode.value as string;
     const enumValueType: string = IntelliSenseUtility.getTypeOfEnumValue(valueSchemaType);
     if (!enumValueType) {
-      DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, problems, validTypes);
       return;
     }
     const dummyNode: PropertyNode = {
