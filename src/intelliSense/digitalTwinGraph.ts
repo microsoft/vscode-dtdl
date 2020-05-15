@@ -69,14 +69,6 @@ export enum NodeKind {
 }
 
 /**
- * Value schema kind
- */
-export enum ValueSchema {
-  Integer = "integer",
-  String = "string",
-}
-
-/**
  * Element kind of graph json
  */
 enum GraphElement {

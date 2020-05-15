@@ -297,7 +297,7 @@ export class IntelliSenseUtility {
       return Constants.EMPTY_STRING;
     }
 
-    const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.parseProperty(outerProperty);
+    const outerPropertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(outerProperty);
     return outerPropertyPair?.name.value || Constants.EMPTY_STRING;
   }
 
@@ -320,6 +320,29 @@ export class IntelliSenseUtility {
     return undefined;
   }
 
+  /**
+   * check if json node is a container node
+   * @param node json node
+   */
+  public static isContainerNode(node: parser.Node): boolean {
+    return node.type === JsonNodeType.Array || node.type === JsonNodeType.Object;
+  }
+
+  /**
+   * get type of enum value
+   * @param name name
+   */
+  public static getTypeOfEnumValue(name: string): string {
+    switch (name) {
+      case DigitalTwinConstants.VALUE_SCHEMA_INTEGER:
+        return Literal.Integer;
+      case DigitalTwinConstants.VALUE_SCHEMA_STRING:
+        return Literal.String;
+      default:
+        return Constants.EMPTY_STRING;
+    }
+  }
+
   private static graph: DigitalTwinGraph;
 
   /**
@@ -329,7 +352,7 @@ export class IntelliSenseUtility {
   private static resolveVersion(context: string): number {
     const groups: RegExpMatchArray | null = context.match(DigitalTwinConstants.CONTEXT_REGEX);
     if (groups && groups.length === 2) {
-      return parseInt(groups[1], 10);
+      return parseInt(groups[1], Constants.DEFAULT_RADIX);
     }
     return 0;
   }

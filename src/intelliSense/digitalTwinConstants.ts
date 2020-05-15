@@ -14,7 +14,7 @@ export enum DiagnosticMessage {
   ValueNotString = "Value is not string.",
   ValueNotInteger = "Value is not integer.",
   LessThanMinLength = "String length is less than the minimum length of",
-  GreaterThanMaxLength = "String is greater than the maximum length of",
+  GreaterThanMaxLength = "String length is greater than the maximum length of",
   LessThanMinCount = "Array size is less than the minimum count of",
   GreaterThanMaxCount = "Array size is greater than maximum count of",
   LessThanMinValue = "Number is less than the minimum value of",
@@ -25,7 +25,7 @@ export enum DiagnosticMessage {
   NestedNotAllowed = "is not allowed to be nested.",
   DuplicateElement = "has been assigned to another element.",
   InvalidValue = "Invalid value. Valid values:",
-  InvalidDtmiLength = "The maximum length of DTMI is",
+  InvalidDtmiLength = "DTMI exceeds the maximum length of",
   InvalidDtmiPattern = "The pattern of DTMI is dtmi:<path>;<version>. Path may contain only letters, digits, underscore, and colon. Version must be numeric.",
   InvalidDtmiVersion = "Version must be no more than 9 digits and may not start with 0.",
   InvalidDtmiPath = "Path segments are separated by colons. Each path segment must be non-empty string that begins with letter and ends with letter or digit.",
@@ -53,6 +53,8 @@ export class DigitalTwinConstants {
   public static readonly VALUE_SCHEMA_PROPERTY = "valueSchema";
   public static readonly SCHEMA_CLASS = "Schema";
   public static readonly COMPONENT_CLASS = "Component";
+  public static readonly VALUE_SCHEMA_INTEGER = "integer";
+  public static readonly VALUE_SCHEMA_STRING = "string";
   public static readonly LINE_FEED = "\n";
   public static readonly DEFAULT_DELIMITER = ",";
   public static readonly SCHEMA_DELIMITER = "#";

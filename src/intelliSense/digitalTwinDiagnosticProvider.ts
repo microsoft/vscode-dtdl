@@ -3,9 +3,8 @@
 
 import * as parser from "jsonc-parser";
 import * as vscode from "vscode";
-import { Constants } from "../common/constants";
 import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants";
-import { ClassNode, Literal, NodeKind, PropertyNode, ValueSchema } from "./digitalTwinGraph";
+import { ClassNode, Literal, NodeKind, PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
 
@@ -311,7 +310,7 @@ export class DigitalTwinDiagnosticProvider {
           DigitalTwinDiagnosticProvider.validateDtmi(propertyPair.value, true, problems);
           break;
         case DigitalTwinConstants.ENUM_VALUE_PROPERTY:
-          DigitalTwinDiagnosticProvider.validateEnumValue(propertyPair.value, problems);
+          DigitalTwinDiagnosticProvider.validateEnumValue(propertyPair.value, jsonNode, problems);
           break;
         default:
           // validate property is expected
@@ -338,39 +337,30 @@ export class DigitalTwinDiagnosticProvider {
   /**
    * validate enum value according to the value of valueSchema
    * @param jsonNode json node
+   * @param parentObjectNode parent object node
    * @param problems problem collection
    */
-  private static validateEnumValue(jsonNode: parser.Node, problems: Problem[]): void {
-    // get parent json node by twice to get the Enum object node
-    let objectNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
-      jsonNode,
+  private static validateEnumValue(jsonNode: parser.Node, parentObjectNode: parser.Node, problems: Problem[]): void {
+    const enumNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
+      parentObjectNode,
       JsonNodeType.Object,
     );
-    objectNode = IntelliSenseUtility.getParentJsonNodeByType(objectNode, JsonNodeType.Object);
-    if (!objectNode) {
+    if (!enumNode) {
       return;
     }
+    const validTypes: string[] = [DigitalTwinConstants.VALUE_SCHEMA_STRING, DigitalTwinConstants.VALUE_SCHEMA_INTEGER];
     const valueSchemaNode: parser.Node | undefined = IntelliSenseUtility.getPropertyValueOfObjectByKey(
       DigitalTwinConstants.VALUE_SCHEMA_PROPERTY,
-      objectNode,
+      enumNode,
     );
-    // if value schema not exist, missRequiredProperty message will be shown first
     if (!valueSchemaNode) {
+      DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, problems, validTypes);
       return;
     }
-    let enumValueType: string = Constants.EMPTY_STRING;
     const valueSchemaType: string = valueSchemaNode.value as string;
-    switch (valueSchemaType) {
-      case ValueSchema.Integer:
-        enumValueType = Literal.Integer;
-        break;
-      case ValueSchema.String:
-        enumValueType = Literal.String;
-        break;
-      default:
-    }
-    // if value schema is not correct, invalidValue message will be shown first
+    const enumValueType: string = IntelliSenseUtility.getTypeOfEnumValue(valueSchemaType);
     if (!enumValueType) {
+      DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, problems, validTypes);
       return;
     }
     const dummyNode: PropertyNode = {
@@ -547,12 +537,17 @@ export class DigitalTwinDiagnosticProvider {
    * @param problems problem collection
    */
   private static validateDtmi(jsonNode: parser.Node, isPartitionClass: boolean, problems: Problem[]): void {
+    if (jsonNode.type !== JsonNodeType.String) {
+      const isContainer: boolean = IntelliSenseUtility.isContainerNode(jsonNode);
+      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.ValueNotString, isContainer);
+      return;
+    }
     const id: string = jsonNode.value as string;
     const length: number = isPartitionClass
       ? DigitalTwinConstants.PARTITION_CLASS_ID_MAX_LENGTH
       : DigitalTwinConstants.DTMI_MAX_LENGTH;
     if (id.length > length) {
-      const message: string = `${DiagnosticMessage.InvalidDtmiLength} ${length} characters.`;
+      const message: string = `${DiagnosticMessage.InvalidDtmiLength} ${length}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
       return;
     }
