@@ -69,14 +69,6 @@ export enum NodeKind {
 }
 
 /**
- * Value schema kind
- */
-export enum ValueSchema {
-  Integer = "integer",
-  String = "string",
-}
-
-/**
  * Element kind of graph json
  */
 enum GraphElement {
@@ -128,13 +120,15 @@ export class DigitalTwinGraph {
   private propertyNodes: Map<string, PropertyNode>;
   private dtdlContext: Map<string, string>;
   private baseClass: string;
-  private partitionClass: string[];
+  private partitionClasses: string[];
+  private enumValueTypes: Set<string>;
   private constructor() {
     this.classNodes = new Map<string, ClassNode>();
     this.propertyNodes = new Map<string, PropertyNode>();
     this.dtdlContext = new Map<string, string>();
     this.baseClass = Constants.EMPTY_STRING;
-    this.partitionClass = [];
+    this.partitionClasses = [];
+    this.enumValueTypes = new Set<string>();
   }
 
   /**
@@ -149,7 +143,14 @@ export class DigitalTwinGraph {
    * @param name class name
    */
   public isPartitionClass(name: string): boolean {
-    return this.partitionClass.includes(this.getNodeId(name));
+    return this.partitionClasses.includes(this.getNodeId(name));
+  }
+
+  /**
+   * get enum value types
+   */
+  public getEnumValueTypes(): Set<string> {
+    return this.enumValueTypes;
   }
 
   /**
@@ -253,6 +254,19 @@ export class DigitalTwinGraph {
   }
 
   /**
+   * get node name from dtmi id
+   * @param id dtmi id
+   */
+  public getNodeName(id: string): string {
+    const start: number = id.lastIndexOf(DigitalTwinConstants.DTMI_PATH_DELIMITER);
+    const end: number = id.lastIndexOf(DigitalTwinConstants.DTMI_VERSION_DELIMITER);
+    if (start !== -1 && end !== -1) {
+      return id.slice(start + 1, end);
+    }
+    return Constants.EMPTY_STRING;
+  }
+
+  /**
    * init DigitalTwin graph
    * @param context extension context
    */
@@ -274,6 +288,7 @@ export class DigitalTwinGraph {
     this.parse(graphJson);
     this.inheritProperties();
     this.addSentinelNodes();
+    this.addEnumValueTypes();
   }
 
   /**
@@ -288,7 +303,7 @@ export class DigitalTwinGraph {
             this.baseClass = graphJson[key] as string;
             break;
           case GraphElement.PartitionClass:
-            this.partitionClass = graphJson[key] as string[];
+            this.partitionClasses = graphJson[key] as string[];
             break;
           case GraphElement.Class:
             for (const item of graphJson[key]) {
@@ -360,7 +375,7 @@ export class DigitalTwinGraph {
       name: Constants.EMPTY_STRING,
       nodeKind: Constants.EMPTY_STRING,
       constraint: {
-        in: this.partitionClass,
+        in: this.partitionClasses,
       },
     };
     this.propertyNodes.set(entryNode.id, entryNode);
@@ -370,6 +385,18 @@ export class DigitalTwinGraph {
       name: DigitalTwinConstants.LANG_STRING,
     };
     this.classNodes.set(languageNode.id, languageNode);
+  }
+
+  /**
+   * add enum value types by value schema
+   */
+  private addEnumValueTypes(): void {
+    // enum value type depends on value schema
+    const valueSchema: PropertyNode | undefined = this.getPropertyNode(DigitalTwinConstants.VALUE_SCHEMA_PROPERTY);
+    if (!valueSchema || !valueSchema.constraint.in) {
+      return;
+    }
+    valueSchema.constraint.in.forEach((instance) => this.enumValueTypes.add(this.getNodeName(instance)));
   }
 
   /**

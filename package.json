@@ -25,6 +25,7 @@
   ],
   "activationEvents": [
     "onCommand:vscode-dtdl.createInterface",
+    "onLanguage:json",
     "workspaceContains:**/*.json"
   ],
   "main": "./dist/extension",
