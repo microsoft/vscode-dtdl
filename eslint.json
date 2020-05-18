@@ -21,6 +21,7 @@
     "rules": {
         "no-unused-vars": "warn",
         "no-empty": "warn",
-        "no-prototype-builtins": "warn"
+        "no-prototype-builtins": "warn",
+        "no-undef": "warn"
     }
 }
