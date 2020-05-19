@@ -19,8 +19,7 @@ interface Suggestion {
 /**
  * Completion item provider for DigitalTwin IntelliSense
  */
-export class DigitalTwinCompletionItemProvider
-  implements vscode.CompletionItemProvider {
+export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemProvider {
   /**
    * get text for json parser after completion
    * @param document text document
@@ -36,21 +35,22 @@ export class DigitalTwinCompletionItemProvider
     return DigitalTwinCompletionItemProvider.completeText(text, offset);
   }
 
-  private static isAtPropertyKey(
-    document: vscode.TextDocument, position: vscode.Position): boolean {
+  private static isAtPropertyKey(document: vscode.TextDocument, position: vscode.Position): boolean {
     const text: string = document.getText();
 
     const textNode: parser.Node = parser.parseTree(text);
 
-    const stringNode: parser.Node | undefined =
-      parser.findNodeAtOffset(textNode, document.offsetAt(position));
+    const stringNode: parser.Node | undefined = parser.findNodeAtOffset(textNode, document.offsetAt(position));
     if (!stringNode) {
       return false;
     }
 
     const scanner: parser.JSONScanner = parser.createScanner(text, true);
-    const range: vscode.Range =
-      DigitalTwinCompletionItemProvider.evaluateOverwriteRange(document, position, stringNode);
+    const range: vscode.Range = DigitalTwinCompletionItemProvider.evaluateOverwriteRange(
+      document,
+      position,
+      stringNode
+    );
     scanner.setPosition(document.offsetAt(range.end));
     const token: parser.SyntaxKind = scanner.scan();
     return token === parser.SyntaxKind.ColonToken;
@@ -61,7 +61,7 @@ export class DigitalTwinCompletionItemProvider
       const edit: parser.Edit = {
         offset,
         length: 1,
-        content: Constants.COMPLETION_TRIGGER + DigitalTwinConstants.DEFAULT_DELIMITER,
+        content: Constants.COMPLETION_TRIGGER + DigitalTwinConstants.DEFAULT_DELIMITER
       };
       text = parser.applyEdits(text, [edit]);
     }
@@ -91,26 +91,35 @@ export class DigitalTwinCompletionItemProvider
     return suggestions;
   }
 
-  private static suggestProperty(
-    objectNode: parser.Node,
-    suggestWithValue: boolean,
-    suggestions: Suggestion[],
-  ): void {
+  private static suggestProperty(objectNode: parser.Node, suggestWithValue: boolean, suggestions: Suggestion[]): void {
     const existingProperties: Set<string> = DigitalTwinCompletionItemProvider.getExistingProperties(objectNode);
 
-    const typeClassNode: ClassNode|undefined = DigitalTwinCompletionItemProvider.getObjectType(objectNode);
-    const isTypeInferableButRequired: boolean =
-      DigitalTwinCompletionItemProvider.isTypeInferableButRequired(objectNode, existingProperties);
+    const typeClassNode: ClassNode | undefined = DigitalTwinCompletionItemProvider.getObjectType(objectNode);
+    const isTypeInferableButRequired: boolean = DigitalTwinCompletionItemProvider.isTypeInferableButRequired(
+      objectNode,
+      existingProperties
+    );
     if (!typeClassNode || isTypeInferableButRequired) {
       return DigitalTwinCompletionItemProvider.AddTypePropertySuggestion(
-        existingProperties, true, suggestWithValue, suggestions);
+        existingProperties,
+        true,
+        suggestWithValue,
+        suggestions
+      );
     } else {
       if (IntelliSenseUtility.isLanguageString(typeClassNode)) {
         return DigitalTwinCompletionItemProvider.AddLanguageCodePropertySuggestion(
-          existingProperties, suggestWithValue, suggestions);
+          existingProperties,
+          suggestWithValue,
+          suggestions
+        );
       }
-      return DigitalTwinCompletionItemProvider.
-        suggestPropertiesCandidates(typeClassNode, existingProperties, suggestWithValue, suggestions);
+      return DigitalTwinCompletionItemProvider.suggestPropertiesCandidates(
+        typeClassNode,
+        existingProperties,
+        suggestWithValue,
+        suggestions
+      );
     }
   }
 
@@ -119,32 +128,38 @@ export class DigitalTwinCompletionItemProvider
       return false;
     }
 
-    const outerPropertyNode: PropertyNode|undefined =
-      DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
+    const outerPropertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getOuterPropertyNode(
+      objectNode
+    );
     if (!outerPropertyNode || outerPropertyNode.type === Literal.LangString) {
       return false;
     }
 
     // If type can be inferred but not allowed to be inferred, type is required.
-    const typeAllowedToBeInferred: boolean = (outerPropertyNode.isTypeInferable) as boolean;
+    const typeAllowedToBeInferred: boolean = outerPropertyNode.isTypeInferable as boolean;
     return !typeAllowedToBeInferred;
   }
 
   private static AddLanguageCodePropertySuggestion(
     existingPropertyNames: Set<string>,
     suggestWithValue: boolean,
-    suggestions: Suggestion[],
-    ): void {
+    suggestions: Suggestion[]
+  ): void {
     for (const code of LANGUAGE_CODE) {
       const dummyLanguageCodeNode: PropertyNode = {
         id: DigitalTwinConstants.DUMMY,
         name: code,
         type: Literal.String,
         nodeKind: NodeKind.Literal,
-        constraint: {},
+        constraint: {}
       };
       DigitalTwinCompletionItemProvider.AddPropertySuggestion(
-        existingPropertyNames, dummyLanguageCodeNode, false, suggestWithValue, suggestions);
+        existingPropertyNames,
+        dummyLanguageCodeNode,
+        false,
+        suggestWithValue,
+        suggestions
+      );
     }
   }
 
@@ -159,7 +174,7 @@ export class DigitalTwinCompletionItemProvider
         continue;
       }
 
-      const propertyPair: PropertyPair|undefined = IntelliSenseUtility.parseProperty(child);
+      const propertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(child);
       if (propertyPair) {
         const propertyName = propertyPair.name.value;
         existingProperties.add(propertyName);
@@ -168,9 +183,11 @@ export class DigitalTwinCompletionItemProvider
     return existingProperties;
   }
 
-  private static getObjectType(objectNode: parser.Node): ClassNode|undefined {
-    const typeProperty: parser.Node|undefined =
-      IntelliSenseUtility.getPropertyValueOfObjectByKey(DigitalTwinConstants.TYPE, objectNode);
+  private static getObjectType(objectNode: parser.Node): ClassNode | undefined {
+    const typeProperty: parser.Node | undefined = IntelliSenseUtility.getPropertyValueOfObjectByKey(
+      DigitalTwinConstants.TYPE,
+      objectNode
+    );
     if (typeProperty) {
       return IntelliSenseUtility.getClassNode(typeProperty.value);
     }
@@ -178,9 +195,10 @@ export class DigitalTwinCompletionItemProvider
     return DigitalTwinCompletionItemProvider.getObjectTypeByOuterProperty(objectNode);
   }
 
-  private static getObjectTypeByOuterProperty(objectNode: parser.Node): ClassNode|undefined {
-    const outerPropertyNode: PropertyNode|undefined =
-      DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
+  private static getObjectTypeByOuterProperty(objectNode: parser.Node): ClassNode | undefined {
+    const outerPropertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getOuterPropertyNode(
+      objectNode
+    );
     if (!outerPropertyNode) {
       return undefined;
     }
@@ -197,8 +215,8 @@ export class DigitalTwinCompletionItemProvider
     propertyNode: PropertyNode,
     isRequired: boolean,
     suggestWithValue: boolean,
-    suggestions: Suggestion[],
-    ): void {
+    suggestions: Suggestion[]
+  ): void {
     if (existingPropertyNames.has(propertyNode.name)) {
       return;
     }
@@ -206,7 +224,7 @@ export class DigitalTwinCompletionItemProvider
       isProperty: true,
       label: DigitalTwinCompletionItemProvider.formatLabel(propertyNode.name, isRequired),
       insertText: DigitalTwinCompletionItemProvider.getInsertedTextForProperty(propertyNode, suggestWithValue),
-      includeSeparator: suggestWithValue,
+      includeSeparator: suggestWithValue
     });
   }
 
@@ -214,17 +232,22 @@ export class DigitalTwinCompletionItemProvider
     existingPropertyNames: Set<string>,
     isRequired: boolean,
     suggestWithValue: boolean,
-    suggestions: Suggestion[],
-    ): void {
+    suggestions: Suggestion[]
+  ): void {
     const dummyTypeNode: PropertyNode = {
       id: DigitalTwinConstants.DUMMY,
       name: DigitalTwinConstants.TYPE,
       type: Constants.EMPTY_STRING,
       nodeKind: NodeKind.Literal,
-      constraint: {},
+      constraint: {}
     };
     DigitalTwinCompletionItemProvider.AddPropertySuggestion(
-      existingPropertyNames, dummyTypeNode, isRequired, suggestWithValue, suggestions);
+      existingPropertyNames,
+      dummyTypeNode,
+      isRequired,
+      suggestWithValue,
+      suggestions
+    );
   }
 
   /**
@@ -250,21 +273,21 @@ export class DigitalTwinCompletionItemProvider
 
     if (propertyNode.nodeKind === NodeKind.Literal) {
       switch (propertyNode.type) {
-          case Literal.Boolean:
-            value = "${1:false}";
-            break;
-          case Literal.Integer:
-            value = "${1:0}";
-            break;
-          case Literal.String:
-          case Literal.LangString:
-            value = '"$1"';
-            break;
-        }
+        case Literal.Boolean:
+          value = "${1:false}";
+          break;
+        case Literal.Integer:
+          value = "${1:0}";
+          break;
+        case Literal.String:
+        case Literal.LangString:
+          value = '"$1"';
+          break;
+      }
     } else if (propertyNode.isPlural) {
       value = "[$1]";
     } else {
-      const typeClassNode: ClassNode|undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
+      const typeClassNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
       if (typeClassNode && IntelliSenseUtility.isObjectClass(typeClassNode)) {
         value = "{$1}";
       }
@@ -277,43 +300,61 @@ export class DigitalTwinCompletionItemProvider
     typeClassNode: ClassNode,
     existingPropertyNames: Set<string>,
     suggestWithValue: boolean,
-    suggestions: Suggestion[],
-    ): void {
+    suggestions: Suggestion[]
+  ): void {
     DigitalTwinCompletionItemProvider.AddIdPropertySuggestion(
-      typeClassNode, existingPropertyNames, suggestWithValue, suggestions);
+      typeClassNode,
+      existingPropertyNames,
+      suggestWithValue,
+      suggestions
+    );
 
-    DigitalTwinCompletionItemProvider.
-      suggestRemainingProperties(typeClassNode, existingPropertyNames, suggestWithValue, suggestions);
+    DigitalTwinCompletionItemProvider.suggestRemainingProperties(
+      typeClassNode,
+      existingPropertyNames,
+      suggestWithValue,
+      suggestions
+    );
   }
 
   private static AddIdPropertySuggestion(
     typeClassNode: ClassNode,
     existingPropertyNames: Set<string>,
     suggestWithValue: boolean,
-    suggestions: Suggestion[],
-    ): void {
+    suggestions: Suggestion[]
+  ): void {
     const isPartitionClass: boolean = IntelliSenseUtility.isPartitionClass(typeClassNode.name);
     const dummyIdNode: PropertyNode = {
       id: DigitalTwinConstants.DUMMY,
       name: DigitalTwinConstants.ID,
       type: Literal.String,
       nodeKind: NodeKind.Literal,
-      constraint: {},
+      constraint: {}
     };
     DigitalTwinCompletionItemProvider.AddPropertySuggestion(
-      existingPropertyNames, dummyIdNode, isPartitionClass, suggestWithValue, suggestions);
+      existingPropertyNames,
+      dummyIdNode,
+      isPartitionClass,
+      suggestWithValue,
+      suggestions
+    );
   }
 
   private static suggestRemainingProperties(
     typeClassNode: ClassNode,
     existingPropertyNames: Set<string>,
     suggestWithValue: boolean,
-    suggestions: Suggestion[],
-    ): void {
+    suggestions: Suggestion[]
+  ): void {
     const propertiesCandidates: PropertyNode[] = IntelliSenseUtility.getPropertiesOfClassNode(typeClassNode);
     for (const propertyCandidate of propertiesCandidates) {
-      DigitalTwinCompletionItemProvider.AddPropertySuggestion(existingPropertyNames,
-        propertyCandidate, propertyCandidate.isRequired as boolean, suggestWithValue, suggestions);
+      DigitalTwinCompletionItemProvider.AddPropertySuggestion(
+        existingPropertyNames,
+        propertyCandidate,
+        propertyCandidate.isRequired as boolean,
+        suggestWithValue,
+        suggestions
+      );
     }
   }
 
@@ -329,8 +370,7 @@ export class DigitalTwinCompletionItemProvider
     if (propertyName === DigitalTwinConstants.TYPE) {
       possibleValues = DigitalTwinCompletionItemProvider.suggestTypeValues(objectNode);
     } else {
-      possibleValues =
-        DigitalTwinCompletionItemProvider.suggestNonTypeValues(propertyName, objectNode);
+      possibleValues = DigitalTwinCompletionItemProvider.suggestNonTypeValues(propertyName, objectNode);
     }
 
     for (const value of possibleValues) {
@@ -338,19 +378,21 @@ export class DigitalTwinCompletionItemProvider
         isProperty: false,
         label: value,
         insertText: `"${value}"`,
-        includeSeparator: true,
+        includeSeparator: true
       });
     }
   }
 
-  private static getOuterPropertyNode(objectNode: parser.Node): PropertyNode|undefined {
+  private static getOuterPropertyNode(objectNode: parser.Node): PropertyNode | undefined {
     const outerPropertyName: string = IntelliSenseUtility.getOuterPropertyName(objectNode);
     if (!outerPropertyName) {
       return undefined;
     }
 
-    const outerPropertyObjectNode: parser.Node|undefined =
-      IntelliSenseUtility.getParentJsonNodeByType(objectNode, JsonNodeType.Object);
+    const outerPropertyObjectNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
+      objectNode,
+      JsonNodeType.Object
+    );
     if (!outerPropertyObjectNode) {
       return undefined;
     }
@@ -361,7 +403,7 @@ export class DigitalTwinCompletionItemProvider
   private static suggestTypeValues(objectNode: parser.Node): string[] {
     const valueCandidates: string[] = [];
 
-    const outerPropertyNode: PropertyNode|undefined =
+    const outerPropertyNode: PropertyNode | undefined =
       DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode) || IntelliSenseUtility.getEntryNode();
     if (!outerPropertyNode) {
       return valueCandidates;
@@ -377,18 +419,20 @@ export class DigitalTwinCompletionItemProvider
   private static suggestNonTypeValues(propertyName: string, objectNode: parser.Node): string[] {
     const valueCandidates: string[] = [];
 
-    const propertyNode: PropertyNode|undefined =
-      DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(propertyName, objectNode);
+    const propertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(
+      propertyName,
+      objectNode
+    );
 
     if (propertyNode?.constraint.in) {
-        for (const instance of propertyNode.constraint.in) {
-          valueCandidates.push(IntelliSenseUtility.resolveNodeName(instance));
-        }
-        return valueCandidates;
+      for (const instance of propertyNode.constraint.in) {
+        valueCandidates.push(IntelliSenseUtility.resolveNodeName(instance));
+      }
+      return valueCandidates;
     }
 
     if (propertyNode?.type) {
-      const typeClassNode: ClassNode|undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
+      const typeClassNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
       if (typeClassNode) {
         return IntelliSenseUtility.getInstancesOfClassNode(typeClassNode);
       }
@@ -399,9 +443,9 @@ export class DigitalTwinCompletionItemProvider
 
   private static getPropertyNodeByPropertyName(
     propertyName: string,
-    objectNode: parser.Node,
-    ): PropertyNode|undefined {
-    let propertyNode: PropertyNode|undefined = IntelliSenseUtility.getPropertyNode(propertyName);
+    objectNode: parser.Node
+  ): PropertyNode | undefined {
+    let propertyNode: PropertyNode | undefined = IntelliSenseUtility.getPropertyNode(propertyName);
 
     if (!propertyNode) {
       // property name is shared by multiple property.
@@ -413,9 +457,9 @@ export class DigitalTwinCompletionItemProvider
 
   private static getPropertyNodeByOuterProperty(
     objectNode: parser.Node,
-    propertyName: string,
-    ): PropertyNode|undefined {
-    const outerPropertyClassNode: ClassNode|undefined = DigitalTwinCompletionItemProvider.getObjectType(objectNode);
+    propertyName: string
+  ): PropertyNode | undefined {
+    const outerPropertyClassNode: ClassNode | undefined = DigitalTwinCompletionItemProvider.getObjectType(objectNode);
     if (outerPropertyClassNode) {
       const properties: PropertyNode[] = IntelliSenseUtility.getPropertiesOfClassNode(outerPropertyClassNode);
       for (const property of properties) {
@@ -440,7 +484,7 @@ export class DigitalTwinCompletionItemProvider
     suggestion: Suggestion,
     position: vscode.Position,
     range: vscode.Range,
-    separator: string,
+    separator: string
   ): vscode.CompletionItem {
     const insertTextTemp = suggestion.insertText + (suggestion.includeSeparator ? separator : Constants.EMPTY_STRING);
     const completionItem: vscode.CompletionItem = {
@@ -448,7 +492,7 @@ export class DigitalTwinCompletionItemProvider
       kind: suggestion.isProperty ? vscode.CompletionItemKind.Property : vscode.CompletionItemKind.Value,
       insertText: new vscode.SnippetString(insertTextTemp),
       // the start of range should be after position, otherwise completion item will not be shown
-      range: new vscode.Range(position, range.end),
+      range: new vscode.Range(position, range.end)
     };
     if (position.isAfter(range.start)) {
       completionItem.additionalTextEdits = [vscode.TextEdit.delete(new vscode.Range(range.start, position))];
@@ -465,20 +509,13 @@ export class DigitalTwinCompletionItemProvider
   private static evaluateOverwriteRange(
     document: vscode.TextDocument,
     position: vscode.Position,
-    node: parser.Node,
+    node: parser.Node
   ): vscode.Range {
     let range: vscode.Range;
-    if (
-      node.type === JsonNodeType.String ||
-      node.type === JsonNodeType.Number ||
-      node.type === JsonNodeType.Boolean
-    ) {
+    if (node.type === JsonNodeType.String || node.type === JsonNodeType.Number || node.type === JsonNodeType.Boolean) {
       range = IntelliSenseUtility.getNodeRange(document, node);
     } else {
-      const word: string = DigitalTwinCompletionItemProvider.getCurrentWord(
-        document,
-        position,
-      );
+      const word: string = DigitalTwinCompletionItemProvider.getCurrentWord(document, position);
       const start: number = document.offsetAt(position) - word.length;
       range = new vscode.Range(document.positionAt(start), position);
     }
@@ -490,16 +527,10 @@ export class DigitalTwinCompletionItemProvider
    * @param document text document
    * @param position position
    */
-  private static getCurrentWord(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-  ): string {
+  private static getCurrentWord(document: vscode.TextDocument, position: vscode.Position): string {
     let i: number = position.character - 1;
     const text: string = document.lineAt(position.line).text;
-    while (
-      i >= 0 &&
-      DigitalTwinConstants.WORD_STOP.indexOf(text.charAt(i)) === -1
-    ) {
+    while (i >= 0 && DigitalTwinConstants.WORD_STOP.indexOf(text.charAt(i)) === -1) {
       i--;
     }
     return text.slice(i + 1, position.character);
@@ -529,17 +560,20 @@ export class DigitalTwinCompletionItemProvider
     document: vscode.TextDocument,
     position: vscode.Position,
     stringNode: parser.Node,
-    suggestions: Suggestion[],
-    ): vscode.CompletionItem[] {
-    const range: vscode.Range =
-      DigitalTwinCompletionItemProvider.evaluateOverwriteRange(document, position, stringNode);
+    suggestions: Suggestion[]
+  ): vscode.CompletionItem[] {
+    const range: vscode.Range = DigitalTwinCompletionItemProvider.evaluateOverwriteRange(
+      document,
+      position,
+      stringNode
+    );
     const separator: string = DigitalTwinCompletionItemProvider.evaluateSeparatorAfter(
       document.getText(),
-      document.offsetAt(range.end),
+      document.offsetAt(range.end)
     );
 
-    const completionItems: vscode.CompletionItem[] = suggestions.map((s) =>
-      DigitalTwinCompletionItemProvider.createCompletionItem(s, position, range, separator),
+    const completionItems: vscode.CompletionItem[] = suggestions.map(s =>
+      DigitalTwinCompletionItemProvider.createCompletionItem(s, position, range, separator)
     );
     return completionItems;
   }
@@ -550,14 +584,15 @@ export class DigitalTwinCompletionItemProvider
    * @param required required properties
    */
   private static formatLabel(jsonPropertyKey: string, isRequired: boolean): string {
-    const requiredInfo: string =
-      isRequired ? ` ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}` : Constants.EMPTY_STRING;
+    const requiredInfo: string = isRequired
+      ? ` ${DigitalTwinConstants.REQUIRED_PROPERTY_LABEL}`
+      : Constants.EMPTY_STRING;
     return `${jsonPropertyKey}` + requiredInfo;
   }
 
   public provideCompletionItems(
     document: vscode.TextDocument,
-    position: vscode.Position,
+    position: vscode.Position
   ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
     if (!IntelliSenseUtility.isGraphInitialized()) {
       return undefined;
@@ -569,8 +604,10 @@ export class DigitalTwinCompletionItemProvider
       return undefined;
     }
 
-    const stringNode: parser.Node | undefined =
-      parser.findNodeAtOffset(modelContent.jsonNode, document.offsetAt(position));
+    const stringNode: parser.Node | undefined = parser.findNodeAtOffset(
+      modelContent.jsonNode,
+      document.offsetAt(position)
+    );
     if (!stringNode || stringNode.type !== JsonNodeType.String) {
       return undefined;
     }

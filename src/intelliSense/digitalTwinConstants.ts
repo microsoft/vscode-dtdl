@@ -28,7 +28,7 @@ export enum DiagnosticMessage {
   InvalidDtmiLength = "DTMI exceeds the maximum length of",
   InvalidDtmiPattern = "The pattern of DTMI is dtmi:<path>;<version>. Path may contain only letters, digits, underscore, and colon. Version must be numeric.",
   InvalidDtmiVersion = "Version must be no more than 9 digits and may not start with 0.",
-  InvalidDtmiPath = "Path segments are separated by colons. Each path segment must be non-empty string that begins with letter and ends with letter or digit.",
+  InvalidDtmiPath = "Path segments are separated by colons. Each path segment must be non-empty string that begins with letter and ends with letter or digit."
 }
 
 /**
@@ -64,6 +64,6 @@ export class DigitalTwinConstants {
   public static readonly DTMI_PATTERN_REGEX = new RegExp("^dtmi:[A-Za-z0-9_:]*;[0-9]+$");
   public static readonly DTMI_VERSION_REGEX = new RegExp(";[1-9][0-9]{0,8}$");
   public static readonly DTMI_PATH_REGEX = new RegExp(
-    "^dtmi:[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$",
+    "^dtmi:[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?(?::[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)*;[1-9][0-9]{0,8}$"
   );
 }

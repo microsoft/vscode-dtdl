@@ -57,7 +57,7 @@ export enum Literal {
   LangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
   String = "http://www.w3.org/2001/XMLSchema#string",
   Integer = "http://www.w3.org/2001/XMLSchema#integer",
-  Boolean = "http://www.w3.org/2001/XMLSchema#boolean",
+  Boolean = "http://www.w3.org/2001/XMLSchema#boolean"
 }
 
 /**
@@ -65,7 +65,7 @@ export enum Literal {
  */
 export enum NodeKind {
   Literal = "Literal",
-  IRI = "IRI",
+  IRI = "IRI"
 }
 
 /**
@@ -75,7 +75,7 @@ enum GraphElement {
   BaseClass = "baseClass",
   PartitionClass = "partitionClass",
   Class = "class",
-  Property = "property",
+  Property = "property"
 }
 
 /**
@@ -103,7 +103,7 @@ export class DigitalTwinGraph {
    */
   private static async resolveDefinition(context: vscode.ExtensionContext, fileName: string): Promise<any> {
     const filePath: string = context.asAbsolutePath(
-      path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName),
+      path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName)
     );
     return await Utility.getJsonContent(filePath);
   }
@@ -375,14 +375,14 @@ export class DigitalTwinGraph {
       name: Constants.EMPTY_STRING,
       nodeKind: Constants.EMPTY_STRING,
       constraint: {
-        in: this.partitionClasses,
-      },
+        in: this.partitionClasses
+      }
     };
     this.propertyNodes.set(entryNode.id, entryNode);
     // language node
     const languageNode: ClassNode = {
       id: Literal.LangString,
-      name: DigitalTwinConstants.LANG_STRING,
+      name: DigitalTwinConstants.LANG_STRING
     };
     this.classNodes.set(languageNode.id, languageNode);
   }
@@ -396,7 +396,7 @@ export class DigitalTwinGraph {
     if (!valueSchema || !valueSchema.constraint.in) {
       return;
     }
-    valueSchema.constraint.in.forEach((instance) => this.enumValueTypes.add(this.getNodeName(instance)));
+    valueSchema.constraint.in.forEach(instance => this.enumValueTypes.add(this.getNodeName(instance)));
   }
 
   /**
