@@ -155,16 +155,24 @@ export class IntelliSenseUtility {
   }
 
   /**
+   * get type of enum value
+   * @param valueSchema value schema
+   */
+  public static getTypeOfEnumValue(valueSchema: string): string {
+    const enumValueTypes: Set<string> = IntelliSenseUtility.graph.getEnumValueTypes();
+    if (!enumValueTypes.has(valueSchema)) {
+      return Constants.EMPTY_STRING;
+    }
+    const key: string = valueSchema.charAt(0).toUpperCase() + valueSchema.slice(1);
+    return Literal[key as keyof typeof Literal];
+  }
+
+  /**
    * resolve node name from dtmi id
    * @param id dtmi id
    */
   public static resolveNodeName(id: string): string {
-    const start: number = id.lastIndexOf(DigitalTwinConstants.DTMI_PATH_DELIMITER);
-    const end: number = id.lastIndexOf(DigitalTwinConstants.DTMI_VERSION_DELIMITER);
-    if (start !== -1 && end !== -1) {
-      return id.slice(start + 1, end);
-    }
-    return Constants.EMPTY_STRING;
+    return IntelliSenseUtility.graph.getNodeName(id);
   }
 
   /**
@@ -195,6 +203,14 @@ export class IntelliSenseUtility {
    */
   public static isLanguageString(classNode: ClassNode): boolean {
     return classNode.id === Literal.LangString;
+  }
+
+  /**
+   * check if json node is a container node
+   * @param node json node
+   */
+  public static isContainerNode(node: parser.Node): boolean {
+    return node.type === JsonNodeType.Array || node.type === JsonNodeType.Object;
   }
 
   /**
@@ -297,7 +313,7 @@ export class IntelliSenseUtility {
       return Constants.EMPTY_STRING;
     }
 
-    const outerPropertyPair: PropertyPair|undefined = IntelliSenseUtility.parseProperty(outerProperty);
+    const outerPropertyPair: PropertyPair | undefined = IntelliSenseUtility.parseProperty(outerProperty);
     return outerPropertyPair?.name.value || Constants.EMPTY_STRING;
   }
 
@@ -329,7 +345,7 @@ export class IntelliSenseUtility {
   private static resolveVersion(context: string): number {
     const groups: RegExpMatchArray | null = context.match(DigitalTwinConstants.CONTEXT_REGEX);
     if (groups && groups.length === 2) {
-      return parseInt(groups[1], 10);
+      return parseInt(groups[1], Constants.DEFAULT_RADIX);
     }
     return 0;
   }

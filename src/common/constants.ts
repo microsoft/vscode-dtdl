@@ -10,6 +10,7 @@ export class Constants {
   public static readonly EMPTY_STRING = "";
   public static readonly COMPLETION_TRIGGER = '"';
   public static readonly JSON_SPACE = 2;
+  public static readonly DEFAULT_RADIX = 10;
   public static readonly DEFAULT_TIMER_MS = 1000;
   public static readonly RESOURCE_FOLDER = "resources";
   public static readonly TEMPLATE_FOLDER = "templates";

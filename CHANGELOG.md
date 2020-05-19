@@ -1,9 +1,13 @@
 # Change Log
 
-All notable changes to the "iot-pnp" extension will be documented in this file.
+All notable changes to the "vscode-dtdl" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## Version 0.1.0
 
-## [Unreleased]
+- Release date: May 19, 2020
 
-- Initial release
+### Added
+
+- Syntax validation.
+- Intellisense to help you with the language syntax (including auto-completion).
+- Create interfaces from the command palette.
