@@ -15,7 +15,7 @@ import { UIConstants } from "./uiConstants";
 export enum MessageType {
   Info,
   Warn,
-  Error,
+  Error
 }
 
 /**
@@ -65,11 +65,11 @@ export class UI {
     // select folder or browse
     let items: vscode.QuickPickItem[] = [];
     if (workspaceFolders) {
-      items = workspaceFolders.map((folder) => {
+      items = workspaceFolders.map(folder => {
         const fsPath: string = folder.uri.fsPath;
         return {
           label: path.basename(fsPath),
-          description: fsPath,
+          description: fsPath
         };
       });
     }
@@ -86,7 +86,7 @@ export class UI {
    */
   public static async inputModelName(label: string, type: ModelType, folder: string): Promise<string> {
     const placeHolder = `${type} name`;
-    const validateInput = async (name: string) => {
+    const validateInput = async (name: string): Promise<string | undefined> => {
       return await Utility.validateModelName(name, type, folder);
     };
     return await UI.showInputBox(label, placeHolder, validateInput);
@@ -100,7 +100,7 @@ export class UI {
   private static async showQuickPick(label: string, items: vscode.QuickPickItem[]): Promise<vscode.QuickPickItem> {
     const options: vscode.QuickPickOptions = {
       placeHolder: label,
-      ignoreFocusOut: true,
+      ignoreFocusOut: true
     };
     const selected: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items, options);
     if (!selected) {
@@ -120,7 +120,7 @@ export class UI {
       defaultUri,
       canSelectFiles: false,
       canSelectFolders: true,
-      canSelectMany: false,
+      canSelectMany: false
     };
     const selected: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
     if (!selected || !selected.length) {
@@ -142,14 +142,14 @@ export class UI {
     placeHolder: string,
     validateInput?: (s: string) => string | undefined | Promise<string | undefined>,
     value?: string,
-    ignoreFocusOut: boolean = true,
+    ignoreFocusOut = true
   ): Promise<string> {
     const options: vscode.InputBoxOptions = {
       prompt: label,
       placeHolder,
       validateInput,
       value,
-      ignoreFocusOut,
+      ignoreFocusOut
     };
     const input: string | undefined = await vscode.window.showInputBox(options);
     if (!input) {

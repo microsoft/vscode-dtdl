@@ -24,7 +24,7 @@ export class NSAT {
    * ask user to take survey
    * @param context extension context
    */
-  public async takeSurvey(context: ExtensionContext) {
+  public async takeSurvey(context: ExtensionContext): Promise<void> {
     const globalState: Memento = context.globalState;
     if (!globalState) {
       return;
@@ -53,41 +53,41 @@ export class NSAT {
     }
     const take = {
       title: "Take Survey",
-      run: async () => {
+      run: async (): Promise<void> => {
         this.telemetryClient.sendEvent("nsat.survey/takeShortSurvey");
         commands.executeCommand(
           "vscode.open",
           Uri.parse(
-            `${this.surveyUrl}?o=${encodeURIComponent(process.platform)}&v=${encodeURIComponent(extensionVersion)}`,
-          ),
+            `${this.surveyUrl}?o=${encodeURIComponent(process.platform)}&v=${encodeURIComponent(extensionVersion)}`
+          )
         );
         await globalState.update(IS_CANDIDATE_KEY, false);
         await globalState.update(SKIP_VERSION_KEY, extensionVersion);
         await globalState.update(TAKE_SURVEY_DATE_KEY, date);
-      },
+      }
     };
     const remind = {
       title: "Remind Me Later",
-      run: async () => {
+      run: async (): Promise<void> => {
         this.telemetryClient.sendEvent("nsat.survey/remindMeLater");
         await globalState.update(SESSION_COUNT_KEY, 0);
-      },
+      }
     };
     const never = {
       title: "Don't Show Again",
-      run: async () => {
+      run: async (): Promise<void> => {
         this.telemetryClient.sendEvent("nsat.survey/dontShowAgain");
         await globalState.update(IS_CANDIDATE_KEY, false);
         await globalState.update(SKIP_VERSION_KEY, extensionVersion);
         await globalState.update(DONT_SHOW_DATE_KEY, date);
-      },
+      }
     };
     this.telemetryClient.sendEvent("nsat.survey/userAsked");
     const button = await window.showInformationMessage(
       "Do you mind taking a quick feedback survey about DTDL Extension for VS Code?",
       take,
       remind,
-      never,
+      never
     );
     await (button || remind).run();
   }

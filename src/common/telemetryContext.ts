@@ -9,7 +9,7 @@ import { UserCancelledError } from "./userCancelledError";
 enum OperationResult {
   Success = "Succeeded",
   Fail = "Failed",
-  Cancel = "Cancelled",
+  Cancel = "Cancelled"
 }
 
 /**

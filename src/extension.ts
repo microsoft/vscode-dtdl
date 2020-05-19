@@ -16,32 +16,83 @@ import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnos
 import { IntelliSenseUtility, ModelContent } from "./intelliSense/intelliSenseUtility";
 import { MessageType, UI } from "./view/ui";
 
-export function activate(context: vscode.ExtensionContext) {
-  const outputChannel = new ColorizedChannel(Constants.CHANNEL_NAME);
-  const telemetryClient = new TelemetryClient(context);
-  const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
-  const deviceModelManager = new DeviceModelManager(context, outputChannel);
-
-  telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
-  context.subscriptions.push(outputChannel);
-  context.subscriptions.push(telemetryClient);
-
-  // register events
-  initIntelliSense(context, telemetryClient);
-  initCommand(
-    context,
-    telemetryClient,
-    outputChannel,
-    nsat,
-    true,
-    EventType.CreateInterface,
-    async (): Promise<void> => {
-      return deviceModelManager.createModel(ModelType.Interface);
-    },
+function initIntelliSense(context: vscode.ExtensionContext, telemetryClient: TelemetryClient): void {
+  // init DigitalTwin graph
+  IntelliSenseUtility.initGraph(context);
+  // register provider
+  const selector: vscode.DocumentSelector = {
+    language: "json",
+    scheme: "file"
+  };
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      selector,
+      new DigitalTwinCompletionItemProvider(),
+      Constants.COMPLETION_TRIGGER
+    )
+  );
+  // register diagnostic
+  const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
+    Constants.CHANNEL_NAME
+  );
+  context.subscriptions.push(diagnosticCollection);
+  let pendingDiagnostic: NodeJS.Timer;
+  const diagnosticProvider = new DigitalTwinDiagnosticProvider();
+  const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+  if (activeTextEditor && IntelliSenseUtility.isDigitalTwinFile(activeTextEditor.document)) {
+    // delay for DigitalTwin graph initialization
+    pendingDiagnostic = setTimeout(
+      () => diagnosticProvider.updateDiagnostics(activeTextEditor.document, diagnosticCollection),
+      Constants.DEFAULT_TIMER_MS
+    );
+  }
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor | undefined) => {
+      // only update diagnostics if it is a new document
+      if (
+        editor &&
+        IntelliSenseUtility.isDigitalTwinFile(editor.document) &&
+        !diagnosticCollection.has(editor.document.uri)
+      ) {
+        diagnosticProvider.updateDiagnostics(editor.document, diagnosticCollection);
+      }
+    })
+  );
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(event.document)) {
+        if (pendingDiagnostic) {
+          clearTimeout(pendingDiagnostic);
+        }
+        pendingDiagnostic = setTimeout(
+          () => diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection),
+          Constants.DEFAULT_TIMER_MS
+        );
+      }
+    })
+  );
+  context.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
+        diagnosticCollection.delete(document.uri);
+      }
+    })
+  );
+  // send usage telemetry when file is opened
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
+      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
+        const modelContent: ModelContent | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
+        if (modelContent) {
+          const telemetryContext: TelemetryContext = TelemetryContext.startNew();
+          telemetryContext.properties.dtdlVersion = modelContent.version.toString();
+          telemetryContext.end();
+          telemetryClient.sendEvent(EventType.OpenModelFile, telemetryContext);
+        }
+      }
+    })
   );
 }
-
-export function deactivate() {}
 
 function initCommand(
   context: vscode.ExtensionContext,
@@ -50,7 +101,7 @@ function initCommand(
   nsat: NSAT,
   enableSurvey: boolean,
   event: EventType,
-  callback: (...args: any[]) => Promise<any>,
+  callback: (...args: any[]) => Promise<any>
 ): void {
   context.subscriptions.push(
     vscode.commands.registerCommand(event, async (...args: any[]) => {
@@ -78,84 +129,35 @@ function initCommand(
           nsat.takeSurvey(context);
         }
       }
-    }),
+    })
   );
 }
 
-function initIntelliSense(context: vscode.ExtensionContext, telemetryClient: TelemetryClient): void {
-  // init DigitalTwin graph
-  IntelliSenseUtility.initGraph(context);
-  // register provider
-  const selector: vscode.DocumentSelector = {
-    language: "json",
-    scheme: "file",
-  };
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      selector,
-      new DigitalTwinCompletionItemProvider(),
-      Constants.COMPLETION_TRIGGER,
-    ),
+export function activate(context: vscode.ExtensionContext): void {
+  const outputChannel = new ColorizedChannel(Constants.CHANNEL_NAME);
+  const telemetryClient = new TelemetryClient(context);
+  const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
+  const deviceModelManager = new DeviceModelManager(context, outputChannel);
+
+  telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
+  context.subscriptions.push(outputChannel);
+  context.subscriptions.push(telemetryClient);
+
+  // register events
+  initIntelliSense(context, telemetryClient);
+  initCommand(
+    context,
+    telemetryClient,
+    outputChannel,
+    nsat,
+    true,
+    EventType.CreateInterface,
+    async (): Promise<void> => {
+      return deviceModelManager.createModel(ModelType.Interface);
+    }
   );
-  // register diagnostic
-  const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
-    Constants.CHANNEL_NAME,
-  );
-  context.subscriptions.push(diagnosticCollection);
-  let pendingDiagnostic: NodeJS.Timer;
-  const diagnosticProvider = new DigitalTwinDiagnosticProvider();
-  const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-  if (activeTextEditor && IntelliSenseUtility.isDigitalTwinFile(activeTextEditor.document)) {
-    // delay for DigitalTwin graph initialization
-    pendingDiagnostic = setTimeout(
-      () => diagnosticProvider.updateDiagnostics(activeTextEditor.document, diagnosticCollection),
-      Constants.DEFAULT_TIMER_MS,
-    );
-  }
-  context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor | undefined) => {
-      // only update diagnostics if it is a new document
-      if (
-        editor &&
-        IntelliSenseUtility.isDigitalTwinFile(editor.document) &&
-        !diagnosticCollection.has(editor.document.uri)
-      ) {
-        diagnosticProvider.updateDiagnostics(editor.document, diagnosticCollection);
-      }
-    }),
-  );
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent) => {
-      if (IntelliSenseUtility.isDigitalTwinFile(event.document)) {
-        if (pendingDiagnostic) {
-          clearTimeout(pendingDiagnostic);
-        }
-        pendingDiagnostic = setTimeout(
-          () => diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection),
-          Constants.DEFAULT_TIMER_MS,
-        );
-      }
-    }),
-  );
-  context.subscriptions.push(
-    vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
-      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
-        diagnosticCollection.delete(document.uri);
-      }
-    }),
-  );
-  // send usage telemetry when file is opened
-  context.subscriptions.push(
-    vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
-        const modelContent: ModelContent | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
-        if (modelContent) {
-          const telemetryContext: TelemetryContext = TelemetryContext.startNew();
-          telemetryContext.properties.dtdlVersion = modelContent.version.toString();
-          telemetryContext.end();
-          telemetryClient.sendEvent(EventType.OpenModelFile, telemetryContext);
-        }
-      }
-    }),
-  );
+}
+
+export function deactivate(): void {
+  // Do nothing.
 }
