@@ -39,7 +39,7 @@ export class DigitalTwinDiagnosticProvider {
    * @param problems problem collection
    */
   private static addProblemOfInvalidProperty(jsonNode: parser.Node, problems: Problem[]): void {
-    const message: string = `${jsonNode.value as string} ${DiagnosticMessage.InvalidProperty}`;
+    const message = `${jsonNode.value as string} ${DiagnosticMessage.InvalidProperty}`;
     DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
   }
 
@@ -146,11 +146,11 @@ export class DigitalTwinDiagnosticProvider {
   private static getValidObjectType(
     jsonNode: parser.Node,
     classes: ClassNode[],
-    problems: Problem[],
+    problems: Problem[]
   ): ClassNode | undefined {
     let classNode: ClassNode | undefined;
     if (jsonNode.type === JsonNodeType.String) {
-      classNode = classes.find((c) => c.name === (jsonNode.value as string));
+      classNode = classes.find(c => c.name === (jsonNode.value as string));
     } else if (jsonNode.type === JsonNodeType.Array && jsonNode.children) {
       // support semantic type
       let lastNode: ClassNode | undefined;
@@ -160,7 +160,7 @@ export class DigitalTwinDiagnosticProvider {
           classNode = undefined;
           break;
         }
-        currentNode = classes.find((c) => c.name === (child.value as string));
+        currentNode = classes.find(c => c.name === (child.value as string));
         // TODO: need validate Semantic Type value
         if (!currentNode) {
           continue;
@@ -183,7 +183,7 @@ export class DigitalTwinDiagnosticProvider {
       }
     }
     if (!classNode) {
-      const validTypes: string[] = classes.map((c) => c.name);
+      const validTypes: string[] = classes.map(c => c.name);
       DigitalTwinDiagnosticProvider.addProblemOfInvalidType(jsonNode, problems, validTypes);
     }
     return classNode;
@@ -198,7 +198,7 @@ export class DigitalTwinDiagnosticProvider {
   private static validateLanguageString(
     jsonNode: parser.Node,
     digitalTwinNode: PropertyNode,
-    problems: Problem[],
+    problems: Problem[]
   ): void {
     if (!jsonNode.children) {
       return;
@@ -234,7 +234,7 @@ export class DigitalTwinDiagnosticProvider {
     }
     let objectNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
       typeNode,
-      JsonNodeType.Object,
+      JsonNodeType.Object
     );
     while (objectNode && depth) {
       objectNode = IntelliSenseUtility.getParentJsonNodeByType(objectNode, JsonNodeType.Object);
@@ -323,7 +323,7 @@ export class DigitalTwinDiagnosticProvider {
       }
     }
     // validate required properties
-    const missProperties: string[] = required.filter((name) => !exist.has(name));
+    const missProperties: string[] = required.filter(name => !exist.has(name));
     if (missProperties.length) {
       missProperties.unshift(DiagnosticMessage.MissRequiredProperties);
       const message: string = missProperties.join(DigitalTwinConstants.LINE_FEED);
@@ -343,14 +343,14 @@ export class DigitalTwinDiagnosticProvider {
   private static validateEnumValue(jsonNode: parser.Node, enumValueObjectNode: parser.Node, problems: Problem[]): void {
     const enumNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
       enumValueObjectNode,
-      JsonNodeType.Object,
+      JsonNodeType.Object
     );
     if (!enumNode) {
       return;
     }
     const valueSchemaNode: parser.Node | undefined = IntelliSenseUtility.getPropertyValueOfObjectByKey(
       DigitalTwinConstants.VALUE_SCHEMA_PROPERTY,
-      enumNode,
+      enumNode
     );
     // if value schema is not specified or incorrect, diagnostic message will be shown on value schema first
     if (!valueSchemaNode) {
@@ -367,7 +367,7 @@ export class DigitalTwinDiagnosticProvider {
       nodeKind: NodeKind.Literal,
       type: enumValueType,
       isRequired: true,
-      constraint: {},
+      constraint: {}
     };
     DigitalTwinDiagnosticProvider.validateNode(jsonNode, dummyNode, problems);
   }
@@ -483,7 +483,7 @@ export class DigitalTwinDiagnosticProvider {
     // constraint is prior to type, e.g. Enum/valueSchema
     let instances: string[];
     if (digitalTwinNode.constraint.in) {
-      instances = digitalTwinNode.constraint.in.map((id) => IntelliSenseUtility.resolveNodeName(id));
+      instances = digitalTwinNode.constraint.in.map(id => IntelliSenseUtility.resolveNodeName(id));
       DigitalTwinDiagnosticProvider.validateInstances(jsonNode, instances, problems);
       return;
     }
@@ -545,7 +545,7 @@ export class DigitalTwinDiagnosticProvider {
       ? DigitalTwinConstants.PARTITION_CLASS_ID_MAX_LENGTH
       : DigitalTwinConstants.DTMI_MAX_LENGTH;
     if (id.length > length) {
-      const message: string = `${DiagnosticMessage.InvalidDtmiLength} ${length}.`;
+      const message = `${DiagnosticMessage.InvalidDtmiLength} ${length}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message);
       return;
     }
@@ -649,12 +649,12 @@ export class DigitalTwinDiagnosticProvider {
     const problems: Problem[] = [];
     DigitalTwinDiagnosticProvider.validateNode(jsonNode, digitalTwinNode, problems);
     diagnostics = problems.map(
-      (p) =>
+      p =>
         new vscode.Diagnostic(
           new vscode.Range(document.positionAt(p.offset), document.positionAt(p.offset + p.length)),
           p.message,
-          vscode.DiagnosticSeverity.Error,
-        ),
+          vscode.DiagnosticSeverity.Error
+        )
     );
     problems.length = 0;
     return diagnostics;

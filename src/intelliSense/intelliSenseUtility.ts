@@ -16,7 +16,7 @@ export enum JsonNodeType {
   String = "string",
   Number = "number",
   Boolean = "boolean",
-  Property = "property",
+  Property = "property"
 }
 
 /**
@@ -307,7 +307,7 @@ export class IntelliSenseUtility {
     }
     const outerProperty: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
       node,
-      JsonNodeType.Property,
+      JsonNodeType.Property
     );
     if (!outerProperty) {
       return Constants.EMPTY_STRING;
