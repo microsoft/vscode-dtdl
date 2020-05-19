@@ -25,12 +25,10 @@ export class TelemetryClient {
    * check if it is Microsoft internal user
    */
   private static isInternalUser(): boolean {
-    if (process.env.USERDNSDOMAIN) {
-      const userDomain: string = process.env.USERDNSDOMAIN;
-      return userDomain.toLowerCase().endsWith("microsoft.com");
-    } else {
-      return false;
-    }
+    const userDomain: string = process.env.USERDNSDOMAIN
+      ? process.env.USERDNSDOMAIN.toLowerCase()
+      : Constants.EMPTY_STRING;
+    return userDomain.endsWith("microsoft.com");
   }
 
   public extensionId: string = Constants.EMPTY_STRING;
