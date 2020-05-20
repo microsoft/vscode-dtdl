@@ -62,7 +62,7 @@
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
     "compile": "tsc -p ./",
-    "eslint": "eslint -c ./eslint.json src/**/*.ts",
+    "eslint": "eslint src/**/*.ts",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "webpack": "webpack --mode development"
