@@ -7,6 +7,8 @@ trigger: none
 pr:
 - master
 - develop
+- pre-release-v*
+- release-v*
 
 strategy:
   matrix:
