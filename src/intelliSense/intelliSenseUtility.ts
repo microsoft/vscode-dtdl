@@ -97,6 +97,25 @@ export class IntelliSenseUtility {
     return IntelliSenseUtility.graph.getPropertiesOfClassNode(classNode);
   }
 
+  public static getInstancesOfPropertyNode(propertyNode: PropertyNode): string[] {
+    const instances: string[] = [];
+    if (propertyNode?.constraint.in) {
+      for (const instance of propertyNode.constraint.in) {
+        instances.push(IntelliSenseUtility.resolveNodeName(instance));
+      }
+      return instances;
+    }
+
+    if (propertyNode?.type) {
+      const typeClassNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
+      if (typeClassNode) {
+        return IntelliSenseUtility.getInstancesOfClassNode(typeClassNode);
+      }
+    }
+
+    return instances;
+  }
+
   /**
    * get instances of class node
    * @param classNode class node

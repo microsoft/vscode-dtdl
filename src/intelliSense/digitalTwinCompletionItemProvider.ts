@@ -386,7 +386,7 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
   private static getOuterPropertyNode(objectNode: parser.Node): PropertyNode | undefined {
     const outerPropertyName: string = IntelliSenseUtility.getOuterPropertyName(objectNode);
     if (!outerPropertyName) {
-      return undefined;
+      return IntelliSenseUtility.getEntryNode();
     }
 
     const outerPropertyObjectNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
@@ -402,9 +402,9 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
 
   private static suggestTypeValues(objectNode: parser.Node): string[] {
     const valueCandidates: string[] = [];
-
-    const outerPropertyNode: PropertyNode | undefined =
-      DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode) || IntelliSenseUtility.getEntryNode();
+    const outerPropertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getOuterPropertyNode(
+      objectNode
+    );
     if (!outerPropertyNode) {
       return valueCandidates;
     }
@@ -417,28 +417,15 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
   }
 
   private static suggestNonTypeValues(propertyName: string, objectNode: parser.Node): string[] {
-    const valueCandidates: string[] = [];
-
     const propertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(
       propertyName,
       objectNode
     );
 
-    if (propertyNode?.constraint.in) {
-      for (const instance of propertyNode.constraint.in) {
-        valueCandidates.push(IntelliSenseUtility.resolveNodeName(instance));
-      }
-      return valueCandidates;
+    if (!propertyNode) {
+      return [];
     }
-
-    if (propertyNode?.type) {
-      const typeClassNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
-      if (typeClassNode) {
-        return IntelliSenseUtility.getInstancesOfClassNode(typeClassNode);
-      }
-    }
-
-    return valueCandidates;
+    return IntelliSenseUtility.getInstancesOfPropertyNode(propertyNode);
   }
 
   private static getPropertyNodeByPropertyName(
