@@ -402,7 +402,9 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
 
   private static suggestTypeValues(objectNode: parser.Node): string[] {
     const valueCandidates: string[] = [];
-    const outerPropertyNode: PropertyNode|undefined = DigitalTwinCompletionItemProvider.getOuterPropertyNode(objectNode);
+    const outerPropertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getOuterPropertyNode(
+      objectNode
+    );
     if (!outerPropertyNode) {
       return valueCandidates;
     }
@@ -415,8 +417,10 @@ export class DigitalTwinCompletionItemProvider implements vscode.CompletionItemP
   }
 
   private static suggestNonTypeValues(propertyName: string, objectNode: parser.Node): string[] {
-    const propertyNode: PropertyNode|undefined =
-      DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(propertyName, objectNode);
+    const propertyNode: PropertyNode | undefined = DigitalTwinCompletionItemProvider.getPropertyNodeByPropertyName(
+      propertyName,
+      objectNode
+    );
 
     if (!propertyNode) {
       return [];
