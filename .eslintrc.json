@@ -21,7 +21,7 @@
     "prettier/prettier": ["error", {"printWidth": 120}],
     "max-len": ["error", {"code": 120, "ignorePattern": "^import\\s.+\\sfrom\\s.+;$", "ignoreStrings": true}],
     "@typescript-eslint/no-empty-function": ["error", { "allow": ["constructors"] }],
-    "object-curly-spacing": ["error", "always"],
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "object-curly-spacing": ["error", "always"]
   }
 }
