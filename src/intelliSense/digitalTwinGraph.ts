@@ -101,6 +101,7 @@ export class DigitalTwinGraph {
    * @param context extension context
    * @param fileName file name
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private static async resolveDefinition(context: vscode.ExtensionContext, fileName: string): Promise<any> {
     const filePath: string = context.asAbsolutePath(
       path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName)
@@ -112,6 +113,7 @@ export class DigitalTwinGraph {
    * check if it is a valid node
    * @param node node
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private static isValidNode(node: any): boolean {
     return node.id && node.name;
   }
@@ -284,6 +286,7 @@ export class DigitalTwinGraph {
    * build DigitalTwin graph
    * @param graphJson json object of graph definition
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private buildGraph(graphJson: any): void {
     this.parse(graphJson);
     this.inheritProperties();
@@ -295,6 +298,7 @@ export class DigitalTwinGraph {
    * parse content of graph json
    * @param graphJson json object of graph definition
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private parse(graphJson: any): void {
     for (const key in graphJson) {
       if (graphJson.hasOwnProperty(key)) {

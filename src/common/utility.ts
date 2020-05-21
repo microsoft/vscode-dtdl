@@ -51,6 +51,7 @@ export class Utility {
    * get json content from file
    * @param filePath file path
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   public static async getJsonContent(filePath: string): Promise<any> {
     return fs.readJson(filePath, { encoding: Constants.UTF8 });
   }
