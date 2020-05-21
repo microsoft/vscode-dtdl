@@ -17,6 +17,7 @@ export class TelemetryClient {
    * check if it is a valid package json
    * @param packageJSON package json
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private static isValidPackageJSON(packageJSON: any): boolean {
     return packageJSON.name && packageJSON.publisher && packageJSON.version && packageJSON.aiKey;
   }
