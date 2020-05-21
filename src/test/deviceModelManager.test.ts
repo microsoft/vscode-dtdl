@@ -9,6 +9,7 @@ import { Utility } from "../common/utility";
 import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
 import { UI } from "../view/ui";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const vscode = require("../../__mocks__/vscode");
 
 jest.mock("../common/colorizedChannel");
