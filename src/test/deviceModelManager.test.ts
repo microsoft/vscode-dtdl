@@ -27,7 +27,7 @@ describe("Device model manager", () => {
 
   test("create interface successfully", async () => {
     await manager.createModel(ModelType.Interface);
-    expect(UI.openAndShowTextDocument).toHaveBeenCalledWith(path.join(folder, "test.interface.json"));
+    expect(UI.openAndShowTextDocument).toHaveBeenCalledWith(path.join(folder, "test.json"));
   });
 
   test("create interface with error", async () => {
