@@ -49,6 +49,11 @@ describe("Colorized channel", () => {
     expect(vscode.OutputChannel.appendLine).toHaveBeenCalledWith("[Error] mock");
   });
 
+  test("print operation fail to end", () => {
+    channel.error(operation, Constants.DEVICE_MODEL_COMPONENT, new Error(message));
+    expect(vscode.OutputChannel.appendLine).toHaveBeenCalledWith("[Error][Device Model] Fail to test. Error: mock");
+  });
+
   test("show channel", () => {
     channel.show();
     expect(vscode.OutputChannel.show).toHaveBeenCalled();
