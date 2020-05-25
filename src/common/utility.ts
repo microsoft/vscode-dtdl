@@ -61,7 +61,7 @@ export class Utility {
    * @param str string
    * @param replacement replacement
    */
-  private static replaceAll(str: string, replacement: Map<string, string>): string {
+  public static replaceAll(str: string, replacement: Map<string, string>): string {
     const keys = Array.from(replacement.keys());
     const pattern = new RegExp(keys.join("|"), "g");
     return str.replace(pattern, matched => {
