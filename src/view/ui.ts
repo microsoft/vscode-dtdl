@@ -97,7 +97,7 @@ export class UI {
    * @param label label
    * @param items quick pick item list
    */
-  private static async showQuickPick(label: string, items: vscode.QuickPickItem[]): Promise<vscode.QuickPickItem> {
+  public static async showQuickPick(label: string, items: vscode.QuickPickItem[]): Promise<vscode.QuickPickItem> {
     const options: vscode.QuickPickOptions = {
       placeHolder: label,
       ignoreFocusOut: true
@@ -114,7 +114,7 @@ export class UI {
    * @param label label
    * @param defaultUri default uri
    */
-  private static async showOpenDialog(label: string, defaultUri?: vscode.Uri): Promise<string> {
+  public static async showOpenDialog(label: string, defaultUri?: vscode.Uri): Promise<string> {
     const options: vscode.OpenDialogOptions = {
       openLabel: label,
       defaultUri,
@@ -137,7 +137,7 @@ export class UI {
    * @param value value
    * @param ignoreFocusOut identify if ignore focus out
    */
-  private static async showInputBox(
+  public static async showInputBox(
     label: string,
     placeHolder: string,
     validateInput?: (s: string) => string | undefined | Promise<string | undefined>,
