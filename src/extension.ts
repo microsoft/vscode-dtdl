@@ -101,9 +101,11 @@ function initCommand(
   nsat: NSAT,
   enableSurvey: boolean,
   event: EventType,
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   callback: (...args: any[]) => Promise<any>
 ): void {
   context.subscriptions.push(
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     vscode.commands.registerCommand(event, async (...args: any[]) => {
       const telemetryContext: TelemetryContext = TelemetryContext.startNew();
       try {
