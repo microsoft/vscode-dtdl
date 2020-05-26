@@ -24,6 +24,7 @@ export enum DiagnosticMessage {
   CoTypeNotAllowed = "Co-type is not allowed. Only Telemetry, Property, Relationship support co-type.",
   NestedNotAllowed = "is not allowed to be nested.",
   DuplicateElement = "has been assigned to another element.",
+  DuplicateId = "@id value is already defined in the file.",
   InvalidValue = "Invalid value. Valid values:",
   InvalidDtmiLength = "DTMI exceeds the maximum length of",
   InvalidDtmiPattern = "The pattern of DTMI is dtmi:<path>;<version>. Path may contain only letters, digits, underscore, and colon. Version must be numeric.",
