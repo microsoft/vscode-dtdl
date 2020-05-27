@@ -60,22 +60,16 @@ export class DigitalTwinDiagnosticProvider {
    * validate json node by DigitalTwin graph, add problem to collection
    * @param jsonNode json node
    * @param digitalTwinNode DigitalTwin property node
-   * @param identifierSet unique id set
    * @param problems problem collection
    */
-  private static validateNode(
-    jsonNode: parser.Node,
-    digitalTwinNode: PropertyNode,
-    identifierSet: Set<string>,
-    problems: Problem[]
-  ): void {
+  private static validateNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     const nodeType: parser.NodeType = jsonNode.type;
     switch (nodeType) {
       case JsonNodeType.Object:
-        DigitalTwinDiagnosticProvider.validateObjectNode(jsonNode, digitalTwinNode, identifierSet, problems);
+        DigitalTwinDiagnosticProvider.validateObjectNode(jsonNode, digitalTwinNode, problems);
         break;
       case JsonNodeType.Array:
-        DigitalTwinDiagnosticProvider.validateArrayNode(jsonNode, digitalTwinNode, identifierSet, problems);
+        DigitalTwinDiagnosticProvider.validateArrayNode(jsonNode, digitalTwinNode, problems);
         break;
       case JsonNodeType.String:
         DigitalTwinDiagnosticProvider.validateStringNode(jsonNode, digitalTwinNode, problems);
@@ -94,15 +88,9 @@ export class DigitalTwinDiagnosticProvider {
    * validate json object node
    * @param jsonNode json node
    * @param digitalTwinNode DigitalTwin property node
-   * @param identifierSet unique id set
    * @param problems problem collection
    */
-  private static validateObjectNode(
-    jsonNode: parser.Node,
-    digitalTwinNode: PropertyNode,
-    identifierSet: Set<string>,
-    problems: Problem[]
-  ): void {
+  private static validateObjectNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     let message: string;
     const classes: ClassNode[] = IntelliSenseUtility.getObjectClasses(digitalTwinNode);
     if (!classes.length) {
@@ -147,7 +135,7 @@ export class DigitalTwinDiagnosticProvider {
       return;
     }
     // validate properties
-    DigitalTwinDiagnosticProvider.validateProperties(jsonNode, classNode, identifierSet, problems);
+    DigitalTwinDiagnosticProvider.validateProperties(jsonNode, classNode, problems);
   }
 
   /**
@@ -268,15 +256,9 @@ export class DigitalTwinDiagnosticProvider {
    * validate properties of json object node
    * @param jsonNode json node
    * @param classNode class node
-   * @param identifierSet unique id set
    * @param problems problem colletion
    */
-  private static validateProperties(
-    jsonNode: parser.Node,
-    classNode: ClassNode,
-    identifierSet: Set<string>,
-    problems: Problem[]
-  ): void {
+  private static validateProperties(jsonNode: parser.Node, classNode: ClassNode, problems: Problem[]): void {
     if (!jsonNode.children) {
       return;
     }
@@ -309,7 +291,6 @@ export class DigitalTwinDiagnosticProvider {
       switch (propertyName) {
         case DigitalTwinConstants.ID:
           DigitalTwinDiagnosticProvider.validateDtmi(propertyPair.value, isPartitionClass, problems);
-          DigitalTwinDiagnosticProvider.validateUniqueId(propertyPair.value, identifierSet, problems);
           break;
         case DigitalTwinConstants.CONTEXT:
           // @context is only available for partition class
@@ -330,7 +311,7 @@ export class DigitalTwinDiagnosticProvider {
           DigitalTwinDiagnosticProvider.validateDtmi(propertyPair.value, true, problems);
           break;
         case DigitalTwinConstants.ENUM_VALUE_PROPERTY:
-          DigitalTwinDiagnosticProvider.validateEnumValue(propertyPair.value, jsonNode, identifierSet, problems);
+          DigitalTwinDiagnosticProvider.validateEnumValue(propertyPair.value, jsonNode, problems);
           break;
         default:
           // validate property is expected
@@ -338,7 +319,7 @@ export class DigitalTwinDiagnosticProvider {
           if (!propertyNode) {
             DigitalTwinDiagnosticProvider.addProblemOfInvalidProperty(propertyPair.name, problems);
           } else {
-            DigitalTwinDiagnosticProvider.validateNode(propertyPair.value, propertyNode, identifierSet, problems);
+            DigitalTwinDiagnosticProvider.validateNode(propertyPair.value, propertyNode, problems);
           }
       }
     }
@@ -358,15 +339,9 @@ export class DigitalTwinDiagnosticProvider {
    * validate enum value according to the value of valueSchema
    * @param jsonNode json node
    * @param enumValueObjectNode object node of enum value
-   * @param identifierSet unique id set
    * @param problems problem collection
    */
-  private static validateEnumValue(
-    jsonNode: parser.Node,
-    enumValueObjectNode: parser.Node,
-    identifierSet: Set<string>,
-    problems: Problem[]
-  ): void {
+  private static validateEnumValue(jsonNode: parser.Node, enumValueObjectNode: parser.Node, problems: Problem[]): void {
     const enumNode: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
       enumValueObjectNode,
       JsonNodeType.Object
@@ -395,22 +370,16 @@ export class DigitalTwinDiagnosticProvider {
       isRequired: true,
       constraint: {}
     };
-    DigitalTwinDiagnosticProvider.validateNode(jsonNode, dummyNode, identifierSet, problems);
+    DigitalTwinDiagnosticProvider.validateNode(jsonNode, dummyNode, problems);
   }
 
   /**
    * validate json array node
    * @param jsonNode json node
    * @param digitalTwinNode DigitalTwin property node
-   * @param identifierSet unique id set
    * @param problems problem collection
    */
-  private static validateArrayNode(
-    jsonNode: parser.Node,
-    digitalTwinNode: PropertyNode,
-    identifierSet: Set<string>,
-    problems: Problem[]
-  ): void {
+  private static validateArrayNode(jsonNode: parser.Node, digitalTwinNode: PropertyNode, problems: Problem[]): void {
     let message: string;
     if (!digitalTwinNode.isPlural || digitalTwinNode.type === Literal.LangString) {
       message = `${jsonNode.type} ${DiagnosticMessage.TypeNotAllowed}`;
@@ -436,46 +405,34 @@ export class DigitalTwinDiagnosticProvider {
       message = `${DiagnosticMessage.GreaterThanMaxCount} ${digitalTwinNode.constraint.maxCount}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message, true);
     }
-    DigitalTwinDiagnosticProvider.validateUniqueItem(jsonNode.children, digitalTwinNode, identifierSet, problems);
+    DigitalTwinDiagnosticProvider.validateUniqueItem(jsonNode.children, digitalTwinNode, problems);
   }
 
   /**
-   * validate item and its uniqueness
+   * validate unique item
    * @param items array items
    * @param digitalTwinNode DigitalTwin property node
-   * @param identifierSet unique id set
    * @param problems problem collection
    */
-  private static validateUniqueItem(
-    items: parser.Node[],
-    digitalTwinNode: PropertyNode,
-    identifierSet: Set<string>,
-    problems: Problem[]
-  ): void {
-    DigitalTwinDiagnosticProvider.validateUniqueItemByKey(items, DigitalTwinConstants.NAME_PROPERTY, true, problems);
-    // validate additional unique keys
+  private static validateUniqueItem(items: parser.Node[], digitalTwinNode: PropertyNode, problems: Problem[]): void {
+    const uniqueKeys: string[] = [DigitalTwinConstants.ID, DigitalTwinConstants.NAME_PROPERTY];
     if (digitalTwinNode.uniqueKeys) {
-      for (const key of digitalTwinNode.uniqueKeys) {
-        DigitalTwinDiagnosticProvider.validateUniqueItemByKey(items, key, false, problems);
-      }
+      uniqueKeys.push(...digitalTwinNode.uniqueKeys);
+    }
+    for (const key of uniqueKeys) {
+      DigitalTwinDiagnosticProvider.validateUniqueItemByKey(items, key, problems);
     }
     // validate each item
-    items.forEach(item => DigitalTwinDiagnosticProvider.validateNode(item, digitalTwinNode, identifierSet, problems));
+    items.forEach(item => DigitalTwinDiagnosticProvider.validateNode(item, digitalTwinNode, problems));
   }
 
   /**
    * validate unique item by key
    * @param items array items
-   * @param key property name of json object node as unique key
-   * @param allowLiteral allow to check uniqueness by literal value
+   * @param key unique key
    * @param problems problem collection
    */
-  private static validateUniqueItemByKey(
-    items: parser.Node[],
-    key: string,
-    allowLiteral: boolean,
-    problems: Problem[]
-  ): void {
+  private static validateUniqueItemByKey(items: parser.Node[], key: string, problems: Problem[]): void {
     let message: string;
     let itemValue: string;
     let propertyValue: parser.Node | undefined;
@@ -484,9 +441,10 @@ export class DigitalTwinDiagnosticProvider {
       if (item.type === JsonNodeType.Object) {
         propertyValue = IntelliSenseUtility.getPropertyValueOfObjectByKey(key, item);
         itemValue = propertyValue ? propertyValue.value.toString() : Constants.EMPTY_STRING;
-      } else if (allowLiteral) {
+      } else if (item.type === JsonNodeType.String && key === DigitalTwinConstants.ID) {
+        // if type is json string node, it should be dtmi, e.g. Interface/extends
         propertyValue = item;
-        itemValue = item.value.toString();
+        itemValue = item.value as string;
       } else {
         continue;
       }
@@ -641,24 +599,6 @@ export class DigitalTwinDiagnosticProvider {
   }
 
   /**
-   * validate id is unique throughout the file
-   * @param jsonNode json node
-   * @param identifierSet unique id set
-   * @param problems problem collection
-   */
-  private static validateUniqueId(jsonNode: parser.Node, identifierSet: Set<string>, problems: Problem[]): void {
-    if (jsonNode.type !== JsonNodeType.String) {
-      return;
-    }
-    const id: string = jsonNode.value as string;
-    if (identifierSet.has(id)) {
-      DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, DiagnosticMessage.DuplicateId);
-      return;
-    }
-    identifierSet.add(id);
-  }
-
-  /**
    * check if class node is a reference to schema
    * @param jsonNode json node
    * @param classNode class node
@@ -742,9 +682,8 @@ export class DigitalTwinDiagnosticProvider {
     if (!digitalTwinNode) {
       return diagnostics;
     }
-    const identifierSet = new Set<string>();
     const problems: Problem[] = [];
-    DigitalTwinDiagnosticProvider.validateNode(jsonNode, digitalTwinNode, identifierSet, problems);
+    DigitalTwinDiagnosticProvider.validateNode(jsonNode, digitalTwinNode, problems);
     diagnostics = problems.map(
       p =>
         new vscode.Diagnostic(
