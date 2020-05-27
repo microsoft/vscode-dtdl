@@ -7,6 +7,7 @@ import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants"
 import { ClassNode, Literal, NodeKind, PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
+import { Constants } from "../common/constants";
 
 /**
  * Diagnostic problem
@@ -404,23 +405,58 @@ export class DigitalTwinDiagnosticProvider {
       message = `${DiagnosticMessage.GreaterThanMaxCount} ${digitalTwinNode.constraint.maxCount}.`;
       DigitalTwinDiagnosticProvider.addProblem(jsonNode, problems, message, true);
     }
-    // validate element uniqueness by name
-    let objectName: string;
+    DigitalTwinDiagnosticProvider.validateUniqueItem(jsonNode.children, digitalTwinNode, problems);
+  }
+
+  /**
+   * validate unique item
+   * @param items array items
+   * @param digitalTwinNode DigitalTwin property node
+   * @param problems problem collection
+   */
+  private static validateUniqueItem(items: parser.Node[], digitalTwinNode: PropertyNode, problems: Problem[]): void {
+    const uniqueKeys: string[] = [DigitalTwinConstants.ID, DigitalTwinConstants.NAME_PROPERTY];
+    if (digitalTwinNode.uniqueKeys) {
+      uniqueKeys.push(...digitalTwinNode.uniqueKeys);
+    }
+    for (const key of uniqueKeys) {
+      DigitalTwinDiagnosticProvider.validateUniqueItemByKey(items, key, problems);
+    }
+    // validate each item
+    items.forEach(item => DigitalTwinDiagnosticProvider.validateNode(item, digitalTwinNode, problems));
+  }
+
+  /**
+   * validate unique item by key
+   * @param items array items
+   * @param key unique key
+   * @param problems problem collection
+   */
+  private static validateUniqueItemByKey(items: parser.Node[], key: string, problems: Problem[]): void {
+    let message: string;
+    let itemValue: string;
     let propertyValue: parser.Node | undefined;
     const exist = new Set<string>();
-    for (const child of jsonNode.children) {
-      propertyValue = IntelliSenseUtility.getPropertyValueOfObjectByKey(DigitalTwinConstants.NAME_PROPERTY, child);
-      if (propertyValue) {
-        objectName = propertyValue.value as string;
-        if (exist.has(objectName)) {
-          message = `${objectName} ${DiagnosticMessage.DuplicateElement}`;
-          DigitalTwinDiagnosticProvider.addProblem(propertyValue, problems, message);
-        } else {
-          exist.add(objectName);
-        }
+    for (const item of items) {
+      if (item.type === JsonNodeType.Object) {
+        propertyValue = IntelliSenseUtility.getPropertyValueOfObjectByKey(key, item);
+        itemValue = propertyValue ? propertyValue.value.toString() : Constants.EMPTY_STRING;
+      } else if (item.type === JsonNodeType.String && key === DigitalTwinConstants.ID) {
+        // if type is json string node, it should be dtmi, e.g. Interface/extends
+        propertyValue = item;
+        itemValue = item.value as string;
+      } else {
+        continue;
       }
-      // validate each element
-      DigitalTwinDiagnosticProvider.validateNode(child, digitalTwinNode, problems);
+      if (!propertyValue || !itemValue) {
+        continue;
+      }
+      if (exist.has(itemValue)) {
+        message = `${itemValue} ${DiagnosticMessage.DuplicateElement}`;
+        DigitalTwinDiagnosticProvider.addProblem(propertyValue, problems, message);
+      } else {
+        exist.add(itemValue);
+      }
     }
     exist.clear();
   }
