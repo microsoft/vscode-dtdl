@@ -13,7 +13,7 @@ jest.mock("fs-extra");
 describe("Utility", () => {
   const folder = "root";
   const name = "test";
-  const modelId = "urn:model:id:1";
+  const modelId = "dtmi:model:id;1";
   const replacement = new Map<string, string>();
   replacement.set(Constants.MODEL_ID_PLACEHOLDER, modelId);
 
@@ -41,8 +41,8 @@ describe("Utility", () => {
   });
 
   test("replace all with multiple pattern", () => {
-    const secondKey = "{foo}";
-    const secondValue = "bar";
+    const secondKey = Constants.MODEL_NAME_PLACEHOLDER;
+    const secondValue = "name";
     replacement.set(secondKey, secondValue);
     const template = Constants.MODEL_ID_PLACEHOLDER + "," + secondKey;
     expect(Utility.replaceAll(template, replacement)).toBe(modelId + "," + secondValue);
@@ -62,5 +62,11 @@ describe("Utility", () => {
   test("validate model name when it is not allowed", async () => {
     const message = await Utility.validateModelName("my-interface", ModelType.Interface, folder);
     expect(message).toBe("Name can only contain " + Constants.MODEL_NAME_REGEX_DESCRIPTION);
+  });
+
+  test("validate model name when it already exists", async () => {
+    pathExists.mockResolvedValueOnce(true);
+    const message = await Utility.validateModelName(name, ModelType.Interface, folder);
+    expect(message).toBe("Interface test already exists in folder root");
   });
 });
