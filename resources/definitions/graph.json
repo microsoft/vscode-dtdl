@@ -1,24 +1,30 @@
 {
   "baseClass": "dtmi:dtdl:class:Entity;2",
-  "partitionClass": ["dtmi:dtdl:class:Interface;2"],
+  "partitionClass": [
+    "dtmi:dtdl:class:Interface;2"
+  ],
   "class": [
     {
       "id": "dtmi:dtdl:class:Array;2",
       "name": "Array",
-      "properties": ["dtmi:dtdl:constraint:Array:elementSchema;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Array:elementSchema;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Boolean;2",
       "name": "Boolean",
-      "instances": ["boolean"]
+      "instances": [
+        "boolean"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Command;2",
       "name": "Command",
       "properties": [
-        "dtmi:dtdl:constraint:Command:response;2",
+        "dtmi:dtdl:constraint:Command:commandType;2",
         "dtmi:dtdl:constraint:Command:request;2",
-        "dtmi:dtdl:constraint:Command:commandType;2"
+        "dtmi:dtdl:constraint:Command:response;2"
       ]
     },
     {
@@ -28,31 +34,36 @@
     {
       "id": "dtmi:dtdl:class:CommandType;2",
       "name": "CommandType",
-      "instances": ["asynchronous", "synchronous"]
+      "instances": [
+        "asynchronous",
+        "synchronous"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:ComplexSchema;2",
       "name": "ComplexSchema",
       "isAbstract": true,
       "children": [
-        "dtmi:dtdl:class:Map;2",
-        "dtmi:dtdl:class:Object;2",
+        "dtmi:dtdl:class:Array;2",
         "dtmi:dtdl:class:Enum;2",
-        "dtmi:dtdl:class:Array;2"
+        "dtmi:dtdl:class:Map;2",
+        "dtmi:dtdl:class:Object;2"
       ]
     },
     {
       "id": "dtmi:dtdl:class:Component;2",
       "name": "Component",
-      "properties": ["dtmi:dtdl:constraint:Component:schema;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Component:schema;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Content;2",
       "name": "Content",
       "isAbstract": true,
       "children": [
-        "dtmi:dtdl:class:Component;2",
         "dtmi:dtdl:class:Command;2",
+        "dtmi:dtdl:class:Component;2",
         "dtmi:dtdl:class:Property;2",
         "dtmi:dtdl:class:Relationship;2",
         "dtmi:dtdl:class:Telemetry;2"
@@ -61,49 +72,62 @@
     {
       "id": "dtmi:dtdl:class:Date;2",
       "name": "Date",
-      "instances": ["date"]
+      "instances": [
+        "date"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:DateTime;2",
       "name": "DateTime",
-      "instances": ["dateTime"]
+      "instances": [
+        "dateTime"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Double;2",
       "name": "Double",
-      "instances": ["double"]
+      "instances": [
+        "double"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Duration;2",
       "name": "Duration",
-      "instances": ["duration"]
+      "instances": [
+        "duration"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Entity;2",
       "name": "Entity",
       "isAbstract": true,
       "properties": [
-        "dtmi:dtdl:constraint:Entity:displayName;2",
         "dtmi:dtdl:constraint:Entity:comment;2",
-        "dtmi:dtdl:constraint:Entity:description;2"
+        "dtmi:dtdl:constraint:Entity:description;2",
+        "dtmi:dtdl:constraint:Entity:displayName;2"
       ],
       "children": [
+        "dtmi:dtdl:class:CommandType;2",
         "dtmi:dtdl:class:Interface;2",
         "dtmi:dtdl:class:NamedEntity;2",
         "dtmi:dtdl:class:Schema;2",
-        "dtmi:dtdl:class:CommandType;2",
         "dtmi:dtdl:class:Unit;2"
       ]
     },
     {
       "id": "dtmi:dtdl:class:Enum;2",
       "name": "Enum",
-      "properties": ["dtmi:dtdl:constraint:Enum:enumValues;2", "dtmi:dtdl:constraint:Enum:valueSchema;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Enum:enumValues;2",
+        "dtmi:dtdl:constraint:Enum:valueSchema;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:EnumValue;2",
       "name": "EnumValue",
-      "properties": ["dtmi:dtdl:constraint:EnumValue:enumValue;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:EnumValue:enumValue;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Field;2",
@@ -112,36 +136,47 @@
     {
       "id": "dtmi:dtdl:class:Float;2",
       "name": "Float",
-      "instances": ["float"]
+      "instances": [
+        "float"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Integer;2",
       "name": "Integer",
-      "instances": ["integer"]
+      "instances": [
+        "integer"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Interface;2",
       "name": "Interface",
       "properties": [
-        "dtmi:dtdl:constraint:Interface:schemas;2",
+        "dtmi:dtdl:constraint:Interface:contents;2",
         "dtmi:dtdl:constraint:Interface:extends;2",
-        "dtmi:dtdl:constraint:Interface:contents;2"
+        "dtmi:dtdl:constraint:Interface:schemas;2"
       ]
     },
     {
       "id": "dtmi:dtdl:class:Long;2",
       "name": "Long",
-      "instances": ["long"]
+      "instances": [
+        "long"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Map;2",
       "name": "Map",
-      "properties": ["dtmi:dtdl:constraint:Map:mapKey;2", "dtmi:dtdl:constraint:Map:mapValue;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Map:mapKey;2",
+        "dtmi:dtdl:constraint:Map:mapValue;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:MapKey;2",
       "name": "MapKey",
-      "properties": ["dtmi:dtdl:constraint:MapKey:schema;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:MapKey:schema;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:MapValue;2",
@@ -151,12 +186,14 @@
       "id": "dtmi:dtdl:class:NamedEntity;2",
       "name": "NamedEntity",
       "isAbstract": true,
-      "properties": ["dtmi:dtdl:constraint:NamedEntity:name;2"],
+      "properties": [
+        "dtmi:dtdl:constraint:NamedEntity:name;2"
+      ],
       "children": [
-        "dtmi:dtdl:class:SchemaField;2",
         "dtmi:dtdl:class:Content;2",
         "dtmi:dtdl:class:EnumValue;2",
         "dtmi:dtdl:class:MapKey;2",
+        "dtmi:dtdl:class:SchemaField;2",
         "dtmi:dtdl:class:UnitAttribute;2"
       ]
     },
@@ -167,14 +204,16 @@
       "children": [
         "dtmi:dtdl:class:Double;2",
         "dtmi:dtdl:class:Float;2",
-        "dtmi:dtdl:class:Long;2",
-        "dtmi:dtdl:class:Integer;2"
+        "dtmi:dtdl:class:Integer;2",
+        "dtmi:dtdl:class:Long;2"
       ]
     },
     {
       "id": "dtmi:dtdl:class:Object;2",
       "name": "Object",
-      "properties": ["dtmi:dtdl:constraint:Object:fields;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Object:fields;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:PrimitiveSchema;2",
@@ -182,8 +221,8 @@
       "isAbstract": true,
       "children": [
         "dtmi:dtdl:class:Boolean;2",
-        "dtmi:dtdl:class:String;2",
         "dtmi:dtdl:class:NumericSchema;2",
+        "dtmi:dtdl:class:String;2",
         "dtmi:dtdl:class:TemporalSchema;2"
       ]
     },
@@ -191,15 +230,18 @@
       "id": "dtmi:dtdl:class:Property;2",
       "name": "Property",
       "isAugmentable": true,
-      "properties": ["dtmi:dtdl:constraint:Property:writable;2", "dtmi:dtdl:constraint:Property:schema;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Property:schema;2",
+        "dtmi:dtdl:constraint:Property:writable;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Relationship;2",
       "name": "Relationship",
       "isAugmentable": true,
       "properties": [
-        "dtmi:dtdl:constraint:Relationship:minMultiplicity;2",
         "dtmi:dtdl:constraint:Relationship:maxMultiplicity;2",
+        "dtmi:dtdl:constraint:Relationship:minMultiplicity;2",
         "dtmi:dtdl:constraint:Relationship:properties;2",
         "dtmi:dtdl:constraint:Relationship:target;2",
         "dtmi:dtdl:constraint:Relationship:writable;2"
@@ -209,47 +251,64 @@
       "id": "dtmi:dtdl:class:Schema;2",
       "name": "Schema",
       "isAbstract": true,
-      "children": ["dtmi:dtdl:class:PrimitiveSchema;2", "dtmi:dtdl:class:ComplexSchema;2"]
+      "children": [
+        "dtmi:dtdl:class:ComplexSchema;2",
+        "dtmi:dtdl:class:PrimitiveSchema;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:SchemaField;2",
       "name": "SchemaField",
       "isAbstract": true,
-      "properties": ["dtmi:dtdl:constraint:SchemaField:schema;2"],
-      "children": ["dtmi:dtdl:class:Field;2", "dtmi:dtdl:class:MapValue;2", "dtmi:dtdl:class:CommandPayload;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:SchemaField:schema;2"
+      ],
+      "children": [
+        "dtmi:dtdl:class:CommandPayload;2",
+        "dtmi:dtdl:class:Field;2",
+        "dtmi:dtdl:class:MapValue;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:String;2",
       "name": "String",
-      "instances": ["string"]
+      "instances": [
+        "string"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Telemetry;2",
       "name": "Telemetry",
       "isAugmentable": true,
-      "properties": ["dtmi:dtdl:constraint:Telemetry:schema;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Telemetry:schema;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:TemporalSchema;2",
       "name": "TemporalSchema",
       "isAbstract": true,
       "children": [
+        "dtmi:dtdl:class:Date;2",
         "dtmi:dtdl:class:DateTime;2",
         "dtmi:dtdl:class:Duration;2",
-        "dtmi:dtdl:class:Time;2",
-        "dtmi:dtdl:class:Date;2"
+        "dtmi:dtdl:class:Time;2"
       ]
     },
     {
       "id": "dtmi:dtdl:class:Time;2",
       "name": "Time",
-      "instances": ["time"]
+      "instances": [
+        "time"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:Unit;2",
       "name": "Unit",
       "isAugmentable": true,
-      "properties": ["dtmi:dtdl:constraint:Unit:symbol;2"]
+      "properties": [
+        "dtmi:dtdl:constraint:Unit:symbol;2"
+      ]
     },
     {
       "id": "dtmi:dtdl:class:UnitAttribute;2",
@@ -259,11 +318,53 @@
   ],
   "property": [
     {
+      "id": "dtmi:dtdl:constraint:Array:elementSchema;2",
+      "name": "elementSchema",
+      "nodeKind": "BlankNodeOrIRI",
+      "type": "dtmi:dtdl:class:Schema;2",
+      "isRequired": true,
+      "constraint": {
+        "minCount": 1,
+        "maxCount": 1
+      }
+    },
+    {
       "id": "dtmi:dtdl:constraint:Command:commandType;2",
       "name": "commandType",
       "nodeKind": "IRI",
       "type": "dtmi:dtdl:class:CommandType;2",
       "constraint": {
+        "maxCount": 1
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:Command:request;2",
+      "name": "request",
+      "nodeKind": "BlankNodeOrIRI",
+      "type": "dtmi:dtdl:class:CommandPayload;2",
+      "isTypeInferable": true,
+      "constraint": {
+        "maxCount": 1
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:Command:response;2",
+      "name": "response",
+      "nodeKind": "BlankNodeOrIRI",
+      "type": "dtmi:dtdl:class:CommandPayload;2",
+      "isTypeInferable": true,
+      "constraint": {
+        "maxCount": 1
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:Component:schema;2",
+      "name": "schema",
+      "nodeKind": "IRI",
+      "type": "dtmi:dtdl:class:Interface;2",
+      "isRequired": true,
+      "constraint": {
+        "minCount": 1,
         "maxCount": 1
       }
     },
@@ -275,17 +376,6 @@
       "constraint": {
         "maxCount": 1,
         "maxLength": 512
-      }
-    },
-    {
-      "id": "dtmi:dtdl:constraint:Interface:contents;2",
-      "name": "contents",
-      "nodeKind": "BlankNodeOrIRI",
-      "type": "dtmi:dtdl:class:Content;2",
-      "isPlural": true,
-      "constraint": {
-        "minCount": 0,
-        "maxCount": 300
       }
     },
     {
@@ -309,14 +399,34 @@
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:Array:elementSchema;2",
-      "name": "elementSchema",
+      "id": "dtmi:dtdl:constraint:Enum:enumValues;2",
+      "name": "enumValues",
       "nodeKind": "BlankNodeOrIRI",
+      "type": "dtmi:dtdl:class:EnumValue;2",
+      "isPlural": true,
+      "isRequired": true,
+      "uniqueKeys": [
+        "enumValue"
+      ],
+      "isTypeInferable": true,
+      "constraint": {
+        "minCount": 1,
+        "maxCount": 100
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:Enum:valueSchema;2",
+      "name": "valueSchema",
+      "nodeKind": "IRI",
       "type": "dtmi:dtdl:class:Schema;2",
       "isRequired": true,
       "constraint": {
         "minCount": 1,
-        "maxCount": 1
+        "maxCount": 1,
+        "in": [
+          "dtmi:dtdl:instance:Schema:string;2",
+          "dtmi:dtdl:instance:Schema:integer;2"
+        ]
       }
     },
     {
@@ -330,16 +440,14 @@
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:Enum:enumValues;2",
-      "name": "enumValues",
+      "id": "dtmi:dtdl:constraint:Interface:contents;2",
+      "name": "contents",
       "nodeKind": "BlankNodeOrIRI",
-      "type": "dtmi:dtdl:class:EnumValue;2",
+      "type": "dtmi:dtdl:class:Content;2",
       "isPlural": true,
-      "isRequired": true,
-      "isTypeInferable": true,
       "constraint": {
-        "minCount": 1,
-        "maxCount": 100
+        "minCount": 0,
+        "maxCount": 300
       }
     },
     {
@@ -353,17 +461,12 @@
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:Object:fields;2",
-      "name": "fields",
-      "nodeKind": "BlankNodeOrIRI",
-      "type": "dtmi:dtdl:class:Field;2",
+      "id": "dtmi:dtdl:constraint:Interface:schemas;2",
+      "name": "schemas",
+      "nodeKind": "IRI",
+      "type": "dtmi:dtdl:class:ComplexSchema;2",
       "isPlural": true,
-      "isRequired": true,
-      "isTypeInferable": true,
-      "constraint": {
-        "minCount": 1,
-        "maxCount": 30
-      }
+      "constraint": {}
     },
     {
       "id": "dtmi:dtdl:constraint:Map:mapKey;2",
@@ -390,6 +493,66 @@
       }
     },
     {
+      "id": "dtmi:dtdl:constraint:MapKey:schema;2",
+      "name": "schema",
+      "nodeKind": "IRI",
+      "type": "dtmi:dtdl:class:String;2",
+      "isRequired": true,
+      "constraint": {
+        "minCount": 1,
+        "maxCount": 1
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:NamedEntity:name;2",
+      "name": "name",
+      "nodeKind": "Literal",
+      "type": "http://www.w3.org/2001/XMLSchema#string",
+      "isRequired": true,
+      "constraint": {
+        "minCount": 1,
+        "maxCount": 1,
+        "maxLength": 64,
+        "pattern": "^[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?$"
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:Object:fields;2",
+      "name": "fields",
+      "nodeKind": "BlankNodeOrIRI",
+      "type": "dtmi:dtdl:class:Field;2",
+      "isPlural": true,
+      "isRequired": true,
+      "isTypeInferable": true,
+      "constraint": {
+        "minCount": 1,
+        "maxCount": 30
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:Property:schema;2",
+      "name": "schema",
+      "nodeKind": "BlankNodeOrIRI",
+      "type": "dtmi:dtdl:class:Schema;2",
+      "isRequired": true,
+      "constraint": {
+        "minCount": 1,
+        "maxCount": 1,
+        "exclude": [
+          "dtmi:dtdl:class:Array;2"
+        ]
+      }
+    },
+    {
+      "id": "dtmi:dtdl:constraint:Property:writable;2",
+      "name": "writable",
+      "nodeKind": "Literal",
+      "type": "http://www.w3.org/2001/XMLSchema#boolean",
+      "constraint": {
+        "maxCount": 1
+      }
+    },
+    {
       "id": "dtmi:dtdl:constraint:Relationship:maxMultiplicity;2",
       "name": "maxMultiplicity",
       "nodeKind": "Literal",
@@ -412,19 +575,6 @@
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:NamedEntity:name;2",
-      "name": "name",
-      "nodeKind": "Literal",
-      "type": "http://www.w3.org/2001/XMLSchema#string",
-      "isRequired": true,
-      "constraint": {
-        "minCount": 1,
-        "maxCount": 1,
-        "maxLength": 64,
-        "pattern": "^[A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?$"
-      }
-    },
-    {
       "id": "dtmi:dtdl:constraint:Relationship:properties;2",
       "name": "properties",
       "nodeKind": "BlankNodeOrIRI",
@@ -435,21 +585,18 @@
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:Command:request;2",
-      "name": "request",
-      "nodeKind": "BlankNodeOrIRI",
-      "type": "dtmi:dtdl:class:CommandPayload;2",
-      "isTypeInferable": true,
+      "id": "dtmi:dtdl:constraint:Relationship:target;2",
+      "name": "target",
+      "nodeKind": "IRI",
       "constraint": {
         "maxCount": 1
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:Command:response;2",
-      "name": "response",
-      "nodeKind": "BlankNodeOrIRI",
-      "type": "dtmi:dtdl:class:CommandPayload;2",
-      "isTypeInferable": true,
+      "id": "dtmi:dtdl:constraint:Relationship:writable;2",
+      "name": "writable",
+      "nodeKind": "Literal",
+      "type": "http://www.w3.org/2001/XMLSchema#boolean",
       "constraint": {
         "maxCount": 1
       }
@@ -466,40 +613,6 @@
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:MapKey:schema;2",
-      "name": "schema",
-      "nodeKind": "IRI",
-      "type": "dtmi:dtdl:class:String;2",
-      "isRequired": true,
-      "constraint": {
-        "minCount": 1,
-        "maxCount": 1
-      }
-    },
-    {
-      "id": "dtmi:dtdl:constraint:Component:schema;2",
-      "name": "schema",
-      "nodeKind": "IRI",
-      "type": "dtmi:dtdl:class:Interface;2",
-      "isRequired": true,
-      "constraint": {
-        "minCount": 1,
-        "maxCount": 1
-      }
-    },
-    {
-      "id": "dtmi:dtdl:constraint:Property:schema;2",
-      "name": "schema",
-      "nodeKind": "BlankNodeOrIRI",
-      "type": "dtmi:dtdl:class:Schema;2",
-      "isRequired": true,
-      "constraint": {
-        "minCount": 1,
-        "maxCount": 1,
-        "exclude": ["dtmi:dtdl:class:Array;2"]
-      }
-    },
-    {
       "id": "dtmi:dtdl:constraint:Telemetry:schema;2",
       "name": "schema",
       "nodeKind": "BlankNodeOrIRI",
@@ -511,56 +624,10 @@
       }
     },
     {
-      "id": "dtmi:dtdl:constraint:Interface:schemas;2",
-      "name": "schemas",
-      "nodeKind": "IRI",
-      "type": "dtmi:dtdl:class:ComplexSchema;2",
-      "isPlural": true,
-      "constraint": {}
-    },
-    {
       "id": "dtmi:dtdl:constraint:Unit:symbol;2",
       "name": "symbol",
       "nodeKind": "Literal",
       "type": "http://www.w3.org/2001/XMLSchema#string",
-      "constraint": {
-        "maxCount": 1
-      }
-    },
-    {
-      "id": "dtmi:dtdl:constraint:Relationship:target;2",
-      "name": "target",
-      "nodeKind": "IRI",
-      "constraint": {
-        "maxCount": 1
-      }
-    },
-    {
-      "id": "dtmi:dtdl:constraint:Enum:valueSchema;2",
-      "name": "valueSchema",
-      "nodeKind": "IRI",
-      "type": "dtmi:dtdl:class:Schema;2",
-      "isRequired": true,
-      "constraint": {
-        "minCount": 1,
-        "maxCount": 1,
-        "in": ["dtmi:dtdl:instance:Schema:string;2", "dtmi:dtdl:instance:Schema:integer;2"]
-      }
-    },
-    {
-      "id": "dtmi:dtdl:constraint:Property:writable;2",
-      "name": "writable",
-      "nodeKind": "Literal",
-      "type": "http://www.w3.org/2001/XMLSchema#boolean",
-      "constraint": {
-        "maxCount": 1
-      }
-    },
-    {
-      "id": "dtmi:dtdl:constraint:Relationship:writable;2",
-      "name": "writable",
-      "nodeKind": "Literal",
-      "type": "http://www.w3.org/2001/XMLSchema#boolean",
       "constraint": {
         "maxCount": 1
       }
