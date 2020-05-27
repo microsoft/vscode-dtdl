@@ -31,7 +31,7 @@ export interface PropertyNode {
   isPlural?: boolean;
   isRequired?: boolean;
   isTypeInferable?: boolean;
-  dictionaryKey?: string;
+  uniqueKeys?: string[];
   constraint: ConstraintNode;
 }
 
