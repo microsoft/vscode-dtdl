@@ -7,7 +7,6 @@ import { DiagnosticMessage, DigitalTwinConstants } from "./digitalTwinConstants"
 import { ClassNode, Literal, NodeKind, PropertyNode } from "./digitalTwinGraph";
 import { IntelliSenseUtility, JsonNodeType, ModelContent, PropertyPair } from "./intelliSenseUtility";
 import { LANGUAGE_CODE } from "./languageCode";
-import { Constants } from "../common/constants";
 
 /**
  * Diagnostic problem
@@ -440,7 +439,10 @@ export class DigitalTwinDiagnosticProvider {
     for (const item of items) {
       if (item.type === JsonNodeType.Object) {
         propertyValue = IntelliSenseUtility.getPropertyValueOfObjectByKey(key, item);
-        itemValue = propertyValue ? propertyValue.value.toString() : Constants.EMPTY_STRING;
+        if (!propertyValue || IntelliSenseUtility.isContainerNode(propertyValue)) {
+          continue;
+        }
+        itemValue = propertyValue.value.toString();
       } else if (item.type === JsonNodeType.String && key === DigitalTwinConstants.ID) {
         // if type is json string node, it should be dtmi, e.g. Interface/extends
         propertyValue = item;
