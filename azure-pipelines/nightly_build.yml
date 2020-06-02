@@ -38,10 +38,3 @@ steps:
     displayName: Modify package.json for release candidates
 
   - template: common/package_steps.yml
-
-  # publish vsix to marketplace for release candidates
-  - bash: yes | vsce unpublish -p $MARKETPLACE_TOKEN $(nightly_publisher).$(nightly_extension_name) && vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
-    displayName: Deploy release candidates to marketplace
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
-    env:
-      MARKETPLACE_TOKEN: $(iotdevexbuild_marketplace_token)
