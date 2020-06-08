@@ -4,7 +4,7 @@ All notable changes to the "vscode-dtdl" extension will be documented in this fi
 
 ## Version 0.1.0
 
-- Release date: May 19, 2020
+- Release date: June 8, 2020
 
 ### Added
 
