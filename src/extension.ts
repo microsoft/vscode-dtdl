@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(outputChannel);
   context.subscriptions.push(telemetryClient);
 
-  // Use local abstract path for debug
+  // Use local absolute path for debugging
   const serverPath = context.asAbsolutePath(Constants.DTDL_LANGUAGE_SERVER_RELATIVE_PATH);
   const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
