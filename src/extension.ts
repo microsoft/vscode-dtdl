@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(outputChannel);
   context.subscriptions.push(telemetryClient);
 
-  // You can change to your local path for debugging, such as "D:\\dtdl-language-server\\lib\\main.js";
+  // Use local abstract path for debug
   const serverPath = context.asAbsolutePath(Constants.DTDL_LANGUAGE_SERVER_RELATIVE_PATH);
   const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
@@ -90,6 +90,15 @@ export function activate(context: vscode.ExtensionContext): void {
     serverOptions,
     clientOptions
   );
+
+  client.onReady().then(() => {
+    client.onNotification("custom/onDidOpenModelFile", version => {
+      const telemetryContext: TelemetryContext = TelemetryContext.startNew();
+      telemetryContext.properties.dtdlVersion = version;
+      telemetryContext.end();
+      telemetryClient.sendEvent(EventType.OpenModelFile, telemetryContext);
+    });
+  });
 
   client.start();
 
