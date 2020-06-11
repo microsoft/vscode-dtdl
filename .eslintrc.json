@@ -1,0 +1,26 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended"
+  ],
+  "env": {
+    "es6": true,
+    "node": true,
+    "commonjs": true
+  },
+  "plugins": [
+    "@typescript-eslint/eslint-plugin"
+  ],
+  "rules": {
+    "prettier/prettier": ["error", {"printWidth": 120}],
+    "max-len": ["error", {"code": 120, "ignorePattern": "^import\\s.+\\sfrom\\s.+;$", "ignoreStrings": true}],
+    "@typescript-eslint/no-empty-function": ["error", { "allow": ["constructors"] }],
+    "object-curly-spacing": ["error", "always"]
+  }
+}

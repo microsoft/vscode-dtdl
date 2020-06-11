@@ -14,7 +14,7 @@ import { UIConstants } from "../view/uiConstants";
  * DigitalTwin model type
  */
 export enum ModelType {
-  Interface = "Interface",
+  Interface = "Interface"
 }
 
 /**
@@ -83,7 +83,7 @@ export class DeviceModelManager {
     const modelId: string = DeviceModelManager.generateModelId(name);
     const filePath: string = path.join(folder, DeviceModelManager.generateModelFileName(name));
     const templatePath: string = this.context.asAbsolutePath(
-      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName()),
+      path.join(Constants.RESOURCE_FOLDER, Constants.TEMPLATE_FOLDER, DeviceModelManager.getTemplateFileName())
     );
     const replacement = new Map<string, string>();
     replacement.set(Constants.MODEL_ID_PLACEHOLDER, modelId);

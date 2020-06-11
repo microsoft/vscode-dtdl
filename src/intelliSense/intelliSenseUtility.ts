@@ -16,7 +16,7 @@ export enum JsonNodeType {
   String = "string",
   Number = "number",
   Boolean = "boolean",
-  Property = "property",
+  Property = "property"
 }
 
 /**
@@ -95,6 +95,25 @@ export class IntelliSenseUtility {
    */
   public static getPropertiesOfClassNode(classNode: ClassNode): PropertyNode[] {
     return IntelliSenseUtility.graph.getPropertiesOfClassNode(classNode);
+  }
+
+  public static getInstancesOfPropertyNode(propertyNode: PropertyNode): string[] {
+    const instances: string[] = [];
+    if (propertyNode?.constraint.in) {
+      for (const instance of propertyNode.constraint.in) {
+        instances.push(IntelliSenseUtility.resolveNodeName(instance));
+      }
+      return instances;
+    }
+
+    if (propertyNode?.type) {
+      const typeClassNode: ClassNode | undefined = IntelliSenseUtility.getClassNode(propertyNode.type);
+      if (typeClassNode) {
+        return IntelliSenseUtility.getInstancesOfClassNode(typeClassNode);
+      }
+    }
+
+    return instances;
   }
 
   /**
@@ -307,7 +326,7 @@ export class IntelliSenseUtility {
     }
     const outerProperty: parser.Node | undefined = IntelliSenseUtility.getParentJsonNodeByType(
       node,
-      JsonNodeType.Property,
+      JsonNodeType.Property
     );
     if (!outerProperty) {
       return Constants.EMPTY_STRING;

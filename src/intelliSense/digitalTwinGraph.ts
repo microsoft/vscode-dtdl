@@ -31,7 +31,7 @@ export interface PropertyNode {
   isPlural?: boolean;
   isRequired?: boolean;
   isTypeInferable?: boolean;
-  dictionaryKey?: string;
+  uniqueKeys?: string[];
   constraint: ConstraintNode;
 }
 
@@ -57,7 +57,7 @@ export enum Literal {
   LangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
   String = "http://www.w3.org/2001/XMLSchema#string",
   Integer = "http://www.w3.org/2001/XMLSchema#integer",
-  Boolean = "http://www.w3.org/2001/XMLSchema#boolean",
+  Boolean = "http://www.w3.org/2001/XMLSchema#boolean"
 }
 
 /**
@@ -65,7 +65,7 @@ export enum Literal {
  */
 export enum NodeKind {
   Literal = "Literal",
-  IRI = "IRI",
+  IRI = "IRI"
 }
 
 /**
@@ -75,7 +75,7 @@ enum GraphElement {
   BaseClass = "baseClass",
   PartitionClass = "partitionClass",
   Class = "class",
-  Property = "property",
+  Property = "property"
 }
 
 /**
@@ -101,9 +101,10 @@ export class DigitalTwinGraph {
    * @param context extension context
    * @param fileName file name
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private static async resolveDefinition(context: vscode.ExtensionContext, fileName: string): Promise<any> {
     const filePath: string = context.asAbsolutePath(
-      path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName),
+      path.join(Constants.RESOURCE_FOLDER, Constants.DEFINITION_FOLDER, fileName)
     );
     return await Utility.getJsonContent(filePath);
   }
@@ -112,6 +113,7 @@ export class DigitalTwinGraph {
    * check if it is a valid node
    * @param node node
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private static isValidNode(node: any): boolean {
     return node.id && node.name;
   }
@@ -284,6 +286,7 @@ export class DigitalTwinGraph {
    * build DigitalTwin graph
    * @param graphJson json object of graph definition
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private buildGraph(graphJson: any): void {
     this.parse(graphJson);
     this.inheritProperties();
@@ -295,6 +298,7 @@ export class DigitalTwinGraph {
    * parse content of graph json
    * @param graphJson json object of graph definition
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private parse(graphJson: any): void {
     for (const key in graphJson) {
       if (graphJson.hasOwnProperty(key)) {
@@ -375,14 +379,14 @@ export class DigitalTwinGraph {
       name: Constants.EMPTY_STRING,
       nodeKind: Constants.EMPTY_STRING,
       constraint: {
-        in: this.partitionClasses,
-      },
+        in: this.partitionClasses
+      }
     };
     this.propertyNodes.set(entryNode.id, entryNode);
     // language node
     const languageNode: ClassNode = {
       id: Literal.LangString,
-      name: DigitalTwinConstants.LANG_STRING,
+      name: DigitalTwinConstants.LANG_STRING
     };
     this.classNodes.set(languageNode.id, languageNode);
   }
@@ -396,7 +400,7 @@ export class DigitalTwinGraph {
     if (!valueSchema || !valueSchema.constraint.in) {
       return;
     }
-    valueSchema.constraint.in.forEach((instance) => this.enumValueTypes.add(this.getNodeName(instance)));
+    valueSchema.constraint.in.forEach(instance => this.enumValueTypes.add(this.getNodeName(instance)));
   }
 
   /**

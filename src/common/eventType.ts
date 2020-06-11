@@ -6,5 +6,5 @@
  */
 export enum EventType {
   CreateInterface = "vscode-dtdl.createInterface",
-  OpenModelFile = "openModelFile",
+  OpenModelFile = "openModelFile"
 }

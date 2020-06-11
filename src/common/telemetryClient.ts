@@ -17,6 +17,7 @@ export class TelemetryClient {
    * check if it is a valid package json
    * @param packageJSON package json
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   private static isValidPackageJSON(packageJSON: any): boolean {
     return packageJSON.name && packageJSON.publisher && packageJSON.version && packageJSON.aiKey;
   }
@@ -25,16 +26,17 @@ export class TelemetryClient {
    * check if it is Microsoft internal user
    */
   private static isInternalUser(): boolean {
-    const userDomain: string =
-      process.env.USERDNSDOMAIN ? process.env.USERDNSDOMAIN.toLowerCase() : Constants.EMPTY_STRING;
+    const userDomain: string = process.env.USERDNSDOMAIN
+      ? process.env.USERDNSDOMAIN.toLowerCase()
+      : Constants.EMPTY_STRING;
     return userDomain.endsWith("microsoft.com");
   }
 
   public extensionId: string = Constants.EMPTY_STRING;
-  public extensionVersion: string = "unknown";
+  public extensionVersion = "unknown";
 
   private client: TelemetryReporter | undefined;
-  private isInternal: boolean = false;
+  private isInternal = false;
   constructor(context: vscode.ExtensionContext) {
     const packageJSON = JSON.parse(fs.readFileSync(context.asAbsolutePath("./package.json"), "utf8"));
     if (!packageJSON || !TelemetryClient.isValidPackageJSON(packageJSON)) {
@@ -66,7 +68,9 @@ export class TelemetryClient {
     if (telemetryContext.succeeded()) {
       this.client.sendTelemetryEvent(eventName, telemetryContext.properties, telemetryContext.measurements);
     } else {
-      this.client.sendTelemetryErrorEvent(eventName, telemetryContext.properties, telemetryContext.measurements, ["errorMessage"]);
+      this.client.sendTelemetryErrorEvent(eventName, telemetryContext.properties, telemetryContext.measurements, [
+        "errorMessage"
+      ]);
     }
   }
 

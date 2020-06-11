@@ -19,7 +19,7 @@ export class Utility {
   public static async createFileFromTemplate(
     templatePath: string,
     filePath: string,
-    replacement: Map<string, string>,
+    replacement: Map<string, string>
   ): Promise<void> {
     const template: string = await fs.readFile(templatePath, Constants.UTF8);
     const content: string = Utility.replaceAll(template, replacement);
@@ -51,6 +51,7 @@ export class Utility {
    * get json content from file
    * @param filePath file path
    */
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   public static async getJsonContent(filePath: string): Promise<any> {
     return fs.readJson(filePath, { encoding: Constants.UTF8 });
   }
@@ -60,10 +61,10 @@ export class Utility {
    * @param str string
    * @param replacement replacement
    */
-  private static replaceAll(str: string, replacement: Map<string, string>): string {
+  public static replaceAll(str: string, replacement: Map<string, string>): string {
     const keys = Array.from(replacement.keys());
     const pattern = new RegExp(keys.join("|"), "g");
-    return str.replace(pattern, (matched) => {
+    return str.replace(pattern, matched => {
       const value: string | undefined = replacement.get(matched);
       return value || matched;
     });
