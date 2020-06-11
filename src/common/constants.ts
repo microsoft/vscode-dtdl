@@ -8,15 +8,13 @@ export class Constants {
   public static readonly CHANNEL_NAME = "DTDL";
   public static readonly UTF8 = "utf8";
   public static readonly EMPTY_STRING = "";
-  public static readonly COMPLETION_TRIGGER = '"';
   public static readonly JSON_SPACE = 2;
-  public static readonly DEFAULT_RADIX = 10;
-  public static readonly DEFAULT_TIMER_MS = 1000;
   public static readonly RESOURCE_FOLDER = "resources";
   public static readonly TEMPLATE_FOLDER = "templates";
-  public static readonly DEFINITION_FOLDER = "definitions";
   public static readonly SAMPLE_FILE_NAME = "sample";
-  public static readonly GRAPH_FILE_NAME = "graph.json";
+  public static readonly DTDL_LANGUAGE_SERVER_ID = "dtdl-language-server";
+  public static readonly DTDL_LANGUAGE_SERVER_NAME = "DTDL Language Server";
+  public static readonly DTDL_LANGUAGE_SERVER_RELATIVE_PATH = "dist/main.js";
 
   public static readonly DEVICE_MODEL_COMPONENT = "Device Model";
   public static readonly MODEL_NAME_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;

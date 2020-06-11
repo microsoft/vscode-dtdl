@@ -4,6 +4,7 @@
 
 const path = require("path");
 const webpack = require("webpack");
+const CopyPlugin = require("copy-webpack-plugin");
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -39,6 +40,15 @@ const config = {
     ]
   },
   // ignore since it is not used in extension
-  plugins: [new webpack.IgnorePlugin(/applicationinsights-native-metrics/)]
+  plugins: [
+    new webpack.IgnorePlugin(/applicationinsights-native-metrics/),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: "node_modules/dtdl-language-server/lib/main.js"
+        }
+      ]
+    })
+  ]
 };
 module.exports = config;

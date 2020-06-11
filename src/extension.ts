@@ -11,88 +11,10 @@ import { TelemetryClient } from "./common/telemetryClient";
 import { TelemetryContext } from "./common/telemetryContext";
 import { UserCancelledError } from "./common/userCancelledError";
 import { DeviceModelManager, ModelType } from "./deviceModel/deviceModelManager";
-import { DigitalTwinCompletionItemProvider } from "./intelliSense/digitalTwinCompletionItemProvider";
-import { DigitalTwinDiagnosticProvider } from "./intelliSense/digitalTwinDiagnosticProvider";
-import { IntelliSenseUtility, ModelContent } from "./intelliSense/intelliSenseUtility";
 import { MessageType, UI } from "./view/ui";
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient";
 
-function initIntelliSense(context: vscode.ExtensionContext, telemetryClient: TelemetryClient): void {
-  // init DigitalTwin graph
-  IntelliSenseUtility.initGraph(context);
-  // register provider
-  const selector: vscode.DocumentSelector = {
-    language: "json",
-    scheme: "file"
-  };
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      selector,
-      new DigitalTwinCompletionItemProvider(),
-      Constants.COMPLETION_TRIGGER
-    )
-  );
-  // register diagnostic
-  const diagnosticCollection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection(
-    Constants.CHANNEL_NAME
-  );
-  context.subscriptions.push(diagnosticCollection);
-  let pendingDiagnostic: NodeJS.Timer;
-  const diagnosticProvider = new DigitalTwinDiagnosticProvider();
-  const activeTextEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-  if (activeTextEditor && IntelliSenseUtility.isDigitalTwinFile(activeTextEditor.document)) {
-    // delay for DigitalTwin graph initialization
-    pendingDiagnostic = setTimeout(
-      () => diagnosticProvider.updateDiagnostics(activeTextEditor.document, diagnosticCollection),
-      Constants.DEFAULT_TIMER_MS
-    );
-  }
-  context.subscriptions.push(
-    vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor | undefined) => {
-      // only update diagnostics if it is a new document
-      if (
-        editor &&
-        IntelliSenseUtility.isDigitalTwinFile(editor.document) &&
-        !diagnosticCollection.has(editor.document.uri)
-      ) {
-        diagnosticProvider.updateDiagnostics(editor.document, diagnosticCollection);
-      }
-    })
-  );
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent) => {
-      if (IntelliSenseUtility.isDigitalTwinFile(event.document)) {
-        if (pendingDiagnostic) {
-          clearTimeout(pendingDiagnostic);
-        }
-        pendingDiagnostic = setTimeout(
-          () => diagnosticProvider.updateDiagnostics(event.document, diagnosticCollection),
-          Constants.DEFAULT_TIMER_MS
-        );
-      }
-    })
-  );
-  context.subscriptions.push(
-    vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => {
-      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
-        diagnosticCollection.delete(document.uri);
-      }
-    })
-  );
-  // send usage telemetry when file is opened
-  context.subscriptions.push(
-    vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
-      if (IntelliSenseUtility.isDigitalTwinFile(document)) {
-        const modelContent: ModelContent | undefined = IntelliSenseUtility.parseDigitalTwinModel(document.getText());
-        if (modelContent) {
-          const telemetryContext: TelemetryContext = TelemetryContext.startNew();
-          telemetryContext.properties.dtdlVersion = modelContent.version.toString();
-          telemetryContext.end();
-          telemetryClient.sendEvent(EventType.OpenModelFile, telemetryContext);
-        }
-      }
-    })
-  );
-}
+let client: LanguageClient;
 
 function initCommand(
   context: vscode.ExtensionContext,
@@ -145,8 +67,41 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(outputChannel);
   context.subscriptions.push(telemetryClient);
 
-  // register events
-  initIntelliSense(context, telemetryClient);
+  // Use local absolute path for debugging
+  const serverPath = context.asAbsolutePath(Constants.DTDL_LANGUAGE_SERVER_RELATIVE_PATH);
+  const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+
+  const serverOptions: ServerOptions = {
+    run: { module: serverPath, transport: TransportKind.ipc },
+    debug: {
+      module: serverPath,
+      transport: TransportKind.ipc,
+      options: debugOptions
+    }
+  };
+
+  const clientOptions: LanguageClientOptions = {
+    documentSelector: [{ scheme: "file", language: "json" }]
+  };
+
+  client = new LanguageClient(
+    Constants.DTDL_LANGUAGE_SERVER_ID,
+    Constants.DTDL_LANGUAGE_SERVER_NAME,
+    serverOptions,
+    clientOptions
+  );
+
+  client.onReady().then(() => {
+    client.onNotification("custom/onDidOpenModelFile", version => {
+      const telemetryContext: TelemetryContext = TelemetryContext.startNew();
+      telemetryContext.properties.dtdlVersion = version;
+      telemetryContext.end();
+      telemetryClient.sendEvent(EventType.OpenModelFile, telemetryContext);
+    });
+  });
+
+  client.start();
+
   initCommand(
     context,
     telemetryClient,
@@ -161,5 +116,5 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {
-  // Do nothing.
+  client.stop();
 }
