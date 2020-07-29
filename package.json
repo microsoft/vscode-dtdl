@@ -90,7 +90,7 @@
     "copy-webpack-plugin": "^6.0.1"
   },
   "dependencies": {
-    "dtdl-language-server": "^0.4.0",
+    "dtdl-language-server": "^0.4.1",
     "fs-extra": "^7.0.1",
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-languageclient": "^6.1.3"
