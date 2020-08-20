@@ -57,7 +57,7 @@ export class UI {
    * @param label label
    */
   public static async selectRootFolder(label: string): Promise<string> {
-    const workspaceFolders: vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders;
+    const workspaceFolders: ReadonlyArray<vscode.WorkspaceFolder> | undefined = vscode.workspace.workspaceFolders;
     // use the only folder as default
     if (workspaceFolders && workspaceFolders.length === 1) {
       return workspaceFolders[0].uri.fsPath;
