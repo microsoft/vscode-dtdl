@@ -21,7 +21,7 @@
   "homepage": "https://github.com/Microsoft/vscode-dtdl/blob/master/README.md",
   "categories": [
     "Azure",
-    "Other"
+    "Snippets"
   ],
   "activationEvents": [
     "onCommand:vscode-dtdl.createInterface",
@@ -56,6 +56,12 @@
         "language": "colorized-channel",
         "scopeName": "text.channel.colorized",
         "path": "./syntaxes/colorized.channel.tmLanguage"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "json",
+        "path": "./snippets/snippets.json"
       }
     ]
   },

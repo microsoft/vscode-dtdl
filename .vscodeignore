@@ -1,14 +1,15 @@
 .vscode
 .vscode-test
 node_modules
+__mocks__
 out/
 src/
 scripts/
+azure-pipelines/
 .gitignore
 package-lock.json
 tsconfig.json
 tslint.json
 webpack.config.js
-azure-pipelines/
 jest.config.js
 **/*.map
