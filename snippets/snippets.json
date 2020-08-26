@@ -1,0 +1,23 @@
+{
+  "Add DTDL Property" : {
+    "prefix": "dtp",
+    "body" : [
+      "{\n\t\"@type\": \"Property\",\n\t\"name\": \"$1\",\n\t\"schema\": $2\n}"
+    ],
+    "description": "Adds a DTDL property"
+  },
+  "Add DTDL Telemetry" : {
+    "prefix": "dtt",
+    "body" : [
+      "{\n\t\"@type\": \"Telemetry\",\n\t\"name\": \"$1\",\n\t\"schema\": $2\n}"
+    ],
+    "description": "Adds a DTDL Telemetry"
+  },
+  "Add DTDL Command" : {
+    "prefix": "dtc",
+    "body" : [
+      "{\n\t\"@type\": \"Command\",\n\t\"name\": \"$1\",\n\t\"schema\": $2\n}"
+    ],
+    "description": "Adds a DTDL Command"
+  }
+}
