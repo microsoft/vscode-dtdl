@@ -1,14 +1,66 @@
 [![Build Status](https://dev.azure.com/mseng/VSIoT/_apis/build/status/Azure%20Digital%20Twins/vscode-azure-digital-twins.nightly?branchName=develop)](https://dev.azure.com/mseng/VSIoT/_build/latest?definitionId=10125&branchName=develop)
 
-# DTDL editor for Visual Studio Code
+# DTDL Editor for Visual Studio Code
 
-This extension adds support to the [Digital Twins Definition Language](https://aka.ms/DTDL), with the next features:
+## Overview
+The [Digital Twin Definition Language](https://aka.ms/DTDL) (DTDL) is a language for describing models for Plug and Play devices, device digital twins, and logical digital twins. Broadly, modeling enables IoT solutions to provision, use, and configure digital twins of all kinds from multiple sources in a single solution. Using DTDL to describe any digital twin’s abilities enables the IoT platform and IoT solutions to leverage the semantics of each digital twin.
 
-- Syntax validation.
+With the [DTDL extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.vscode-dtdl) , you can read and write documents using DTDL more efficiently taking full advantage of the following key features:
+
+- Create interfaces from the command palette with predefined or customized templates. 
 - Intellisense to help you with the language syntax (including auto-completion).
-- Create interfaces from the command palette.
+- Use predefined code snippets to develop DTDL efficiently. 
+- Syntax validation.
 
-DTDL is a language for describing models and interfaces for IoT digital twins. Digital twins are models of entities in the physical environment such as shipping containers, rooms, factory floors, and other entities that participate in IoT solutions. Broadly, modeling enables IoT solutions to provision, use, and configure IoT devices and logical entities from multiple sources in a single solution. Using DTDL to describe a digital twin's capabilities enables the IoT platform and IoT solutions to leverage the semantics of the entity.
+## Get Started
+
+### Create Interface
+
+You could use the command palette to create interface from predefined or customized templates. 
+
+- In Visual Studio Code, select **View > Command Palette** to open the VS Code command palette.
+- In the command palette, enter and run the command **DTDL: Create Interface** 
+- Follow the instruction to assign the interface name and choose a template.  
+- A JSON file will be created in the current folder. The file name is based on the input interface name. 
+- You should replace the **{company}** field in @id with your own company’s name. Note that @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#digital-twin-model-identifier-dtmi) (DTMI) and should follow the DTMI rule to uniquely identify the device model.
+- You could extend the interface with new types defined in [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md). 
+
+### Configure Customized Templates Store
+
+This extension provides an initial template, and keep it as simple as possible to help you get started. It also provides a mechanism to add your own customized templates.  
+
+#### **Prepare the environment**
+
+As default, the extension will load the customized templates from "templates" folder in the extension installation location ([Windows](https://code.visualstudio.com/docs/setup/windows) | [mac OS](https://code.visualstudio.com/docs/setup/mac) | [Linux](https://code.visualstudio.com/docs/setup/linux)). You could also change it via Visual Studio Code settings.
+
+
+#### **Get and share more customized templates**
+
+TBD
+
+#### **Add the customized templates**
+
+1. If your template follow this pattern, the extension will help you replace the content by interface name. Otherwise, it will copy the template content directly to new interface file. 
+    - **"@id"** : If the "@id" is defined as "{modelId}" in the template, the extension will generate a path based in the assigned interface name. 
+    - **"displayName"** ：If the "displayName" is defined as "{modelName}" in the template, the extension will replace it with assigned interface name.
+2. Copy your customized templates to the store folder 
+3. Keep the file name short and meaningful, because the extension will let you choose the template by file name when creating interface via command palette. 
+
+### Use Predefined Code Snippets
+
+Besides the basic auto completion, this extension also provides some predefined code snippets to help you develop DTDL efficiently. 
+
+| Code Snippet | Description |
+| --- | --- |
+| `dtt`  | Code snippet of telemetry |
+| `dtp`  | Code snippet of property |
+| `dtc`  | Code snippet of command |
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `DTDL: Create Interface...`  | Create new interface from predefined or customized templates. |
 
 ## Contributing
 
