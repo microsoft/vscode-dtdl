@@ -31,7 +31,7 @@ This extension provides an initial template, and keep it as simple as possible t
 
 #### **Prepare the environment**
 
-As default, the extension will load the customized templates from "templates" folder in the extension installation location ([Windows](https://code.visualstudio.com/docs/setup/windows) | [mac OS](https://code.visualstudio.com/docs/setup/mac) | [Linux](https://code.visualstudio.com/docs/setup/linux)). You could also change it via Visual Studio Code settings.
+As default, the extension will load the customized templates from "templates" folder in the [extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed). You could also change it via Visual Studio Code settings.
 
 
 #### **Get and share more customized templates**
