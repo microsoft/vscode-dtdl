@@ -43,7 +43,7 @@ export class DeviceModelManager {
    * @param type model type
    */
   public static getTemplateFileName(): string {
-    return DeviceModelManager.generateModelFileName(Constants.SAMPLE_FILE_NAME);
+    return DeviceModelManager.generateModelFileName(Constants.BASIC_TEMPLATE);
   }
 
   private readonly component: string;

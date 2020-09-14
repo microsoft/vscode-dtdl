@@ -40,7 +40,7 @@
     "jsonValidation": [
       {
         "fileMatch": "*.json",
-        "url": "./resources/templates/emptySchema.json"
+        "url": "./resources/jsonSchema.json"
       }
     ],
     "languages": [

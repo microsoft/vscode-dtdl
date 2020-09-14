@@ -11,7 +11,7 @@ export class Constants {
   public static readonly JSON_SPACE = 2;
   public static readonly RESOURCE_FOLDER = "resources";
   public static readonly TEMPLATE_FOLDER = "templates";
-  public static readonly SAMPLE_FILE_NAME = "sample";
+  public static readonly BASIC_TEMPLATE = "basic";
   public static readonly DTDL_LANGUAGE_SERVER_ID = "dtdl-language-server";
   public static readonly DTDL_LANGUAGE_SERVER_NAME = "DTDL Language Server";
   public static readonly DTDL_LANGUAGE_SERVER_RELATIVE_PATH = "dist/main.js";
