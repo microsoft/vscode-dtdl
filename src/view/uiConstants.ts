@@ -6,6 +6,7 @@
  */
 export class UIConstants {
   public static readonly SELECT_ROOT_FOLDER_LABEL = "Select folder";
+  public static readonly SELECT_TEMPLATE_FILE_LABEL = "Select template file";
   public static readonly INPUT_MODEL_NAME_LABEL = "Input device model name";
   public static readonly BROWSE_LABEL = "Browse...";
 }
