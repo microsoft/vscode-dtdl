@@ -79,6 +79,25 @@ export class UI {
   }
 
   /**
+   * select template file
+   * @param label label
+   * @param folder template folder
+   */
+  public static async selectTemplateFile(label: string, folder: string): Promise<string> {
+    const files: string[] = Utility.listFile(folder, Constants.TEMPLATE_FILE_GLOB);
+    if (files.length === 1) {
+      return files[0];
+    }
+    const items: vscode.QuickPickItem[] = files.map(file => {
+      return {
+        label: file
+      };
+    });
+    const selected: vscode.QuickPickItem = await UI.showQuickPick(label, items);
+    return selected.label;
+  }
+
+  /**
    * input model name and validate
    * @param label label
    * @param type model type

@@ -18,12 +18,14 @@ jest.mock("../view/ui");
 
 describe("Device model manager", () => {
   const folder = "root";
+  const template = "template";
   const context = vscode.ExtensionContext;
   const channel = new ColorizedChannel(Constants.CHANNEL_NAME);
   const manager = new DeviceModelManager(context, channel);
 
   UI.selectRootFolder = jest.fn().mockResolvedValue(folder);
   UI.inputModelName = jest.fn().mockResolvedValue("test");
+  UI.selectTemplateFile = jest.fn().mockResolvedValue(template);
 
   test("create interface successfully", async () => {
     await manager.createModel(ModelType.Interface);

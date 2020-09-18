@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+import * as glob from "glob";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DeviceModelManager, ModelType } from "../deviceModel/deviceModelManager";
@@ -48,12 +49,11 @@ export class Utility {
   }
 
   /**
-   * get json content from file
-   * @param filePath file path
+   * list file in folder
+   * @param folder folder path
    */
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  public static async getJsonContent(filePath: string): Promise<any> {
-    return fs.readJson(filePath, { encoding: Constants.UTF8 });
+  public static listFile(folder: string, filePattern: string): string[] {
+    return glob.sync(filePattern, { cwd: folder });
   }
 
   /**
