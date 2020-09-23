@@ -16,7 +16,7 @@
   "Add DTDL Command" : {
     "prefix": "dtc",
     "body" : [
-      "{\n\t\"@type\": \"Command\",\n\t\"name\": \"$1\",\n\t\"schema\": $2\n}"
+      "{\n\t\"@type\": \"Command\",\n\t\"name\": \"$1\"\n}"
     ],
     "description": "Adds a DTDL Command"
   }
