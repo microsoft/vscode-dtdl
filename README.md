@@ -19,32 +19,19 @@ With the [DTDL extension for Visual Studio Code](https://marketplace.visualstudi
 You could use the command palette to create interface from predefined or customized templates. 
 
 - In Visual Studio Code, select **View > Command Palette** to open the VS Code command palette.
-- In the command palette, enter and run the command **DTDL: Create Interface** 
-- Follow the instruction to assign the interface name and choose a template.  
-- A JSON file will be created in the current folder. The file name is based on the input interface name. 
+- In the command palette, enter and run the command **DTDL: Create Interface**. 
+- Follow the instruction to assign the interface name. 
+- If there are multiple templates existing, choose a template you need. Otherwise, the extension will the basic template as default.
+- A JSON file will be created in the current folder. The file name is based on the interface name you assigned. 
 - You should replace the **{company}** field in @id with your own company’s name. Note that @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#digital-twin-model-identifier-dtmi) (DTMI) and should follow the DTMI rule to uniquely identify the device model.
-- You could extend the interface with new types defined in [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md). 
-
-### Configure Customized Templates Store
-
-This extension provides an initial template, and keep it as simple as possible to help you get started. It also provides a mechanism to add your own customized templates.  
-
-#### **Prepare the environment**
-
-As default, the extension will load the customized templates from "templates" folder in the [extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed). You could also change it via Visual Studio Code settings.
+- You could extend the interface with [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md). 
 
 
-#### **Get and share more customized templates**
+### Intellisense and Syntax validation
 
-TBD
+This extension could help you with the language syntax (including auto-completion) and also validate the syntax with [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md).
 
-#### **Add the customized templates**
-
-1. If your template follow this pattern, the extension will help you replace the content by interface name. Otherwise, it will copy the template content directly to new interface file. 
-    - **"@id"** : If the "@id" is defined as "{modelId}" in the template, the extension will generate a path based in the assigned interface name. 
-    - **"displayName"** ：If the "displayName" is defined as "{modelName}" in the template, the extension will replace it with assigned interface name.
-2. Copy your customized templates to the store folder 
-3. Keep the file name short and meaningful, because the extension will let you choose the template by file name when creating interface via command palette. 
+> Note: This extension only supports these [Semantic Types](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#semantic-types).
 
 ### Use Predefined Code Snippets
 
@@ -55,6 +42,33 @@ Besides the basic auto completion, this extension also provides some predefined 
 | `dtt`  | Code snippet of telemetry |
 | `dtp`  | Code snippet of property |
 | `dtc`  | Code snippet of command |
+
+### Create Your Own Template
+
+#### Prepare your template file
+
+You could use any DTDL file as a template to develop efficiently. Meanwhile, you could also use these predefined tags to make your template more flexible. 
+
+- **{modelId}**: The extention will replace this tag with *dtmi:com:example:interface_name;1* when creating a new DTDL from a template. For example, if you assigned the interface name as "test", the result will be dtmi:com:example:test;1.
+- **{modelName}**: The extension will replace this tag with the interface name when creating a new DTDL from a template. 
+
+#### Import your template file
+
+- Go to [[extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed)]/vsciot-vscode.vscode-dtdl-[extension release version]/templates
+- Store your template into this folder. Keep the file name short and meaningful, because the extension will use the file name as template name. 
+
+### Create Your Own Code Snippets
+
+If you would like to create customized code snippets for VS Code, you could follow [Snippets in Visual Studio Code](https://code.visualstudio.com/docs/editor/userdefinedsnippets)
+
+### Contribute Your Templates and Code Snippets to the Community 
+
+You could also contribute your templates and code snippets to the [DTDL repository](https://github.com/microsoft/vscode-dtdl).
+
+- Uploading the new templates to **templates** folder.
+- Modifying and adding new code snippets to **snippets/snippets.json** file.
+
+Once the pull request is approved, your templates and code snippets will be released with next release of DTDL extension. 
 
 ## Commands
 
