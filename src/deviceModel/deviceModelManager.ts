@@ -52,6 +52,9 @@ export class DeviceModelManager {
     const name: string = await UI.inputModelName(UIConstants.INPUT_MODEL_NAME_LABEL, type, folder);
     const templateFolder: string = this.context.asAbsolutePath(path.join(Constants.TEMPLATE_FOLDER));
     const template: string = await UI.selectTemplateFile(UIConstants.SELECT_TEMPLATE_FILE_LABEL, templateFolder);
+    if (!template) {
+      return;
+    }
     const operation = `Create ${type} "${name}" in folder ${folder} by template "${template}"`;
     this.outputChannel.start(operation, this.component);
 
