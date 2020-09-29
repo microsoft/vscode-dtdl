@@ -23,7 +23,7 @@ You could use the command palette to create interface from predefined or customi
 - Follow the instruction to assign the interface name. 
 - If there are multiple templates existing, choose a template you need. Otherwise, the extension will the basic template as default.
 - A JSON file will be created in the current folder. The file name is based on the interface name you assigned. 
-- You should replace the **{company}** field in @id with your own company’s name without braces. Note that @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#digital-twin-model-identifier-dtmi) (DTMI) and should follow the DTMI rule to uniquely identify the device model.
+- The @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#digital-twin-model-identifier-dtmi) (DTMI). You should modify the @id following the DTMI rule to uniquely identify the device model. 
 - You could extend the interface with [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md). 
 
 
@@ -55,7 +55,7 @@ You could use any DTDL file as a template to develop efficiently. Meanwhile, you
 #### Import your template file
 
 - Go to [[extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed)]/vsciot-vscode.vscode-dtdl-[extension release version]/templates
-- Store your template into this folder. Keep the file name short and meaningful, because the extension will use the file name as template name. 
+- Store your template into this folder as a JSON file. Keep the file name short and meaningful, because the extension will use the file name as template name. 
 
 ### Create Your Own Code Snippets
 
