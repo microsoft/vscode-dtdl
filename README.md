@@ -76,6 +76,12 @@ Once the pull request is approved, your templates and code snippets will be rele
 | --- | --- |
 | `DTDL: Create Interface...`  | Create new interface from predefined or customized templates. |
 
+## Trouble Shooting 
+
+### Error when creating the interface 
+
+As default, the extension will get the available templates from *[[extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed)]/vsciot-vscode.vscode-dtdl-[extension release version]/templates*. But if delete this folder or all templates files in this folder, you will have an error when creating the interface. In order to fix this issue, you could copy the templates from [DTDL repository](https://github.com/microsoft/vscode-dtdl) to your local templates folder manually. 
+
 ## Contributing
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
