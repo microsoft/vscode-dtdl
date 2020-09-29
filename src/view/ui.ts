@@ -86,8 +86,8 @@ export class UI {
   public static async selectTemplateFile(label: string, folder: string): Promise<string> {
     const files: string[] = Utility.listFile(folder, Constants.TEMPLATE_FILE_GLOB);
     if (!files.length) {
-      UI.showNotification(MessageType.Warn, `${UIConstants.TEMPLATES_NOT_FOUND_MSG} ${folder}`);
-      return Constants.EMPTY_STRING;
+      const message = `${UIConstants.TEMPLATES_NOT_FOUND_MSG} ${folder}`;
+      throw new Error(message);
     }
     if (files.length === 1) {
       return files[0];
