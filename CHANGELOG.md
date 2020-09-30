@@ -2,13 +2,22 @@
 
 All notable changes to the "vscode-dtdl" extension will be documented in this file.
 
+## Version 1.0.0
+
+- Release date: September 30, 2020
+
+### Added
+
+- Add built-in code snippets.
+- Support user defined templates.
+
 ## Version 0.2.0
 
 - Release date: August 10, 2020
 
 ### Added
 
-- Semantic type support.
+- Support Semantic type and units.
 
 ## Version 0.1.1
 
