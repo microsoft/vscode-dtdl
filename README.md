@@ -3,29 +3,29 @@
 # DTDL Editor for Visual Studio Code
 
 ## Overview
+
 The [Digital Twin Definition Language](https://aka.ms/DTDL) (DTDL) is a language for describing models for Plug and Play devices, device digital twins, and logical digital twins. Broadly, modeling enables IoT solutions to provision, use, and configure digital twins of all kinds from multiple sources in a single solution. Using DTDL to describe any digital twin’s abilities enables the IoT platform and IoT solutions to leverage the semantics of each digital twin.
 
 With the [DTDL extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.vscode-dtdl) , you can read and write documents using DTDL more efficiently taking full advantage of the following key features:
 
-- Create interfaces from the command palette with predefined or customized templates. 
+- Create interfaces from the command palette with predefined or customized templates.
 - Intellisense to help you with the language syntax (including auto-completion).
-- Use predefined code snippets to develop DTDL efficiently. 
+- Use predefined code snippets to develop DTDL efficiently.
 - Syntax validation.
 
 ## Get Started
 
 ### Create Interface
 
-You could use the command palette to create interface from predefined or customized templates. 
+You could use the command palette to create interface from predefined or customized templates.
 
 - In Visual Studio Code, select **View > Command Palette** to open the VS Code command palette.
-- In the command palette, enter and run the command **DTDL: Create Interface**. 
-- Follow the instruction to assign the interface name. 
+- In the command palette, enter and run the command **DTDL: Create Interface**.
+- Follow the instruction to assign the interface name.
 - If there are multiple templates existing, choose a template you need. Otherwise, the extension will the basic template as default.
-- A JSON file will be created in the current folder. The file name is based on the interface name you assigned. 
-- The @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#digital-twin-model-identifier-dtmi) (DTMI). You should modify the @id following the DTMI rule to uniquely identify the device model. 
-- You could extend the interface with [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md). 
-
+- A JSON file will be created in the current folder. The file name is based on the interface name you assigned.
+- The @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#digital-twin-model-identifier-dtmi) (DTMI). You should modify the @id following the DTMI rule to uniquely identify the device model.
+- You could extend the interface with [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md).
 
 ### Intellisense and Syntax validation
 
@@ -35,7 +35,7 @@ This extension could help you with the language syntax (including auto-completio
 
 ### Use Predefined Code Snippets
 
-Besides the basic auto completion, this extension also provides some predefined code snippets to help you develop DTDL efficiently. 
+Besides the basic auto completion, this extension also provides some predefined code snippets to help you develop DTDL efficiently.
 
 | Code Snippet | Description |
 | --- | --- |
@@ -47,28 +47,28 @@ Besides the basic auto completion, this extension also provides some predefined 
 
 #### Prepare your template file
 
-You could use any DTDL file as a template to develop efficiently. Meanwhile, you could also use these predefined tags to make your template more flexible. 
+You could use any DTDL file as a template to develop efficiently. Meanwhile, you could also use these predefined tags to make your template more flexible.
 
 - **{modelId}**: The extention will replace this tag with *dtmi:com:example:interface_name;1* when creating a new DTDL from a template. For example, if you assigned the interface name as "test", the result will be dtmi:com:example:test;1.
-- **{modelName}**: The extension will replace this tag with the interface name when creating a new DTDL from a template. 
+- **{modelName}**: The extension will replace this tag with the interface name when creating a new DTDL from a template.
 
 #### Import your template file
 
 - Go to [[extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed)]/vsciot-vscode.vscode-dtdl-[extension release version]/templates
-- Store your template into this folder as a JSON file. Keep the file name short and meaningful, because the extension will use the file name as template name. 
+- Store your template into this folder as a JSON file. Keep the file name short and meaningful, because the extension will use the file name as template name.
 
 ### Create Your Own Code Snippets
 
 If you would like to create customized code snippets for VS Code, you could follow [Snippets in Visual Studio Code](https://code.visualstudio.com/docs/editor/userdefinedsnippets)
 
-### Contribute Your Templates and Code Snippets to the Community 
+### Contribute Your Templates and Code Snippets to the Community
 
 You could also contribute your templates and code snippets to the [DTDL repository](https://github.com/microsoft/vscode-dtdl).
 
 - Uploading the new templates to **templates** folder.
 - Modifying and adding new code snippets to **snippets/snippets.json** file.
 
-Once the pull request is approved, your templates and code snippets will be released with next release of DTDL extension. 
+Once the pull request is approved, your templates and code snippets will be released with next release of DTDL extension.
 
 ## Commands
 
@@ -76,11 +76,11 @@ Once the pull request is approved, your templates and code snippets will be rele
 | --- | --- |
 | `DTDL: Create Interface...`  | Create new interface from predefined or customized templates. |
 
-## Trouble Shooting 
+## Trouble Shooting
 
-### Error when creating the interface 
+### Error when creating the interface
 
-As default, the extension will get the available templates from *[[extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed)]/vsciot-vscode.vscode-dtdl-[extension release version]/templates*. But if you delete this folder or all templates files in this folder, you will have an error when creating the interface. In order to fix this issue, you could copy the templates from [DTDL repository](https://github.com/microsoft/vscode-dtdl) to your local templates folder manually. 
+As default, the extension will get the available templates from *[[extension installation location](https://code.visualstudio.com/docs/editor/extension-gallery#_where-are-extensions-installed)]/vsciot-vscode.vscode-dtdl-[extension release version]/templates*. But if you delete this folder or all templates files in this folder, you will have an error when creating the interface. In order to fix this issue, you could copy the templates from [DTDL repository](https://github.com/microsoft/vscode-dtdl) to your local templates folder manually.
 
 ## Contributing
 
@@ -126,13 +126,13 @@ You should receive a response within 24 hours. If for some reason you do not, pl
 
 Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
 
-  * Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-  * Full paths of source file(s) related to the manifestation of the issue
-  * The location of the affected source code (tag/branch/commit or direct URL)
-  * Any special configuration required to reproduce the issue
-  * Step-by-step instructions to reproduce the issue
-  * Proof-of-concept or exploit code (if possible)
-  * Impact of the issue, including how an attacker might exploit the issue
+- Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
+- Full paths of source file(s) related to the manifestation of the issue
+- The location of the affected source code (tag/branch/commit or direct URL)
+- Any special configuration required to reproduce the issue
+- Step-by-step instructions to reproduce the issue
+- Proof-of-concept or exploit code (if possible)
+- Impact of the issue, including how an attacker might exploit the issue
 
 This information will help us triage your report more quickly.
 
