@@ -3,7 +3,7 @@ const fs = require("fs");
 console.log(process.argv);
 
 const packageJson = JSON.parse(fs.readFileSync("package.json"));
-const indexOfDash = packageJson.version.indexOf('-');
+const indexOfDash = packageJson.version.indexOf("-");
 
 // remove trailing -rc if it presents.
 if (indexOfDash !== -1) {
@@ -18,7 +18,7 @@ if (cnt % 2 === 1) {
   process.exit(1);
 }
 
-for (var i = 3; i < cnt; i += 2) {
+for (let i = 3; i < cnt; i += 2) {
   packageJson[process.argv[i - 1]] = process.argv[i];
 }
 
