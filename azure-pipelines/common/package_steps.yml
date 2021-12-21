@@ -8,7 +8,12 @@ steps:
   - script: |
       vsce package
     displayName: Build VSIX Package
-
+  
+  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+    displayName: 'Generate Software Manifest'
+    inputs:
+      BuildDropPath: '.'
+  
   - task: CopyFiles@2
     inputs:
       SourceFolder: '$(System.DefaultWorkingDirectory)'
