@@ -2,7 +2,7 @@ steps:
   # install nodejs
   - task: NodeTool@0
     inputs:
-      versionSpec: '12.13.0'
+      versionSpec: '14.x'
     displayName: Install Node.js
 
   # run npm install
