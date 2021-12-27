@@ -46,16 +46,20 @@ stages:
       # modify package.json for release candidates
       # including k/v pairs in cli arguments, remove trailing -rc if presents
       - script: |
-          node scripts/modifyPackageJson.js name $(test_extension_name) displayName "$(test_display_name)" aiKey ${TEST_AIKEY} publisher $(test_publisher)
+          node scripts/modifyPackageJson.js name $(test_extension_name) displayName "$(test_display_name)" aiKey $ENV_AIKEY publisher $(test_publisher)
         displayName: Modify package.json for release candidates
         condition: and(succeeded(), eq(variables['is_rc'], 'true'))
+        env:
+          ENV_AIKEY: $(TEST_AIKEY)
 
       # modify package.json for releases
       # including k/v pairs in cli arguments, remove trailing -rc if presents
       - script: |
-          node scripts/modifyPackageJson.js aiKey ${PROD_AIKEY}
-        displayName: Modify package.json for release candidates
+          node scripts/modifyPackageJson.js aiKey $ENV_AIKEY
+        displayName: Modify package.json for releases
         condition: and(succeeded(), eq(variables['is_r'], 'true'))
+        env:
+          ENV_AIKEY: $(PROD_AIKEY)
 
       - template: common/package_steps.yml
 
