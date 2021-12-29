@@ -44,7 +44,6 @@ stages:
       - template: common/set_release_flags_steps.yml
 
       # modify package.json for release candidates
-      # including k/v pairs in cli arguments, remove trailing -rc if presents
       - script: |
           node scripts/modifyPackageJson.js name $(test_extension_name) displayName "$(test_display_name)" aiKey $ENV_AIKEY publisher $(test_publisher)
         displayName: Modify package.json for release candidates
@@ -53,7 +52,6 @@ stages:
           ENV_AIKEY: $(TEST_AIKEY)
 
       # modify package.json for releases
-      # including k/v pairs in cli arguments, remove trailing -rc if presents
       - script: |
           node scripts/modifyPackageJson.js aiKey $ENV_AIKEY
         displayName: Modify package.json for releases
