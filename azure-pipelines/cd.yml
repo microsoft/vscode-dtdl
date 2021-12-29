@@ -61,13 +61,15 @@ stages:
 
       - template: common/package_steps.yml
 
-      - task: GitHubRelease@0
+      - task: GitHubRelease@1
         displayName: Deploy Releases or Release Candidates to GitHub Release
         inputs:
-          gitHubConnection: $(GithubReleaseConnection)'
+          gitHubConnection: $(GithubReleaseConnection)
           repositoryName: '$(Build.Repository.Name)'
           action: 'create'
-          target: '$(Build.SourceVersion)'
+          tagSource: userSpecifiedTag
+          tag: $(Build.SourceBranchName)
+          isDraft: true
           isPreRelease: $(is_rc)
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
