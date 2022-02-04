@@ -102,7 +102,7 @@ stages:
       - script: |
           node scripts/modifyPackageJson.js name $(test_extension_name) displayName "$(test_display_name)" aiKey $ENV_AIKEY publisher $(test_publisher)
         displayName: Modify package.json for release candidates
-        condition: and(succeeded(), eq(${{ parameters.isPreRelease }}, true), eq(${{ parameters.publishExt }}, false))
+        condition: and(succeeded(), eq(${{ parameters.isPreRelease }}, true))
         env:
           ENV_AIKEY: $(TEST_AIKEY)
 
@@ -110,7 +110,7 @@ stages:
       - script: |
           node scripts/modifyPackageJson.js aiKey $ENV_AIKEY
         displayName: Modify package.json for releases
-        condition: and(succeeded(), eq(${{ parameters.publishExt }}, true), eq(${{ parameters.isPreRelease }}, false))
+        condition: and(succeeded(), eq(${{ parameters.isPreRelease }}, false))
         env:
           ENV_AIKEY: $(PROD_AIKEY)
 
