@@ -31,6 +31,8 @@ parameters:
 variables:
 - template: common/variables.yml
 - group: ${{ parameters.variableGroup }}
+- name: vmImage
+  value: $[variables.${{ parameters.buildAgentVmImageVar }}]
 
 stages:
 - stage: test
@@ -54,17 +56,45 @@ stages:
 
 - stage: release
   dependsOn: [test]
+  pool:
+    name: $[variables.${{ parameters.buildAgentPoolVar }}]
+    vmImage: $(vmImage)
+    demands:
+      - ImageOverride -equals $(vmImage)
   jobs:
-  - job: release
-    pool:
-      name: $[variables.${{ parameters.buildAgentPoolVar }}]
-      vmImage: $[variables.${{ parameters.buildAgentVmImageVar }}]
+  - job: CredScan
+    displayName: 'Credential Scan'
+    steps:
+    - task: CredScan@3
+      inputs:
+        outputFormat: 'pre'
+        scanFolder: '$(Build.SourcesDirectory)'
+
+    - task: PostAnalysis@1
+      inputs:
+        AllTools: false
+        APIScan: false
+        BinSkim: false
+        CodesignValidation: false
+        CredScan: true
+        FortifySCA: false
+        FxCop: false
+        ModernCop: false
+        PoliCheck: false
+        RoslynAnalyzers: false
+        SDLNativeRules: false
+        Semmle: false
+        TSLint: false
+        ToolLogsNotFoundAction: 'Standard'
+
+  - job: package_and_release
+    displayName: 'Package and Release'
+    dependsOn: CredScan
     steps:
       - template: common/setup_steps.yml
       - template: common/compile_steps.yml
       - template: common/check_steps.yml
       - template: common/test_steps.yml
-      - template: common/set_release_flags_steps.yml
 
       # modify package.json for release candidates
       - script: |

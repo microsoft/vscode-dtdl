@@ -8,21 +8,19 @@ steps:
   - script: |
       vsce package
     displayName: Build VSIX Package
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)'
+      Contents: '**/*.vsix'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
   
   - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
     displayName: 'Generate Software Manifest'
     inputs:
-      BuildDropPath: '.'
-  
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(System.DefaultWorkingDirectory)'
-      Contents: |
-        **/*.vsix
-        **/_manifest/**
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      BuildDropPath: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: $(Agent.OS)-drop
+      artifactName: drop
