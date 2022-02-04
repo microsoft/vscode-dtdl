@@ -4,14 +4,10 @@ schedules:
   branches:
     include:
     - develop
-  always: false # no matter whether there exists a new push to develop, run nightly anyway.
+  always: false
 
 trigger: none
 pr: none
-
-variables:
-- template: common/variables.yml
-- group: releaseVariables
 
 stages:
 - stage: test
@@ -32,23 +28,3 @@ stages:
       - template: common/compile_steps.yml
       - template: common/check_steps.yml
       - template: common/test_steps.yml
-
-- stage: package
-  dependsOn: [test]
-  jobs:
-  - job: package
-    pool:
-      name: $(BuildAgentPool)
-      vmImage: $(BuildAgentImage)
-    steps:
-      - template: common/setup_steps.yml
-      - template: common/compile_steps.yml
-      - template: common/check_steps.yml
-      - template: common/test_steps.yml
-
-      # modify package.json for release candidates
-      # including k/v pairs in cli arguments, remove trailing -rc if presents
-      - script: |
-          node scripts/modifyPackageJson.js name $(nightly_extension_name) displayName "$(nightly_display_name)" aiKey ${TEST_AIKEY} publisher $(nightly_publisher)
-        displayName: Modify package.json for release candidates
-      - template: common/package_steps.yml
