@@ -162,7 +162,7 @@ stages:
 
       # publish pre-release vsix to marketplace
       - bash: |
-          vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
+          vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix --pre-release
         workingDirectory: '$(System.ArtifactsDirectory)/vsix'
         displayName: Deploy pre-release VSIX to marketplace
         condition: and(succeeded(), eq(${{ parameters.publishExt }}, True), eq(${{ parameters.isPreRelease }}, True))
@@ -171,7 +171,7 @@ stages:
 
       # publish vsix to marketplace
       - bash: |
-          vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix --pre-release
+          vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
         workingDirectory: '$(System.ArtifactsDirectory)/vsix'
         displayName: Deploy release VSIX to marketplace
         condition: and(succeeded(), eq(${{ parameters.publishExt }}, True), eq(${{ parameters.isPreRelease }}, False))
