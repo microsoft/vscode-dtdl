@@ -10,7 +10,7 @@ schedules:
   displayName: 'Weekly Static Analysis'
   branches:
     include:
-    - develop
+    - main
 
 variables:
   LGTM.UploadSnapshot: true

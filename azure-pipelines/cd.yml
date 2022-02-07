@@ -3,10 +3,6 @@ trigger: none
 pr: none
 
 parameters:
-- name: variableGroup
-  displayName: 'Pipeline variable group'
-  type: string
-  default: 'releaseVariables'
 - name: buildAgentPoolVar
   displayName: 'Build agent pool'
   type: string
@@ -30,7 +26,6 @@ parameters:
 
 variables:
 - template: common/variables.yml
-- group: ${{ parameters.variableGroup }}
 - name: vmImage
   value: $[variables.${{ parameters.buildAgentVmImageVar }}]
 - name: buildPool
@@ -147,7 +142,7 @@ stages:
           path: '$(System.ArtifactsDirectory)/vsix'
 
       - task: GitHubRelease@1
-        displayName: Deploy Releases or Release Candidates to GitHub Release
+        displayName: 'Deploy Release to GitHub'
         inputs:
           gitHubConnection: $(GithubReleaseConnection)
           repositoryName: '$(Build.Repository.Name)'
