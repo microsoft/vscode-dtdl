@@ -32,7 +32,8 @@ function initCommand(
       const telemetryContext: TelemetryContext = TelemetryContext.startNew();
       try {
         return await callback(...args);
-      } catch (error) {
+      } catch (err) {
+        const error = err as any;
         telemetryContext.setError(error);
         if (error instanceof UserCancelledError) {
           outputChannel.warn(error.message);
