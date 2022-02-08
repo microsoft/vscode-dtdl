@@ -41,7 +41,7 @@ const config = {
   },
   // ignore since it is not used in extension
   plugins: [
-    new webpack.IgnorePlugin(/applicationinsights-native-metrics/),
+    new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
     new CopyPlugin({
       patterns: [
         {
