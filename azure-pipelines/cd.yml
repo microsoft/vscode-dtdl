@@ -11,16 +11,20 @@ parameters:
   displayName: 'Build agent image'
   type: string
   default: 'BuildAgentImage'
+- name: aiKeyVar
+  displayName: 'AI Key Variable'
+  type: string
+  default: 'TestAIKey'
 - name: ghRelease
   displayName: 'Draft github release'
   type: boolean
   default: false
-- name: isPreRelease
-  displayName: 'PreRelease / release candidate build'
-  type: boolean
-  default: false
 - name: publishExt
   displayName: 'Publish to Marketplace'
+  type: boolean
+  default: false
+- name: productionRelease
+  displayName: 'Release to marketplace as public (non-preview)'
   type: boolean
   default: false
 
@@ -30,6 +34,8 @@ variables:
   value: $[variables.${{ parameters.buildAgentVmImageVar }}]
 - name: buildPool
   value: $[variables.${{ parameters.buildAgentPoolVar }}]
+- name: aiKey
+  value: $[variables.${{ parameters.aiKeyVar }}]
 
 stages:
 - stage: test
@@ -99,17 +105,15 @@ stages:
 
       # modify application insights key for releases
       - script: |
-          node scripts/modifyPackageJson.js aiKey $ENV_AIKEY
+          node scripts/modifyPackageJson.js aiKey $(aiKey)
         displayName: Modify package.json for releases
-        condition: and(succeeded(), eq(${{ parameters.publishExt }}, True))
-        env:
-          ENV_AIKEY: $(PROD_AIKEY)
+        condition: and(succeeded(), ${{ parameters.publishExt }})
 
       - template: common/package_steps.yml
       
       - task: PowerShell@2
         name: 'getVersion'
-        condition: eq(${{ parameters.ghRelease }}, true)
+        condition: ${{ parameters.ghRelease }}
         displayName: Scrape tag from package.json
         inputs:
           targetType: inline
@@ -151,16 +155,16 @@ stages:
           title: Release $(versionTag)
           tag: $(versionTag)
           isDraft: true
-          isPreRelease: ${{ parameters.isPreRelease }}
+          isPreRelease: ${{ not(parameters.productionRelease) }}
           assets: '$(System.ArtifactsDirectory)/vsix/*.vsix'
-        condition: and(succeeded(), eq(${{ parameters.ghRelease }}, true))
+        condition: and(succeeded(), ${{ parameters.ghRelease }})
 
       # publish pre-release vsix to marketplace
       - bash: |
           vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix --pre-release
         workingDirectory: '$(System.ArtifactsDirectory)/vsix'
         displayName: Deploy pre-release VSIX to marketplace
-        condition: and(succeeded(), eq(${{ parameters.publishExt }}, True), eq(${{ parameters.isPreRelease }}, True))
+        condition: and(succeeded(), ${{ parameters.publishExt }}, not(${{ parameters.productionRelease }}))
         env:
           MARKETPLACE_TOKEN: $(vsciot_marketplace_token)
 
@@ -169,6 +173,6 @@ stages:
           vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
         workingDirectory: '$(System.ArtifactsDirectory)/vsix'
         displayName: Deploy release VSIX to marketplace
-        condition: and(succeeded(), eq(${{ parameters.publishExt }}, True), eq(${{ parameters.isPreRelease }}, False))
+        condition: and(succeeded(), ${{ parameters.publishExt }}, ${{ parameters.productionRelease }})
         env:
           MARKETPLACE_TOKEN: $(vsciot_marketplace_token)
