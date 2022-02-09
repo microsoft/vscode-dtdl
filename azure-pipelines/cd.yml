@@ -15,16 +15,12 @@ parameters:
   displayName: 'AI Key Variable'
   type: string
   default: 'TestAIKey'
-- name: ghRelease
-  displayName: 'Draft github release'
-  type: boolean
-  default: false
 - name: publishExt
   displayName: 'Publish to Marketplace'
   type: boolean
   default: false
 - name: productionRelease
-  displayName: 'Release to marketplace as public (non-preview)'
+  displayName: 'Publish to marketplace as public (non-preview)'
   type: boolean
   default: false
 
@@ -110,19 +106,9 @@ stages:
         condition: and(succeeded(), ${{ parameters.publishExt }})
 
       - template: common/package_steps.yml
-      
-      - task: PowerShell@2
-        name: 'getVersion'
-        condition: ${{ parameters.ghRelease }}
-        displayName: Scrape tag from package.json
-        inputs:
-          targetType: inline
-          script: |
-            $packageVersion = npm version | ConvertFrom-Json | Select-Object -ExpandProperty {vscode-dtdl}
-            echo "##vso[task.setvariable variable=versionTag;isOutput=true]v$packageVersion"
 
 - stage: release
-  displayName: 'Release to Github and VS Marketplace'
+  displayName: 'Release to VS Marketplace'
   dependsOn: [test, build]
   pool:
     name: $(buildPool)
@@ -135,8 +121,6 @@ stages:
     environment: 'production'
   - job: 'release'
     displayName: 'Release package'
-    variables:
-      versionTag: $[ stageDependencies.build.build_and_package.outputs['getVersion.versionTag'] ]
     steps:
       - task: DownloadPipelineArtifact@2
         displayName : 'Download VSIX Build Artifacts'
@@ -144,20 +128,6 @@ stages:
           source: 'current'
           artifact: 'vscode-dtdl'
           path: '$(System.ArtifactsDirectory)/vsix'
-
-      - task: GitHubRelease@1
-        displayName: 'Deploy Release to GitHub'
-        inputs:
-          gitHubConnection: $(GithubReleaseConnection)
-          repositoryName: '$(Build.Repository.Name)'
-          action: 'create'
-          tagSource: userSpecifiedTag
-          title: Release $(versionTag)
-          tag: $(versionTag)
-          isDraft: true
-          isPreRelease: ${{ not(parameters.productionRelease) }}
-          assets: '$(System.ArtifactsDirectory)/vsix/*.vsix'
-        condition: and(succeeded(), ${{ parameters.ghRelease }})
 
       # publish pre-release vsix to marketplace
       - bash: |
