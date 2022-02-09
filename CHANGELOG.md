@@ -2,10 +2,10 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
-## v1.1.0 (unreleased)
+## v1.1.0 pre-release (2022-02-09)
 
-- Added support for IoT Central Semantic Types.
-- Added validation to ensure the IoT Central context IRI exists when using an IoT Central specific semantic type.
+- Support for IoT Central Semantic Types (through increment of `dtdl-language-server` to `0.4.5`).
+  - Added validation to ensure the IoT Central context IRI exists when using an IoT Central specific semantic type.
 
 ## v1.0.0 (2020-09-30)
 
