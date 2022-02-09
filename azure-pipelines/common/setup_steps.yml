@@ -6,10 +6,9 @@ steps:
     displayName: Install Node.js
 
   # run npm install
-  - task: Npm@1
-    inputs:
-      verbose: false
-    displayName: Install dependencies
+  - script: |
+      npm ci
+    displayName: 'Install dependencies'
 
   # for what?
   - bash: |
