@@ -94,7 +94,7 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
-    "dtdl-language-server": "^0.4.4",
+    "dtdl-language-server": "0.4.5",
     "fs-extra": "^7.0.1",
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-languageclient": "^6.1.3"
