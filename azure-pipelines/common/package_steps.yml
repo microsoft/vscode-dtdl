@@ -14,14 +14,12 @@ steps:
   - ${{ if eq(parameters.productionRelease, false) }}:
     - script: |
         vsce package --pre-release
-      displayName: Build VSIX Package
-      condition: and(succeeded(), not(${{ parameters.productionRelease }}))
+      displayName: Build pre-release VSIX Package
 
   - ${{ if eq(parameters.productionRelease, true) }}:
     - script: |
         vsce package
       displayName: Build VSIX Package
-      condition: and(succeeded(), ${{ parameters.productionRelease }})
 
   - task: CopyFiles@2
     inputs:
