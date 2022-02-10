@@ -107,7 +107,7 @@ stages:
 
       - template: common/package_steps.yml
         parameters:
-          productionRelease: ${{ parameters.productionRelease }})
+          productionRelease: $(productionRelease)
 
 - stage: release
   displayName: 'Release to VS Marketplace'
