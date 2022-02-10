@@ -1,7 +1,7 @@
 parameters:
 - name: productionRelease
   displayName: 'Build package for a production release (non-preview)'
-  type: string
+  type: boolean
   default: false
 
 steps:
