@@ -1,3 +1,9 @@
+parameters:
+- name: productionRelease
+  displayName: 'Build package for a production release (non-preview)'
+  type: boolean
+  default: false
+
 steps:
   # split the following two scripts
   # because of not working issue on windows platform.
@@ -6,8 +12,14 @@ steps:
     displayName: Install vsce
 
   - script: |
+      vsce package --pre-release
+    displayName: Build VSIX Package
+    condition: and(succeeded(), not(${{ parameters.productionRelease }}))
+
+  - script: |
       vsce package
     displayName: Build VSIX Package
+    condition: and(succeeded(), ${{ parameters.productionRelease }})
 
   - task: CopyFiles@2
     inputs:
