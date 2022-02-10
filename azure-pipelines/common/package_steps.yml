@@ -1,3 +1,9 @@
+parameters:
+- name: productionRelease
+  displayName: 'Build package for a production release (non-preview)'
+  type: boolean
+  default: false
+
 steps:
   # split the following two scripts
   # because of not working issue on windows platform.
@@ -5,9 +11,15 @@ steps:
       npm install -g vsce
     displayName: Install vsce
 
-  - script: |
-      vsce package
-    displayName: Build VSIX Package
+  - ${{ if eq(parameters.productionRelease, false) }}:
+    - script: |
+        vsce package --pre-release
+      displayName: Build pre-release VSIX Package
+
+  - ${{ if eq(parameters.productionRelease, true) }}:
+    - script: |
+        vsce package
+      displayName: Build VSIX Package
 
   - task: CopyFiles@2
     inputs:
