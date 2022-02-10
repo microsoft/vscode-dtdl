@@ -11,15 +11,17 @@ steps:
       npm install -g vsce
     displayName: Install vsce
 
-  - script: |
-      vsce package --pre-release
-    displayName: Build VSIX Package
-    condition: and(succeeded(), not(${{ parameters.productionRelease }}))
+  - ${{ if eq(parameters.productionRelease, false) }}:
+    - script: |
+        vsce package --pre-release
+      displayName: Build VSIX Package
+      condition: and(succeeded(), not(${{ parameters.productionRelease }}))
 
-  - script: |
-      vsce package
-    displayName: Build VSIX Package
-    condition: and(succeeded(), ${{ parameters.productionRelease }})
+  - ${{ if eq(parameters.productionRelease, true) }}:
+    - script: |
+        vsce package
+      displayName: Build VSIX Package
+      condition: and(succeeded(), ${{ parameters.productionRelease }})
 
   - task: CopyFiles@2
     inputs:
