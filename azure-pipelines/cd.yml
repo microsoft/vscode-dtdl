@@ -106,6 +106,8 @@ stages:
         condition: and(succeeded(), ${{ parameters.publishExt }})
 
       - template: common/package_steps.yml
+        parameters:
+          productionRelease: ${{ parameters.productionRelease }})
 
 - stage: release
   displayName: 'Release to VS Marketplace'
