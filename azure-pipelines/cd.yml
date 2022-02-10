@@ -129,6 +129,16 @@ stages:
           artifact: 'vscode-dtdl'
           path: '$(System.ArtifactsDirectory)/vsix'
 
+      # install Node
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '14.x'
+        displayName: Install Node.js
+
+      - script: |
+          npm install -g vsce
+        displayName: Install vsce
+
       # publish pre-release vsix to marketplace
       - bash: |
           vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix --pre-release
