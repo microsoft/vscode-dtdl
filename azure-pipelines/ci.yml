@@ -1,28 +1,58 @@
-# now ci is just about pr validation, 
-# since we tend to make strict configurations for our repo, that is,
-# each pr is up to date before merging into develop and no other way
-# to modify develop except the pr flow.
 trigger: none
 
 pr:
 - main
 - develop
-- pre-release-v*
 
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-latest'
-    mac:
-      imageName: 'macos-latest'
-    windows:
-      imageName: 'windows-latest'
+stages:
+- stage: CredScan
+  jobs:
+    - job: run_credscan
+      displayName: 'Run CredScan'
+      pool:
+        vmImage: 'windows-latest'
+      steps:
+        # cred scan
+        - task: CredScan@3
+          displayName: 'Run CredScan'
+          inputs:
+            outputFormat: 'pre'
+            scanFolder: '$(Build.SourcesDirectory)'
 
-pool:
-  vmImage: $(imageName)
+        - task: PostAnalysis@1
+          inputs:
+            AllTools: false
+            APIScan: false
+            BinSkim: false
+            CodesignValidation: false
+            CredScan: true
+            FortifySCA: false
+            FxCop: false
+            ModernCop: false
+            PoliCheck: false
+            RoslynAnalyzers: false
+            SDLNativeRules: false
+            Semmle: false
+            TSLint: false
+            ToolLogsNotFoundAction: 'Standard'
 
-steps:
-  - template: common/setup_steps.yml
-  - template: common/compile_steps.yml
-  - template: common/check_steps.yml
-  - template: common/test_steps.yml
+- stage: Test
+  dependsOn: ['CredScan']
+  jobs:
+  - job: run_tests
+    displayName: 'Run tests'
+    strategy:
+      matrix:
+        linux:
+          imageName: 'ubuntu-latest'
+        mac:
+          imageName: 'macos-latest'
+        windows:
+          imageName: 'windows-latest'
+
+    pool:
+      vmImage: $(imageName)
+    steps:
+      - template: common/setup_steps.yml
+      - template: common/compile_steps.yml
+      - template: common/test_steps.yml

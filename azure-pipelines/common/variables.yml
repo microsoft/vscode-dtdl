@@ -1,7 +1,0 @@
-variables:
-  test_extension_name: test-vdt-project
-  test_display_name: 'VDT Project For RC'
-  test_publisher: IoTDevExBuild
-  nightly_extension_name: nightly-vdt-project
-  nightly_display_name: 'VDT Project For Nightly'
-  nightly_publisher: IoTDevExBuild
