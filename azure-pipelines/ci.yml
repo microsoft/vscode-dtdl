@@ -2,7 +2,7 @@ trigger: none
 
 pr:
 - main
-- develop
+- dev
 
 stages:
 - stage: CredScan
@@ -37,7 +37,7 @@ stages:
             ToolLogsNotFoundAction: 'Standard'
 
 - stage: Test
-  dependsOn: ['CredScan']
+  dependsOn: []
   jobs:
   - job: run_tests
     displayName: 'Run tests'

@@ -25,7 +25,6 @@ parameters:
   default: false
 
 variables:
-- template: common/variables.yml
 - name: vmImage
   value: $[variables.${{ parameters.buildAgentVmImageVar }}]
 - name: buildPool

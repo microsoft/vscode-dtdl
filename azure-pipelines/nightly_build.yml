@@ -3,7 +3,7 @@ schedules:
   displayName: 'Nightly build and test'
   branches:
     include:
-    - develop
+    - dev
   always: false
 
 trigger: none
@@ -19,7 +19,7 @@ stages:
       steps:
         - template: common/sdl_steps.yml
 
-- stage: test
+- stage: Test
   dependsOn: ['SDL']
   jobs:
   - job: run_tests
