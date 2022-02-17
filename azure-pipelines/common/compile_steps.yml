@@ -1,5 +1,5 @@
 steps:
-  # compiling
+  # Typescript Compile
   - script: |
       npm run compile
-    displayName: Compile Sources
+    displayName: 'Typescript compile'

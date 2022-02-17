@@ -3,15 +3,15 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: '14.x'
-    displayName: Install Node.js
+    displayName: 'Install Node.js'
 
   # run npm install
   - script: |
       npm ci
     displayName: 'Install dependencies'
 
-  # for what?
+  # X Virtual Frame Buffer (to run tests on headless linux distros)
   - bash: |
       /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-    displayName: Start xvfb
+    displayName: 'Start xvfb for headless linux'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
