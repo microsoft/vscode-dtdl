@@ -2,6 +2,11 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
+## v1.1.1 pre-release (2022-02-24)
+
+- A new quick fix for `@context` is available if an IoT Central semantic type is used and the Central context is missing.
+  - Uses `dtdl-language-server` `0.4.6`.
+
 ## v1.1.0 pre-release (2022-02-09)
 
 - Support for IoT Central Semantic Types (through increment of `dtdl-language-server` to `0.4.5`).
