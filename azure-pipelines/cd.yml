@@ -25,7 +25,6 @@ parameters:
   default: false
 
 variables:
-- template: common/variables.yml
 - name: vmImage
   value: $[variables.${{ parameters.buildAgentVmImageVar }}]
 - name: buildPool
@@ -52,38 +51,17 @@ stages:
     steps:
       - template: common/setup_steps.yml
       - template: common/compile_steps.yml
-      - template: common/check_steps.yml
       - template: common/test_steps.yml
 
 - stage: build
   dependsOn: [test]
   jobs:
-  - job: CredScan
-    displayName: 'Credential Scan'
+  - job: SDLTools
+    displayName: 'SDL checks'
     pool:
       vmImage: windows-latest
     steps:
-    - task: CredScan@3
-      inputs:
-        outputFormat: 'pre'
-        scanFolder: '$(Build.SourcesDirectory)'
-
-    - task: PostAnalysis@1
-      inputs:
-        AllTools: false
-        APIScan: false
-        BinSkim: false
-        CodesignValidation: false
-        CredScan: true
-        FortifySCA: false
-        FxCop: false
-        ModernCop: false
-        PoliCheck: false
-        RoslynAnalyzers: false
-        SDLNativeRules: false
-        Semmle: false
-        TSLint: false
-        ToolLogsNotFoundAction: 'Standard'
+    - template: common/sdl_steps.yml
 
   - job: build_and_package
     displayName: 'Build and Publish Artifacts'
@@ -92,17 +70,15 @@ stages:
       vmImage: $(vmImage)
       demands:
         - ImageOverride -equals $(vmImage)
-    dependsOn: CredScan
+    dependsOn: SDLTools
     steps:
       - template: common/setup_steps.yml
       - template: common/compile_steps.yml
-      - template: common/check_steps.yml
-      - template: common/test_steps.yml
 
-      # modify application insights key for releases
+      # modify application insights key for releases only
       - script: |
           node scripts/modifyPackageJson.js aiKey $(aiKey)
-        displayName: Modify package.json for releases
+        displayName: 'Inject App Insights key'
         condition: and(succeeded(), ${{ parameters.publishExt }})
 
       - template: common/package_steps.yml
@@ -112,6 +88,7 @@ stages:
 - stage: release
   displayName: 'Release to VS Marketplace'
   dependsOn: [test, build]
+  condition: and(succeeded(), ${{ parameters.publishExt }})
   pool:
     name: $(buildPool)
     vmImage: $(vmImage)
@@ -135,18 +112,18 @@ stages:
       - task: NodeTool@0
         inputs:
           versionSpec: '14.x'
-        displayName: Install Node.js
+        displayName: 'Install Node.js'
 
       - script: |
           npm install -g vsce
-        displayName: Install vsce
+        displayName: 'Install VSCE tool'
 
       # publish pre-release vsix to marketplace
       - bash: |
           vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix --pre-release
         workingDirectory: '$(System.ArtifactsDirectory)/vsix'
-        displayName: Deploy pre-release VSIX to marketplace
-        condition: and(succeeded(), ${{ parameters.publishExt }}, not(${{ parameters.productionRelease }}))
+        displayName: 'Deploy pre-release VSIX to marketplace'
+        condition: and(succeeded(), not(${{ parameters.productionRelease }}))
         env:
           MARKETPLACE_TOKEN: $(vsciot_marketplace_token)
 
@@ -154,7 +131,7 @@ stages:
       - bash: |
           vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
         workingDirectory: '$(System.ArtifactsDirectory)/vsix'
-        displayName: Deploy release VSIX to marketplace
-        condition: and(succeeded(), ${{ parameters.publishExt }}, ${{ parameters.productionRelease }})
+        displayName: 'Deploy release VSIX to marketplace'
+        condition: and(succeeded(), ${{ parameters.productionRelease }})
         env:
           MARKETPLACE_TOKEN: $(vsciot_marketplace_token)
