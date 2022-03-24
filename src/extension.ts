@@ -5,7 +5,6 @@ import * as vscode from "vscode";
 import { ColorizedChannel } from "./common/colorizedChannel";
 import { Constants } from "./common/constants";
 import { EventType } from "./common/eventType";
-import { NSAT } from "./common/nsat";
 import { ProcessError } from "./common/processError";
 import { TelemetryClient } from "./common/telemetryClient";
 import { TelemetryContext } from "./common/telemetryContext";
@@ -20,8 +19,6 @@ function initCommand(
   context: vscode.ExtensionContext,
   telemetryClient: TelemetryClient,
   outputChannel: ColorizedChannel,
-  nsat: NSAT,
-  enableSurvey: boolean,
   event: EventType,
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   callback: (...args: any[]) => Promise<any>
@@ -50,9 +47,6 @@ function initCommand(
         telemetryContext.end();
         telemetryClient.sendEvent(event, telemetryContext);
         outputChannel.show();
-        if (enableSurvey) {
-          nsat.takeSurvey(context);
-        }
       }
     })
   );
@@ -61,7 +55,6 @@ function initCommand(
 export function activate(context: vscode.ExtensionContext): void {
   const outputChannel = new ColorizedChannel(Constants.CHANNEL_NAME);
   const telemetryClient = new TelemetryClient(context);
-  const nsat = new NSAT(Constants.NSAT_SURVEY_URL, telemetryClient);
   const deviceModelManager = new DeviceModelManager(context, outputChannel);
 
   telemetryClient.sendEvent(Constants.EXTENSION_ACTIVATED_MSG);
@@ -107,8 +100,6 @@ export function activate(context: vscode.ExtensionContext): void {
     context,
     telemetryClient,
     outputChannel,
-    nsat,
-    true,
     EventType.CreateInterface,
     async (): Promise<void> => {
       return deviceModelManager.createModel(ModelType.Interface);
