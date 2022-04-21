@@ -2,6 +2,16 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
+## v1.1.2 pre-release (2022-04-21)
+
+- Uses `dtdl-language-server` `0.4.7`.
+  - Adds language support for unknown adjunct co-types.
+  - Usage of '`commandType`' produces a warning indicating deprecation in DTDL v2.
+  - Improved `@context` evaluation.
+  - Improved detection of IoT Central context when using central semantic types (nested context are evaluated).
+  - Code action for resolving lack of IoT Central context when needed and root `@context` is an array changed to an 'append' instead of a 'replace'.
+  - Error is shown when using complex schema type of 'Array' under a 'Property' type element (v2 constraint).
+
 ## v1.1.1 pre-release (2022-02-24)
 
 - A new quick fix for `@context` is available if an IoT Central semantic type is used and the Central context is missing.
