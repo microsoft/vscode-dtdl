@@ -23,6 +23,4 @@ export class Constants {
 
   public static readonly EXTENSION_ACTIVATED_MSG = "extensionActivated";
   public static readonly NOT_EMPTY_MSG = "could not be empty";
-
-  public static readonly NSAT_SURVEY_URL = "https://aka.ms/vscode-iot-workbench-survey";
 }
