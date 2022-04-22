@@ -2,6 +2,10 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
+## v1.1.3 pre-release (2022-04-21)
+
+- Fix versioning issue.
+
 ## v1.1.2 pre-release (2022-04-21)
 
 - Uses `dtdl-language-server` `0.4.7`.
