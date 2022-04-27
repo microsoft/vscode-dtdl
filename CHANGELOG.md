@@ -2,9 +2,13 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
+## v1.2.0 (2022-04-27)
+
+- Accumulated updates & fixes from the 1.1.x pre-release iterations.
+
 ## v1.1.3 pre-release (2022-04-21)
 
-- Fix versioning issue.
+- Fix package-lock.json versioning.
 
 ## v1.1.2 pre-release (2022-04-21)
 
@@ -15,6 +19,7 @@ All notable changes to the `vscode-dtdl` extension will be documented in this fi
   - Improved detection of IoT Central context when using central semantic types (nested context are evaluated).
   - Code action for resolving lack of IoT Central context when needed and root `@context` is an array changed to an 'append' instead of a 'replace'.
   - Error is shown when using complex schema type of 'Array' under a 'Property' type element (v2 constraint).
+  - Fixed bug where undefined or empty text file body caused an error when using code completion.
 
 ## v1.1.1 pre-release (2022-02-24)
 
