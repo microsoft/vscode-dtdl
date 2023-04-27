@@ -2,6 +2,18 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
+## v1.3.0 pre-release (2023-04-26)
+
+- Uses `dtdl-language-server` `0.5.0`, which adds DTDL v3 support.
+  - v3 context and extensions are recognized.
+  - @context intellisense for v3 (+ v2) extensions.
+  - Allow complex schema type of 'Array' in Property.
+  - Enum no longer requires at least one element in the enumValues property.
+  - Object no longer requires at least one element in the fields property.
+  - Semantic Types without use of the quantitative types extension will show an error.
+    - A new code action can be used to quickly add the required extension.
+  - New DTMI formats supported: no version suffix and two-part (major.minor) version suffix.
+
 ## v1.2.0 (2022-04-27)
 
 - Accumulated updates & fixes from the 1.1.x pre-release iterations.
