@@ -22,14 +22,13 @@ You could use the command palette to create interface from predefined or customi
 - Follow the instruction to assign the interface name.
 - If there are multiple templates existing, choose a template you need. Otherwise, the extension will the basic template as default.
 - A JSON file will be created in the current folder. The file name is based on the interface name you assigned.
-- The @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#digital-twin-model-identifier-dtmi) (DTMI). You should modify the @id following the DTMI rule to uniquely identify the device model.
-- You could extend the interface with [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md).
+- The @id is the path component of the [Digital Twin Model Identifier](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTMI/README.md) (DTMI). You should modify the @id following the DTMI rule to uniquely identify the device model.
+
 
 ### Intellisense and Syntax validation
 
-This extension could help you with the language syntax (including auto-completion) and also validate the syntax with [DTDL v2](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md).
+This extension could help you with the language syntax (including auto-completion) and also validate the syntax with [DTDL](https://aka.ms/dtdl).
 
-> Note: This extension only supports these [Semantic Types](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#semantic-types).
 
 ### Use Predefined Code Snippets
 
