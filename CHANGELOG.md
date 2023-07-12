@@ -2,6 +2,12 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
+## v1.4.0 (2023-07-12)
+
+- Uses `dtdl-language-server` `0.6.0`, which adds DTDL v3 extensions support.
+  - fix indentation issue under @context when 'Quick Fix' option is applied.
+  - add validation, code action and auto completion support for v3 extensions historization, annotation and overriding.
+
 ## v1.3.0 pre-release (2023-04-26)
 
 - Uses `dtdl-language-server` `0.5.0`, which adds DTDL v3 support.

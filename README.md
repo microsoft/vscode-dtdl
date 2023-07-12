@@ -1,5 +1,16 @@
 # DTDL Editor for Visual Studio Code
 
+🎉 **Exciting Update: Our VSCode extension now offers expanded DTDL v3 support!**
+
+We are incredibly delighted to announce the latest update to our VSCode extension. Not only does our enhanced release now fully support the DTDL V3 context, but it also boasts improved Intellisense for V3 language extensions. 
+
+This comprehensive support includes crucial features such as historization, overriding, annotations, and quantitativeTypes, making our product more robust and versatile for your diverse developing needs. 
+
+Don't wait any longer! Dive in and discover the expanded functionality that our updated VSCode extension has to offer. Stay tuned to our repository for upcoming updates. We always welcome your invaluable insights and feedback for continued improvements.
+
+Happy coding to all!🚀
+
+
 ## Overview
 
 The [Digital Twin Definition Language](https://aka.ms/DTDL) (DTDL) is a language for describing models for Plug and Play devices, device digital twins, and logical digital twins. Broadly, modeling enables IoT solutions to provision, use, and configure digital twins of all kinds from multiple sources in a single solution. Using DTDL to describe any digital twin’s abilities enables the IoT platform and IoT solutions to leverage the semantics of each digital twin.

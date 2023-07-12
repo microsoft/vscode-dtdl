@@ -2,7 +2,7 @@
   "name": "vscode-dtdl",
   "displayName": "DTDL",
   "description": "This extension provides syntax highlighting to read and edit JSON documents using the Digital Twins Definition Language",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "vsciot-vscode",
   "aiKey": "[AIKEY PLACEHOLDER]",
   "icon": "logo.png",
@@ -94,7 +94,7 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
-    "dtdl-language-server": "0.5.0",
+    "dtdl-language-server": "0.6.0",
     "fs-extra": "^7.0.1",
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-languageclient": "^6.1.3"
