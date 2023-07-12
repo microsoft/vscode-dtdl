@@ -1,6 +1,6 @@
 # DTDL Editor for Visual Studio Code
 
-🎉 **Exciting Update: Our VSCode Extension now offers Expanded DTDL v3 Support!**
+🎉 **Exciting Update: Our VSCode extension now offers expanded DTDL v3 support!**
 
 We are incredibly delighted to announce the latest update to our VSCode extension. Not only does our enhanced release now fully support the DTDL V3 context, but it also boasts improved Intellisense for V3 language extensions. 
 
