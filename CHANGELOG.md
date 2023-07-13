@@ -2,6 +2,11 @@
 
 All notable changes to the `vscode-dtdl` extension will be documented in this file.
 
+## v1.4.1 (2023-07-13)
+
+- Uses `dtdl-language-server` `0.6.1`.
+  - Update string validation for `displayName` and `name` properties in DTDL v2 vs. v3.
+
 ## v1.4.0 (2023-07-12)
 
 - Uses `dtdl-language-server` `0.6.0`, which adds DTDL v3 extensions support.
